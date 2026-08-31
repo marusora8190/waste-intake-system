@@ -79,7 +79,8 @@
   .calc-field{background:#fbf3ea !important;color:var(--ink-dark) !important;font-weight:700 !important;text-align:center;}
   .num-field{text-align:center;}
   .field-hint{font-size:11.5px;color:var(--muted);margin-top:4px;}
-  .inline-field{display:flex;align-items:center;gap:12px;}
+  .inline-field{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .inline-field .form-title{margin-right:8px;}
   .inline-field label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
   .inline-field select{
     border:1px solid #d8d1c2;border-radius:7px;padding:6px 10px;font-size:14px;
@@ -328,12 +329,12 @@
 
   <!-- 車番別集計タブ -->
   <div class="panel" id="tab-vehicle" style="display:none;">
-    <div class="form-title">車番別集計（月別 運搬回数）</div>
-    <div class="inline-field" style="margin-bottom:22px;">
+    <div class="inline-field" style="margin-bottom:10px;">
+      <div class="form-title" style="margin:0;">車番別集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="v-year"></select>
     </div>
-    <div class="scroll-btn-row">
+    <div class="scroll-btn-row" style="margin-bottom:4px;">
       <button class="scroll-btn" onclick="scrollVehicleTable(-240)" aria-label="左にスクロール">◀</button>
       <button class="scroll-btn" onclick="scrollVehicleTable(240)" aria-label="右にスクロール">▶</button>
     </div>
@@ -350,12 +351,12 @@
 
   <!-- 持込部署集計タブ -->
   <div class="panel" id="tab-department" style="display:none;">
-    <div class="form-title">持込部署集計（月別 運搬回数）</div>
-    <div class="inline-field" style="margin-bottom:22px;">
+    <div class="inline-field" style="margin-bottom:10px;">
+      <div class="form-title" style="margin:0;">持込部署集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="d-year"></select>
     </div>
-    <div class="scroll-btn-row">
+    <div class="scroll-btn-row" style="margin-bottom:4px;">
       <button class="scroll-btn" onclick="scrollDepartmentTable(-240)" aria-label="左にスクロール">◀</button>
       <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
     </div>
