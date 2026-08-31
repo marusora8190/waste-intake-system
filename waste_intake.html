@@ -115,6 +115,11 @@
   }
   .scroll-btn:hover{background:#f1ece1;}
   .scroll-btn:active{background:#e8e1d2;}
+  .fee-total-row td{
+    background:var(--accent-bg) !important;font-weight:700;color:var(--ink-dark);
+    border-top:2px solid var(--ink);
+  }
+  .compact-cols .fee-total-row td:first-child{background:var(--accent-bg) !important;}
   .del-btn{background:none;border:none;color:#c94f3c;cursor:pointer;font-size:13px;text-decoration:underline;}
 
   .list-toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -331,6 +336,7 @@
         <tbody id="vehicle-body">
           <tr><td>読み込み中…</td></tr>
         </tbody>
+        <tfoot><tr id="vehicle-fee-row"></tr></tfoot>
       </table>
     </div>
   </div>
@@ -348,6 +354,7 @@
         <tbody id="yearly-body">
           <tr><td>読み込み中…</td></tr>
         </tbody>
+        <tfoot><tr id="yearly-fee-row"></tr></tfoot>
       </table>
     </div>
   </div>
@@ -764,6 +771,7 @@ function scrollYearlyTable(delta){
 function renderVehicleSummary(){
   const thead = document.getElementById('vehicle-thead');
   const body = document.getElementById('vehicle-body');
+  const feeRow = document.getElementById('vehicle-fee-row');
   const year = document.getElementById('v-year').value;
 
   const yearRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4) === year);
@@ -777,6 +785,7 @@ function renderVehicleSummary(){
 
   if(vehicles.length===0 || months.length===0){
     body.innerHTML = '<tr><td>データがありません</td></tr>';
+    feeRow.innerHTML = '';
     return;
   }
   body.innerHTML = vehicles.map(v=>{
@@ -794,12 +803,23 @@ function renderVehicleSummary(){
     const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
     return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
   }).join('');
+
+  let grandFee = 0;
+  const feeCells = months.map(m=>{
+    const fee = yearRecords.filter(r=> r.record_date.slice(0,7)===m)
+      .reduce((s,r)=> s + Number(r.fee||0), 0);
+    grandFee += fee;
+    return `<td class="num">${fee.toLocaleString()}円</td>`;
+  }).join('');
+  feeRow.className = 'fee-total-row';
+  feeRow.innerHTML = `<td>手数料合計</td>${feeCells}<td class="num">${grandFee.toLocaleString()}円</td>`;
 }
 
 /* ---------- 年別集計タブ（年別 運搬回数） ---------- */
 async function loadYearlySummary(){
   const thead = document.getElementById('yearly-thead');
   const body = document.getElementById('yearly-body');
+  const feeRow = document.getElementById('yearly-fee-row');
   body.innerHTML = '<tr><td>読み込み中…</td></tr>';
   try{
     await loadAllRecords();
@@ -810,6 +830,7 @@ async function loadYearlySummary(){
 
     if(vehicles.length===0){
       body.innerHTML = '<tr><td>データがありません</td></tr>';
+      feeRow.innerHTML = '';
       return;
     }
     body.innerHTML = vehicles.map(v=>{
@@ -827,6 +848,16 @@ async function loadYearlySummary(){
       const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
       return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
     }).join('');
+
+    let grandFee = 0;
+    const feeCells = years.map(y=>{
+      const fee = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===y)
+        .reduce((s,r)=> s + Number(r.fee||0), 0);
+      grandFee += fee;
+      return `<td class="num">${fee.toLocaleString()}円</td>`;
+    }).join('');
+    feeRow.className = 'fee-total-row';
+    feeRow.innerHTML = `<td>手数料合計</td>${feeCells}<td class="num">${grandFee.toLocaleString()}円</td>`;
   }catch(e){
     body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
