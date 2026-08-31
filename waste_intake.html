@@ -103,8 +103,8 @@
   th:last-child,td:last-child{border-right:none;}
   th{background:var(--accent-bg);color:var(--ink-dark);font-weight:700;position:sticky;top:0;}
   tbody tr:hover{background:#fbf7ee;}
-  tr.row-nonburn td{background:#fdead4;}
-  tr.row-nonburn:hover td{background:#fbdfc0;}
+  td.cell-nonburn{background:#fdead4;}
+  tr:hover td.cell-nonburn{background:#fbdfc0;}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
   .num{text-align:center;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
@@ -284,7 +284,7 @@
       <table>
         <thead>
           <tr>
-            <th class="num">日付</th><th>時刻</th><th class="num">受付No.</th><th class="num">カードNo.</th><th>持込部署</th><th class="num">車番</th>
+            <th class="num">日付</th><th>時刻</th><th class="num">受付No.</th><th class="num">カードNo.</th><th>持込部署</th><th>車番</th>
             <th>品種</th><th class="num">総重量</th><th class="num">空車重量</th>
             <th class="num">正味重量</th><th class="num">手数料</th><th></th>
           </tr>
@@ -687,14 +687,14 @@ function renderListFiltered(){
     return;
   }
   body.innerHTML = rows.map(r => `
-    <tr class="${r.item_type==='不燃' ? 'row-nonburn' : ''}">
+    <tr>
       <td class="num">${r.record_date ?? ''}</td>
       <td>${r.record_time ?? ''}</td>
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
       <td>${r.department ?? ''}</td>
-      <td class="num">${r.vehicle_no ?? ''}</td>
-      <td>${r.item_type ?? ''}</td>
+      <td>${r.vehicle_no ?? ''}</td>
+      <td class="${r.item_type==='不燃' ? 'cell-nonburn' : ''}">${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
       <td class="num">${Number(r.net_weight).toLocaleString()}</td>
@@ -827,6 +827,11 @@ async function deleteCard(cardNo){
 /* ---------- 集計共通：全記録を取得 ---------- */
 let ALL_RECORDS = [];
 
+function last4(vehicleNo){
+  if(!vehicleNo) return '';
+  return String(vehicleNo).slice(-4);
+}
+
 async function loadAllRecords(){
   const rows = await sb('waste_records?select=vehicle_no,department,item_type,record_date,net_weight,fee&order=record_date.asc&limit=5000');
   ALL_RECORDS = rows || [];
@@ -900,7 +905,7 @@ function renderVehicleSummary(){
       return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
     }).join('');
     const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    return `<tr><td>${last4(v)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
   }).join('');
 
   let grandFee = 0;
@@ -989,12 +994,14 @@ function renderDepartmentSummary(){
       return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
     }).join('');
     const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td>${p.department}</td><td>${p.vehicle_no || ''}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    return `<tr><td>${p.department}</td><td>${last4(p.vehicle_no)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
   }).join('');
+
+  const yearRecordsWithDept = yearRecords.filter(r=> r.department);
 
   let grandFee = 0;
   const feeCells = months.map(m=>{
-    const fee = yearRecords.filter(r=> r.record_date.slice(0,7)===m)
+    const fee = yearRecordsWithDept.filter(r=> r.record_date.slice(0,7)===m)
       .reduce((s,r)=> s + Number(r.fee||0), 0);
     grandFee += fee;
     return `<td class="num">${fee.toLocaleString()}円</td>`;
