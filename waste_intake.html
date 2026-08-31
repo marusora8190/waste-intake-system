@@ -119,9 +119,17 @@
   }
   .compact-cols thead th:first-child{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td:first-child{background:#fbf7ee;}
+  .department-table td:first-child{font-weight:700;color:var(--text);}
+  .card-no-cell{font-weight:700;color:var(--text);}
   .department-table th:nth-child(2), .department-table td:nth-child(2){
     text-align:center;padding-left:6px;padding-right:6px;white-space:nowrap;width:1%;
   }
+  .compact-cols th.veh-no, .compact-cols td.veh-no{
+    text-align:right !important;padding-right:10px;padding-left:6px;
+    font-variant-numeric:tabular-nums;font-feature-settings:"tnum";
+    width:1%;white-space:nowrap;
+  }
+  .compact-cols td.veh-no{font-weight:700;color:var(--text);}
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -738,7 +746,7 @@ async function loadCards(){
     }
     body.innerHTML = rows.map(r => `
       <tr>
-        <td class="num">${r.card_no}</td>
+        <td class="num card-no-cell">${r.card_no}</td>
         <td class="num">${r.department ?? ''}</td>
         <td class="num">${r.vehicle_no}</td>
         <td class="num">${r.updated_at ? new Date(r.updated_at).toLocaleString('ja-JP') : ''}</td>
@@ -829,7 +837,9 @@ let ALL_RECORDS = [];
 
 function last4(vehicleNo){
   if(!vehicleNo) return '';
-  return String(vehicleNo).slice(-4);
+  const s = String(vehicleNo);
+  const match = s.match(/(\d+)$/);
+  return match ? match[1] : s.slice(-4);
 }
 
 async function loadAllRecords(){
@@ -882,7 +892,7 @@ function renderVehicleSummary(){
   const months = [...new Set(yearRecords.map(r=>r.record_date.slice(0,7)))].sort();
   const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
 
-  thead.innerHTML = '<th>車番</th>' + months.map(m=>{
+  thead.innerHTML = '<th class="veh-no">車番</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
     return `<th class="num">${mo}月</th>`;
   }).join('') + '<th class="num">合計</th>';
@@ -905,7 +915,7 @@ function renderVehicleSummary(){
       return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
     }).join('');
     const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td>${last4(v)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    return `<tr><td class="veh-no">${last4(v)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
   }).join('');
 
   let grandFee = 0;
@@ -971,7 +981,7 @@ function renderDepartmentSummary(){
     return { department, vehicle_no };
   });
 
-  thead.innerHTML = '<th>持込部署</th><th>車番</th>' + months.map(m=>{
+  thead.innerHTML = '<th>持込部署</th><th class="veh-no">車番</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
     return `<th class="num">${mo}月</th>`;
   }).join('') + '<th class="num">合計</th>';
@@ -994,7 +1004,7 @@ function renderDepartmentSummary(){
       return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
     }).join('');
     const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td>${p.department}</td><td>${last4(p.vehicle_no)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    return `<tr><td>${p.department}</td><td class="veh-no">${last4(p.vehicle_no)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
   }).join('');
 
   const yearRecordsWithDept = yearRecords.filter(r=> r.department);
