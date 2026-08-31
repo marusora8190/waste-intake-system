@@ -31,19 +31,19 @@
   .update-status.show{opacity:1;}
 
   .refresh-btn{
-    width:100%;padding:11px 16px;border-radius:8px;border:none;background:var(--ink);
-    color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;margin-bottom:18px;
-    display:flex;align-items:center;gap:10px;
+    margin-left:auto;padding:9px 16px;border-radius:8px;border:none;background:var(--ink);
+    color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;gap:8px;white-space:nowrap;
   }
   .refresh-btn:hover{background:var(--ink-dark);}
   .refresh-btn:disabled{opacity:.6;cursor:not-allowed;}
   .refresh-icon{
     display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
-    width:22px;height:22px;background:#3b82f6;border-radius:6px;color:#fff;
+    width:20px;height:20px;background:#3b82f6;border-radius:6px;color:#fff;
   }
-  .refresh-icon svg{width:13px;height:13px;}
+  .refresh-icon svg{width:12px;height:12px;}
 
-  .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+  .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
   .tab{
     padding:9px 18px;border:1px solid var(--line);background:var(--panel);
     border-radius:8px;cursor:pointer;font-size:14px;color:var(--muted);
@@ -102,6 +102,7 @@
   @media (max-width:720px){
     .field-grid{grid-template-columns:1fr 1fr;}
     .card-form{grid-template-columns:1fr;}
+    .refresh-btn{margin-left:0;}
   }
 </style>
 </head>
@@ -116,14 +117,17 @@
     <div class="tab active" data-tab="input" onclick="switchTab('input')">入力</div>
     <div class="tab" data-tab="list" onclick="switchTab('list')">一覧</div>
     <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
-  </div>
-
-  <!-- 入力タブ -->
-  <div class="panel" id="tab-input">
+    <div class="tab" data-tab="monthly" onclick="switchTab('monthly')">月次集計</div>
+    <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
+    <div class="tab" data-tab="yearly" onclick="switchTab('yearly')">年別集計</div>
     <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
       <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
       <span id="refresh-btn-label">最新の状態に更新</span>
     </button>
+  </div>
+
+  <!-- 入力タブ -->
+  <div class="panel" id="tab-input">
     <div class="form-title">計量票 入力</div>
     <div class="field-grid">
       <div class="field">
@@ -239,6 +243,59 @@
       </table>
     </div>
   </div>
+  <!-- 月次集計タブ -->
+  <div class="panel" id="tab-monthly" style="display:none;">
+    <div class="form-title">月次集計</div>
+    <div class="field-grid" style="margin-bottom:22px;">
+      <div class="field">
+        <label>年</label>
+        <select id="m-year"></select>
+      </div>
+      <div class="field">
+        <label>月</label>
+        <select id="m-month"></select>
+      </div>
+      <div class="field">
+        <label>車番</label>
+        <select id="m-vehicle"><option value="">(全車両)</option></select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tbody id="monthly-body">
+          <tr><td>登録件数</td><td class="num" id="m-count">-</td></tr>
+          <tr><td>正味重量 合計(kg)</td><td class="num" id="m-net">-</td></tr>
+          <tr><td>手数料 合計(円)</td><td class="num" id="m-fee">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 車番別集計タブ -->
+  <div class="panel" id="tab-vehicle" style="display:none;">
+    <div class="form-title">車番別集計（月別 運搬回数）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="vehicle-thead"></tr></thead>
+        <tbody id="vehicle-body">
+          <tr><td>読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 年別集計タブ -->
+  <div class="panel" id="tab-yearly" style="display:none;">
+    <div class="form-title">年別集計（年別 運搬回数）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="yearly-thead"></tr></thead>
+        <tbody id="yearly-body">
+          <tr><td>読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -276,12 +333,15 @@ function showToast(msg, duration=2600){
 }
 
 function switchTab(name){
-  ['input','list','cards'].forEach(n=>{
+  ['input','list','cards','monthly','vehicle','yearly'].forEach(n=>{
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
   if(name==='list') loadList();
   if(name==='cards') loadCards();
+  if(name==='monthly') loadMonthly();
+  if(name==='vehicle') loadVehicleSummary();
+  if(name==='yearly') loadYearlySummary();
 }
 
 /* ---------- カード⇔車番 対応表（メモリキャッシュ） ---------- */
@@ -511,6 +571,141 @@ async function deleteCard(cardNo){
   }
 }
 
+/* ---------- 集計共通：全記録を取得 ---------- */
+let ALL_RECORDS = [];
+
+async function loadAllRecords(){
+  const rows = await sb('waste_records?select=vehicle_no,item_type,record_date,net_weight,fee&order=record_date.asc&limit=5000');
+  ALL_RECORDS = rows || [];
+}
+
+/* ---------- 月次集計タブ ---------- */
+async function loadMonthly(){
+  const body = document.getElementById('monthly-body');
+  try{
+    await loadAllRecords();
+    populateMonthlyFilters();
+    computeMonthly();
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="2">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function populateMonthlyFilters(){
+  const yearSel = document.getElementById('m-year');
+  const monthSel = document.getElementById('m-month');
+  const vehicleSel = document.getElementById('m-vehicle');
+  if(yearSel.dataset.populated) return;
+
+  const now = new Date();
+  const curYear = String(now.getFullYear());
+  const curMonth = String(now.getMonth()+1);
+
+  const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort();
+  if(!years.includes(curYear)) years.push(curYear);
+  years.sort();
+  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  yearSel.value = curYear;
+
+  monthSel.innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}">${m}月</option>`).join('');
+  monthSel.value = curMonth;
+
+  const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
+  vehicleSel.innerHTML = '<option value="">(全車両)</option>' + vehicles.map(v=>`<option value="${v}">${v}</option>`).join('');
+
+  yearSel.addEventListener('change', computeMonthly);
+  monthSel.addEventListener('change', computeMonthly);
+  vehicleSel.addEventListener('change', computeMonthly);
+  yearSel.dataset.populated = '1';
+}
+
+function computeMonthly(){
+  const year = document.getElementById('m-year').value;
+  const monthPadded = String(document.getElementById('m-month').value).padStart(2,'0');
+  const vehicle = document.getElementById('m-vehicle').value;
+
+  const filtered = ALL_RECORDS.filter(r=>{
+    const [ry, rm] = r.record_date.split('-');
+    if(ry !== year || rm !== monthPadded) return false;
+    if(vehicle && r.vehicle_no !== vehicle) return false;
+    return true;
+  });
+
+  const count = filtered.length;
+  const netSum = filtered.reduce((s,r)=> s + Number(r.net_weight||0), 0);
+  const feeSum = filtered.reduce((s,r)=> s + Number(r.fee||0), 0);
+
+  document.getElementById('m-count').textContent = count.toLocaleString();
+  document.getElementById('m-net').textContent = netSum.toLocaleString();
+  document.getElementById('m-fee').textContent = feeSum.toLocaleString();
+}
+
+/* ---------- 車番別集計タブ（月別 運搬回数） ---------- */
+async function loadVehicleSummary(){
+  const thead = document.getElementById('vehicle-thead');
+  const body = document.getElementById('vehicle-body');
+  body.innerHTML = '<tr><td>読み込み中…</td></tr>';
+  try{
+    await loadAllRecords();
+    const months = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,7)))].sort();
+    const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
+
+    thead.innerHTML = '<th>車番</th>' + months.map(m=>{
+      const [y,mo] = m.split('-');
+      return `<th class="num">${y}年${Number(mo)}月</th>`;
+    }).join('') + '<th class="num">合計</th>';
+
+    if(vehicles.length===0){
+      body.innerHTML = '<tr><td>データがありません</td></tr>';
+      return;
+    }
+    body.innerHTML = vehicles.map(v=>{
+      let total = 0;
+      const cells = months.map(m=>{
+        const cnt = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,7)===m).length;
+        total += cnt;
+        return `<td class="num">${cnt}</td>`;
+      }).join('');
+      return `<tr><td>${v}</td>${cells}<td class="num">${total}</td></tr>`;
+    }).join('');
+  }catch(e){
+    body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+/* ---------- 年別集計タブ（年別 運搬回数） ---------- */
+async function loadYearlySummary(){
+  const thead = document.getElementById('yearly-thead');
+  const body = document.getElementById('yearly-body');
+  body.innerHTML = '<tr><td>読み込み中…</td></tr>';
+  try{
+    await loadAllRecords();
+    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort();
+    const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
+
+    thead.innerHTML = '<th>車番</th>' + years.map(y=>`<th class="num">${y}年</th>`).join('') + '<th class="num">合計</th>';
+
+    if(vehicles.length===0){
+      body.innerHTML = '<tr><td>データがありません</td></tr>';
+      return;
+    }
+    body.innerHTML = vehicles.map(v=>{
+      let total = 0;
+      const cells = years.map(y=>{
+        const cnt = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,4)===y).length;
+        total += cnt;
+        return `<td class="num">${cnt}</td>`;
+      }).join('');
+      return `<tr><td>${v}</td>${cells}<td class="num">${total}</td></tr>`;
+    }).join('');
+  }catch(e){
+    body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
 /* ---------- 最新の状態に更新 ---------- */
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
@@ -525,6 +720,16 @@ async function refreshData(){
     }
     if(document.getElementById('tab-cards').style.display !== 'none'){
       await loadCards();
+    }
+    if(document.getElementById('tab-monthly').style.display !== 'none'){
+      await loadAllRecords();
+      computeMonthly();
+    }
+    if(document.getElementById('tab-vehicle').style.display !== 'none'){
+      await loadVehicleSummary();
+    }
+    if(document.getElementById('tab-yearly').style.display !== 'none'){
+      await loadYearlySummary();
     }
     const status = document.getElementById('update-status');
     status.textContent = '✓ 最新の状態に更新されました';
