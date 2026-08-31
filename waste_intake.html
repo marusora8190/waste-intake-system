@@ -92,6 +92,26 @@
   tbody tr:hover{background:#fbf7ee;}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
   .num{text-align:center;}
+  .compact-cols{table-layout:auto;}
+  .compact-cols th, .compact-cols td{padding:8px 6px;}
+  .compact-cols th.num, .compact-cols td.num{white-space:nowrap;width:1%;}
+  .compact-cols th:first-child, .compact-cols td:first-child{
+    position:sticky;left:0;z-index:1;background:var(--panel);
+    text-align:left;padding-left:10px;white-space:nowrap;
+    box-shadow:2px 0 3px -2px rgba(0,0,0,.15);
+  }
+  .compact-cols thead th:first-child{z-index:2;background:var(--accent-bg);}
+  .compact-cols tbody tr:hover td:first-child{background:#fbf7ee;}
+
+  .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
+  .scroll-btn{
+    width:38px;height:34px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;color:var(--text);font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.06);
+  }
+  .scroll-btn:hover{background:#f1ece1;}
+  .scroll-btn:active{background:#e8e1d2;}
   .del-btn{background:none;border:none;color:#c94f3c;cursor:pointer;font-size:13px;text-decoration:underline;}
 
   .list-toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -134,8 +154,8 @@
 
   <div class="app-body">
   <div class="sidebar">
-    <div class="tab active" data-tab="input" onclick="switchTab('input')">入力</div>
-    <div class="tab" data-tab="list" onclick="switchTab('list')">一覧</div>
+    <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
+    <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
     <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
     <div class="tab" data-tab="monthly" onclick="switchTab('monthly')">月次集計</div>
     <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
@@ -292,8 +312,18 @@
   <!-- 車番別集計タブ -->
   <div class="panel" id="tab-vehicle" style="display:none;">
     <div class="form-title">車番別集計（月別 運搬回数）</div>
-    <div class="table-wrap">
-      <table>
+    <div class="field-grid" style="margin-bottom:22px;">
+      <div class="field">
+        <label>年</label>
+        <select id="v-year"></select>
+      </div>
+    </div>
+    <div class="scroll-btn-row">
+      <button class="scroll-btn" onclick="scrollVehicleTable(-240)" aria-label="左にスクロール">◀</button>
+      <button class="scroll-btn" onclick="scrollVehicleTable(240)" aria-label="右にスクロール">▶</button>
+    </div>
+    <div class="table-wrap" id="vehicle-table-wrap">
+      <table class="compact-cols">
         <thead><tr id="vehicle-thead"></tr></thead>
         <tbody id="vehicle-body">
           <tr><td>読み込み中…</td></tr>
@@ -305,8 +335,12 @@
   <!-- 年別集計タブ -->
   <div class="panel" id="tab-yearly" style="display:none;">
     <div class="form-title">年別集計（年別 運搬回数）</div>
-    <div class="table-wrap">
-      <table>
+    <div class="scroll-btn-row">
+      <button class="scroll-btn" onclick="scrollYearlyTable(-240)" aria-label="左にスクロール">◀</button>
+      <button class="scroll-btn" onclick="scrollYearlyTable(240)" aria-label="右にスクロール">▶</button>
+    </div>
+    <div class="table-wrap" id="yearly-table-wrap">
+      <table class="compact-cols">
         <thead><tr id="yearly-thead"></tr></thead>
         <tbody id="yearly-body">
           <tr><td>読み込み中…</td></tr>
@@ -686,36 +720,77 @@ function computeMonthly(){
 
 /* ---------- 車番別集計タブ（月別 運搬回数） ---------- */
 async function loadVehicleSummary(){
-  const thead = document.getElementById('vehicle-thead');
   const body = document.getElementById('vehicle-body');
   body.innerHTML = '<tr><td>読み込み中…</td></tr>';
   try{
     await loadAllRecords();
-    const months = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,7)))].sort();
-    const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
-
-    thead.innerHTML = '<th>車番</th>' + months.map(m=>{
-      const [y,mo] = m.split('-');
-      return `<th class="num">${y}年${Number(mo)}月</th>`;
-    }).join('') + '<th class="num">合計</th>';
-
-    if(vehicles.length===0){
-      body.innerHTML = '<tr><td>データがありません</td></tr>';
-      return;
-    }
-    body.innerHTML = vehicles.map(v=>{
-      let total = 0;
-      const cells = months.map(m=>{
-        const cnt = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,7)===m).length;
-        total += cnt;
-        return `<td class="num">${cnt.toLocaleString()}</td>`;
-      }).join('');
-      return `<tr><td>${v}</td>${cells}<td class="num">${total.toLocaleString()}</td></tr>`;
-    }).join('');
+    populateVehicleYearFilter();
+    renderVehicleSummary();
   }catch(e){
     body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
+}
+
+function populateVehicleYearFilter(){
+  const yearSel = document.getElementById('v-year');
+  if(yearSel.dataset.populated) return;
+
+  const now = new Date();
+  const curYear = String(now.getFullYear());
+  const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))];
+  if(!years.includes(curYear)) years.push(curYear);
+  years.sort();
+
+  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  yearSel.value = curYear;
+  yearSel.addEventListener('change', renderVehicleSummary);
+  yearSel.dataset.populated = '1';
+}
+
+function scrollVehicleTable(delta){
+  const el = document.getElementById('vehicle-table-wrap');
+  if(el) el.scrollBy({left: delta, behavior:'smooth'});
+}
+
+function scrollYearlyTable(delta){
+  const el = document.getElementById('yearly-table-wrap');
+  if(el) el.scrollBy({left: delta, behavior:'smooth'});
+}
+
+function renderVehicleSummary(){
+  const thead = document.getElementById('vehicle-thead');
+  const body = document.getElementById('vehicle-body');
+  const year = document.getElementById('v-year').value;
+
+  const yearRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4) === year);
+  const months = [...new Set(yearRecords.map(r=>r.record_date.slice(0,7)))].sort();
+  const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
+
+  thead.innerHTML = '<th>車番</th>' + months.map(m=>{
+    const mo = Number(m.split('-')[1]);
+    return `<th class="num">${mo}月</th>`;
+  }).join('') + '<th class="num">合計</th>';
+
+  if(vehicles.length===0 || months.length===0){
+    body.innerHTML = '<tr><td>データがありません</td></tr>';
+    return;
+  }
+  body.innerHTML = vehicles.map(v=>{
+    let totalCount = 0;
+    let totalNet = 0;
+    const cells = months.map(m=>{
+      const matched = yearRecords.filter(r=> r.vehicle_no===v && r.record_date.slice(0,7)===m);
+      const cnt = matched.length;
+      const net = matched.reduce((s,r)=> s + Number(r.net_weight||0), 0);
+      totalCount += cnt;
+      totalNet += net;
+      if(cnt===0) return `<td class="num">-</td>`;
+      return `<td class="num">${net.toLocaleString()}kg／${cnt.toLocaleString()}回</td>`;
+    }).join('');
+    const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg／${totalCount.toLocaleString()}回`;
+    return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+  }).join('');
 }
 
 /* ---------- 年別集計タブ（年別 運搬回数） ---------- */
@@ -735,13 +810,19 @@ async function loadYearlySummary(){
       return;
     }
     body.innerHTML = vehicles.map(v=>{
-      let total = 0;
+      let totalCount = 0;
+      let totalNet = 0;
       const cells = years.map(y=>{
-        const cnt = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,4)===y).length;
-        total += cnt;
-        return `<td class="num">${cnt.toLocaleString()}</td>`;
+        const matched = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,4)===y);
+        const cnt = matched.length;
+        const net = matched.reduce((s,r)=> s + Number(r.net_weight||0), 0);
+        totalCount += cnt;
+        totalNet += net;
+        if(cnt===0) return `<td class="num">-</td>`;
+        return `<td class="num">${net.toLocaleString()}kg／${cnt.toLocaleString()}回</td>`;
       }).join('');
-      return `<tr><td>${v}</td>${cells}<td class="num">${total.toLocaleString()}</td></tr>`;
+      const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg／${totalCount.toLocaleString()}回`;
+      return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
     }).join('');
   }catch(e){
     body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
