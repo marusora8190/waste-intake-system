@@ -24,9 +24,24 @@
   }
   .app{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
   .app-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px;}
-  .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;}
+  .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;}
   .app-header h1 span{color:var(--ink);}
   .app-header p{margin:4px 0 0;color:var(--muted);font-size:12.5px;}
+  .update-status{font-size:13px;font-weight:700;color:#2f9e44;opacity:0;transition:opacity .3s;white-space:nowrap;}
+  .update-status.show{opacity:1;}
+
+  .refresh-btn{
+    width:100%;padding:11px 16px;border-radius:8px;border:none;background:var(--ink);
+    color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;margin-bottom:18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .refresh-btn:hover{background:var(--ink-dark);}
+  .refresh-btn:disabled{opacity:.6;cursor:not-allowed;}
+  .refresh-icon{
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+    width:22px;height:22px;background:#3b82f6;border-radius:6px;color:#fff;
+  }
+  .refresh-icon svg{width:13px;height:13px;}
 
   .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
   .tab{
@@ -93,7 +108,7 @@
 <body>
 <div class="app">
   <div class="app-header">
-    <h1><span>ごみ持込</span>量記録システム</h1>
+    <h1><span>ごみ持込</span>量記録システム<span class="update-status" id="update-status"></span></h1>
     <p>天理市 環境事業センター　計量票入力</p>
   </div>
 
@@ -105,6 +120,10 @@
 
   <!-- 入力タブ -->
   <div class="panel" id="tab-input">
+    <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
+      <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
+      <span id="refresh-btn-label">最新の状態に更新</span>
+    </button>
     <div class="form-title">計量票 入力</div>
     <div class="field-grid">
       <div class="field">
@@ -489,6 +508,35 @@ async function deleteCard(cardNo){
   }catch(e){
     showToast('削除に失敗しました: ' + e.message, 6000);
     console.error(e);
+  }
+}
+
+/* ---------- 最新の状態に更新 ---------- */
+async function refreshData(){
+  const btn = document.getElementById('refresh-btn');
+  const label = document.getElementById('refresh-btn-label');
+  btn.disabled = true;
+  const originalText = label.textContent;
+  label.textContent = '更新中…';
+  try{
+    await loadCardMap();
+    if(document.getElementById('tab-list').style.display !== 'none'){
+      await loadList();
+    }
+    if(document.getElementById('tab-cards').style.display !== 'none'){
+      await loadCards();
+    }
+    const status = document.getElementById('update-status');
+    status.textContent = '✓ 最新の状態に更新されました';
+    status.classList.add('show');
+    clearTimeout(status._timer);
+    status._timer = setTimeout(()=>status.classList.remove('show'), 3000);
+  }catch(e){
+    showToast('更新に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }finally{
+    btn.disabled = false;
+    label.textContent = originalText;
   }
 }
 
