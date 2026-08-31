@@ -129,7 +129,7 @@
         <span id="refresh-btn-label">最新の状態に更新</span>
       </button>
     </div>
-    <p>天理市 環境事業センター　計量票入力</p>
+    <p id="app-subtitle" style="display:none;">天理市 環境事業センター　計量票入力</p>
   </div>
 
   <div class="app-body">
@@ -358,6 +358,8 @@ function switchTab(name){
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
+  document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
+  document.getElementById('app-subtitle').style.display = (name==='input') ? 'none' : '';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
   if(name==='monthly') loadMonthly();
