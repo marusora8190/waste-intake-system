@@ -57,6 +57,11 @@
 
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;}
   .form-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--ink);}
+  .edit-banner{
+    background:#fff3e0;border:1px solid #f0c78a;color:#9a5b12;
+    padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:16px;
+  }
+  .edit-banner a{color:#9a5b12;font-weight:700;text-decoration:underline;}
 
   .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 22px;align-items:start;}
   .field{display:flex;flex-direction:column;gap:3px;}
@@ -93,7 +98,7 @@
   tbody tr:hover{background:#fbf7ee;}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
   .num{text-align:center;}
-  .compact-cols{table-layout:auto;}
+  .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
   .compact-cols th.num, .compact-cols td.num{white-space:nowrap;width:1%;}
   .compact-cols th:first-child, .compact-cols td:first-child{
@@ -132,7 +137,7 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  .card-form{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;}
+  .card-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;}
 
   @media (max-width:820px){
     .app-body{flex-direction:column;}
@@ -165,9 +170,7 @@
     <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
     <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
     <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
-    <div class="tab" data-tab="monthly" onclick="switchTab('monthly')">月次集計</div>
     <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
-    <div class="tab" data-tab="yearly" onclick="switchTab('yearly')">年別集計</div>
   </div>
 
   <div class="main-content">
@@ -175,6 +178,9 @@
   <!-- 入力タブ -->
   <div class="panel" id="tab-input">
     <div class="form-title">計量票 入力</div>
+    <div class="edit-banner" id="edit-banner" style="display:none;">
+      編集中の記録があります。<a href="#" onclick="cancelEdit();return false;">編集をキャンセルして新規入力に戻る</a>
+    </div>
     <div class="field-grid">
       <div class="field">
         <label>日付 *</label>
@@ -185,10 +191,14 @@
         <input type="time" id="f-time">
       </div>
       <div class="field">
+        <label>持込者部署</label>
+        <input type="text" id="f-department" class="locked-field" readonly>
+      </div>
+
+      <div class="field">
         <label>受付No. *</label>
         <input type="text" id="f-receipt" class="num-field" inputmode="numeric" placeholder="例: 148">
       </div>
-
       <div class="field">
         <label>カードNo. *</label>
         <input type="text" id="f-card" placeholder="例: 84">
@@ -198,6 +208,7 @@
         <input type="text" id="f-vehicle" class="locked-field" readonly>
         <div class="field-hint" id="card-hint"></div>
       </div>
+
       <div class="field">
         <label>品種</label>
         <select id="f-item">
@@ -205,7 +216,6 @@
           <option value="不燃">不燃</option>
         </select>
       </div>
-
       <div class="field">
         <label>車両区分</label>
         <input type="text" class="locked-field" value="指示書業者（事業系）" readonly>
@@ -214,11 +224,11 @@
         <label>業者</label>
         <input type="text" class="locked-field" value="◎天理教営繕課" readonly>
       </div>
+
       <div class="field">
         <label>地区</label>
         <input type="text" class="locked-field" value="天理市" readonly>
       </div>
-
       <div class="field">
         <label>総重量(kg) *</label>
         <input type="number" id="f-total" class="num-field" step="10" inputmode="decimal">
@@ -227,11 +237,11 @@
         <label>空車重量(kg) *</label>
         <input type="number" id="f-empty" class="num-field" step="10" inputmode="decimal">
       </div>
+
       <div class="field">
         <label>正味重量(kg)</label>
         <input type="text" id="f-net" class="calc-field" readonly value="0">
       </div>
-
       <div class="field">
         <label>手数料(円)（16円/kg）</label>
         <input type="text" id="f-fee" class="calc-field" readonly value="0">
@@ -248,6 +258,12 @@
   <div class="panel" id="tab-list" style="display:none;">
     <div class="list-toolbar">
       <div class="form-title" style="margin:0;">一覧（日付の新しい順）</div>
+      <select id="list-year" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+        <option value="">すべての年</option>
+      </select>
+      <select id="list-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+        <option value="">年間</option>
+      </select>
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="table-wrap">
@@ -275,6 +291,10 @@
         <input type="text" id="c-card" placeholder="例: 38">
       </div>
       <div class="field">
+        <label>車両保管部署</label>
+        <input type="text" id="c-department" placeholder="例: 営繕課">
+      </div>
+      <div class="field">
         <label>車番 *</label>
         <input type="text" id="c-vehicle" placeholder="例: 奈良45つ4226">
       </div>
@@ -282,36 +302,9 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>カードNo.</th><th>車番</th><th>更新日時</th><th></th></tr></thead>
+        <thead><tr><th>カードNo.</th><th>車両保管部署</th><th>車番</th><th>更新日時</th><th></th></tr></thead>
         <tbody id="card-body">
-          <tr><td colspan="4">読み込み中…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <!-- 月次集計タブ -->
-  <div class="panel" id="tab-monthly" style="display:none;">
-    <div class="form-title">月次集計</div>
-    <div class="field-grid" style="margin-bottom:22px;">
-      <div class="field">
-        <label>年</label>
-        <select id="m-year"></select>
-      </div>
-      <div class="field">
-        <label>月</label>
-        <select id="m-month"></select>
-      </div>
-      <div class="field">
-        <label>車番</label>
-        <select id="m-vehicle"><option value="">(全車両)</option></select>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <tbody id="monthly-body">
-          <tr><td>登録件数</td><td class="num" id="m-count">-</td></tr>
-          <tr><td>正味重量 合計(kg)</td><td class="num" id="m-net">-</td></tr>
-          <tr><td>手数料 合計(円)</td><td class="num" id="m-fee">-</td></tr>
+          <tr><td colspan="5">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -337,24 +330,6 @@
           <tr><td>読み込み中…</td></tr>
         </tbody>
         <tfoot><tr id="vehicle-fee-row"></tr></tfoot>
-      </table>
-    </div>
-  </div>
-
-  <!-- 年別集計タブ -->
-  <div class="panel" id="tab-yearly" style="display:none;">
-    <div class="form-title">年別集計（年別 運搬回数）</div>
-    <div class="scroll-btn-row">
-      <button class="scroll-btn" onclick="scrollYearlyTable(-240)" aria-label="左にスクロール">◀</button>
-      <button class="scroll-btn" onclick="scrollYearlyTable(240)" aria-label="右にスクロール">▶</button>
-    </div>
-    <div class="table-wrap" id="yearly-table-wrap">
-      <table class="compact-cols">
-        <thead><tr id="yearly-thead"></tr></thead>
-        <tbody id="yearly-body">
-          <tr><td>読み込み中…</td></tr>
-        </tbody>
-        <tfoot><tr id="yearly-fee-row"></tr></tfoot>
       </table>
     </div>
   </div>
@@ -398,7 +373,7 @@ function showToast(msg, duration=2600){
 }
 
 function switchTab(name){
-  ['input','list','cards','monthly','vehicle','yearly'].forEach(n=>{
+  ['input','list','cards','vehicle'].forEach(n=>{
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
@@ -406,19 +381,17 @@ function switchTab(name){
   document.getElementById('app-subtitle').style.display = (name==='input') ? 'none' : '';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
-  if(name==='monthly') loadMonthly();
   if(name==='vehicle') loadVehicleSummary();
-  if(name==='yearly') loadYearlySummary();
 }
 
 /* ---------- カード⇔車番 対応表（メモリキャッシュ） ---------- */
-let CARD_MAP = {}; // { "84": "奈良400た9419", ... }
+let CARD_MAP = {}; // { "84": { vehicle: "奈良400た9419", department: "営繕課" }, ... }
 
 async function loadCardMap(){
   try{
-    const rows = await sb('card_vehicle_map?select=card_no,vehicle_no');
+    const rows = await sb('card_vehicle_map?select=card_no,vehicle_no,department');
     CARD_MAP = {};
-    (rows||[]).forEach(r => CARD_MAP[String(r.card_no).trim()] = r.vehicle_no);
+    (rows||[]).forEach(r => CARD_MAP[String(r.card_no).trim()] = { vehicle: r.vehicle_no, department: r.department || '' });
   }catch(e){
     console.error(e);
   }
@@ -428,13 +401,16 @@ document.getElementById('f-card').addEventListener('input', (e)=>{
   const card = e.target.value.trim();
   const hint = document.getElementById('card-hint');
   const vEl = document.getElementById('f-vehicle');
-  if(!card){ vEl.value=''; hint.textContent=''; return; }
+  const dEl = document.getElementById('f-department');
+  if(!card){ vEl.value=''; dEl.value=''; hint.textContent=''; return; }
   if(CARD_MAP[card]){
-    vEl.value = CARD_MAP[card];
+    vEl.value = CARD_MAP[card].vehicle || '';
+    dEl.value = CARD_MAP[card].department || '';
     hint.textContent = '';
     hint.style.color = 'var(--muted)';
   }else{
     vEl.value = '';
+    dEl.value = '';
     hint.textContent = '※このカードNo.は未登録です。「カード管理」タブで登録してください（未登録のまま登録も可能）';
     hint.style.color = '#c94f3c';
   }
@@ -472,24 +448,61 @@ FORM_ORDER.forEach((id, idx) => {
   });
 });
 
-/* ---------- 登録 ---------- */
+/* ---------- 登録・編集 ---------- */
+let EDITING_ID = null;
+
 function todayStr(){
   const d = new Date();
   return d.toISOString().slice(0,10);
 }
 
 function clearForm(){
+  EDITING_ID = null;
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('submit-btn').textContent = '登録する';
   document.getElementById('f-date').value = todayStr();
   document.getElementById('f-time').value = '';
   document.getElementById('f-receipt').value = '';
   document.getElementById('f-card').value = '';
   document.getElementById('f-vehicle').value = '';
+  document.getElementById('f-department').value = '';
   document.getElementById('f-item').value = '可燃';
   document.getElementById('f-total').value = '';
   document.getElementById('f-empty').value = '';
   document.getElementById('card-hint').textContent = '';
   recalcPreview();
   document.getElementById('f-date').focus();
+}
+
+function cancelEdit(){
+  clearForm();
+  showToast('編集をキャンセルしました');
+}
+
+function editRecord(id){
+  const rec = LIST_RECORDS.find(r => r.id === id);
+  if(!rec){
+    showToast('記録が見つかりませんでした');
+    return;
+  }
+  EDITING_ID = id;
+  document.getElementById('f-date').value = rec.record_date || '';
+  document.getElementById('f-time').value = rec.record_time || '';
+  document.getElementById('f-receipt').value = rec.receipt_no || '';
+  document.getElementById('f-card').value = rec.card_no || '';
+  document.getElementById('f-item').value = rec.item_type || '可燃';
+  document.getElementById('f-total').value = rec.total_weight ?? '';
+  document.getElementById('f-empty').value = rec.empty_weight ?? '';
+
+  const cardInfo = CARD_MAP[String(rec.card_no || '').trim()];
+  document.getElementById('f-vehicle').value = rec.vehicle_no || (cardInfo ? cardInfo.vehicle : '') || '';
+  document.getElementById('f-department').value = (cardInfo ? cardInfo.department : '') || '';
+  document.getElementById('card-hint').textContent = '';
+
+  recalcPreview();
+  document.getElementById('edit-banner').style.display = '';
+  document.getElementById('submit-btn').textContent = '更新する';
+  switchTab('input');
 }
 
 async function submitRecord(){
@@ -513,24 +526,34 @@ async function submitRecord(){
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   try{
-    await sb('waste_records', {
-      method:'POST',
-      headers:{ 'Prefer':'return=minimal' },
-      body: JSON.stringify({
-        record_date: date,
-        record_time: time || null,
-        receipt_no: receipt,
-        card_no: card,
-        vehicle_no: vehicle || null,
-        item_type: item,
-        total_weight: total,
-        empty_weight: empty
-      })
-    });
-    showToast(`登録しました（正味重量: ${(total-empty).toLocaleString()} kg）`);
+    const payload = {
+      record_date: date,
+      record_time: time || null,
+      receipt_no: receipt,
+      card_no: card,
+      vehicle_no: vehicle || null,
+      item_type: item,
+      total_weight: total,
+      empty_weight: empty
+    };
+    if(EDITING_ID){
+      await sb(`waste_records?id=eq.${EDITING_ID}`, {
+        method:'PATCH',
+        headers:{ 'Prefer':'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      showToast(`更新しました（正味重量: ${(total-empty).toLocaleString()} kg）`);
+    }else{
+      await sb('waste_records', {
+        method:'POST',
+        headers:{ 'Prefer':'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      showToast(`登録しました（正味重量: ${(total-empty).toLocaleString()} kg）`);
+    }
     clearForm();
   }catch(e){
-    showToast('登録に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
     console.error(e);
   }finally{
     btn.disabled = false;
@@ -538,40 +561,82 @@ async function submitRecord(){
 }
 
 /* ---------- 一覧 ---------- */
+let ALL_LIST_RECORDS = [];
+let LIST_RECORDS = [];
+
+function populateListYearFilter(){
+  const sel = document.getElementById('list-year');
+  if(sel.dataset.populated) return;
+  const years = [...new Set(ALL_LIST_RECORDS.map(r=> r.record_date.slice(0,4)))].sort();
+  sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  sel.addEventListener('change', renderListFiltered);
+  sel.dataset.populated = '1';
+}
+
+function populateListMonthFilter(){
+  const sel = document.getElementById('list-month');
+  if(sel.dataset.populated) return;
+  const months = Array.from({length:12}, (_, i) => i+1);
+  sel.innerHTML = '<option value="">年間</option>' + months.map(m=>`<option value="${m}">${m}月</option>`).join('');
+  sel.addEventListener('change', renderListFiltered);
+  sel.dataset.populated = '1';
+}
+
 async function loadList(){
   const body = document.getElementById('list-body');
   body.innerHTML = '<tr><td colspan="11">読み込み中…</td></tr>';
   try{
-    const rows = await sb('waste_records?select=*&order=record_date.desc,record_time.desc,id.desc&limit=500');
-    if(!rows || rows.length===0){
-      body.innerHTML = '<tr><td colspan="11">記録がありません</td></tr>';
-      document.getElementById('list-summary').textContent = '';
-      return;
-    }
-    body.innerHTML = rows.map(r => `
-      <tr>
-        <td>${r.record_date ?? ''}</td>
-        <td>${r.record_time ?? ''}</td>
-        <td>${r.receipt_no ?? ''}</td>
-        <td>${r.card_no ?? ''}</td>
-        <td>${r.vehicle_no ?? ''}</td>
-        <td>${r.item_type ?? ''}</td>
-        <td class="num">${Number(r.total_weight).toLocaleString()}</td>
-        <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
-        <td class="num">${Number(r.net_weight).toLocaleString()}</td>
-        <td class="num">${Number(r.fee).toLocaleString()}</td>
-        <td><button class="del-btn" onclick="deleteRecord(${r.id})">削除</button></td>
-      </tr>
-    `).join('');
-
-    const totalNet = rows.reduce((s,r)=> s + Number(r.net_weight||0), 0);
-    const totalFee = rows.reduce((s,r)=> s + Number(r.fee||0), 0);
-    document.getElementById('list-summary').textContent =
-      `${rows.length}件 ／ 正味重量合計 ${totalNet.toLocaleString()} kg ／ 手数料合計 ${totalFee.toLocaleString()} 円`;
+    const rows = await sb('waste_records?select=*&order=record_date.desc,record_time.desc,id.desc&limit=5000');
+    ALL_LIST_RECORDS = rows || [];
+    populateListYearFilter();
+    populateListMonthFilter();
+    renderListFiltered();
   }catch(e){
     body.innerHTML = `<tr><td colspan="11">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
+}
+
+function renderListFiltered(){
+  const body = document.getElementById('list-body');
+  const year = document.getElementById('list-year').value;
+  const month = document.getElementById('list-month').value;
+
+  const rows = ALL_LIST_RECORDS.filter(r=>{
+    if(year && r.record_date.slice(0,4) !== year) return false;
+    if(month && r.record_date.slice(5,7) !== String(month).padStart(2,'0')) return false;
+    return true;
+  });
+  LIST_RECORDS = rows;
+
+  if(rows.length===0){
+    body.innerHTML = '<tr><td colspan="11">記録がありません</td></tr>';
+    document.getElementById('list-summary').textContent = '';
+    return;
+  }
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.record_date ?? ''}</td>
+      <td>${r.record_time ?? ''}</td>
+      <td>${r.receipt_no ?? ''}</td>
+      <td>${r.card_no ?? ''}</td>
+      <td>${r.vehicle_no ?? ''}</td>
+      <td>${r.item_type ?? ''}</td>
+      <td class="num">${Number(r.total_weight).toLocaleString()}</td>
+      <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
+      <td class="num">${Number(r.net_weight).toLocaleString()}</td>
+      <td class="num">${Number(r.fee).toLocaleString()}</td>
+      <td>
+        <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
+
+  const totalNet = rows.reduce((s,r)=> s + Number(r.net_weight||0), 0);
+  const totalFee = rows.reduce((s,r)=> s + Number(r.fee||0), 0);
+  document.getElementById('list-summary').textContent =
+    `${rows.length}件 ／ 正味重量合計 ${totalNet.toLocaleString()} kg ／ 手数料合計 ${totalFee.toLocaleString()} 円`;
 }
 
 async function deleteRecord(id){
@@ -589,31 +654,33 @@ async function deleteRecord(id){
 /* ---------- カード管理タブ ---------- */
 async function loadCards(){
   const body = document.getElementById('card-body');
-  body.innerHTML = '<tr><td colspan="4">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="5">読み込み中…</td></tr>';
   try{
     const rows = await sb('card_vehicle_map?select=*&order=card_no.asc');
     CARD_MAP = {};
-    (rows||[]).forEach(r => CARD_MAP[String(r.card_no).trim()] = r.vehicle_no);
+    (rows||[]).forEach(r => CARD_MAP[String(r.card_no).trim()] = { vehicle: r.vehicle_no, department: r.department || '' });
     if(!rows || rows.length===0){
-      body.innerHTML = '<tr><td colspan="4">登録されているカードがありません</td></tr>';
+      body.innerHTML = '<tr><td colspan="5">登録されているカードがありません</td></tr>';
       return;
     }
     body.innerHTML = rows.map(r => `
       <tr>
         <td>${r.card_no}</td>
+        <td>${r.department ?? ''}</td>
         <td>${r.vehicle_no}</td>
         <td>${r.updated_at ? new Date(r.updated_at).toLocaleString('ja-JP') : ''}</td>
         <td><button class="del-btn" onclick="deleteCard('${r.card_no.replace(/'/g,"\\'")}')">削除</button></td>
       </tr>
     `).join('');
   }catch(e){
-    body.innerHTML = `<tr><td colspan="4">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
 
 async function submitCard(){
   const card = document.getElementById('c-card').value.trim();
+  const department = document.getElementById('c-department').value.trim();
   const vehicle = document.getElementById('c-vehicle').value.trim();
   if(!card || !vehicle){
     showToast('カードNo.と車番の両方を入力してください');
@@ -626,18 +693,19 @@ async function submitCard(){
       await sb(`card_vehicle_map?card_no=eq.${encodeURIComponent(card)}`, {
         method:'PATCH',
         headers:{ 'Prefer':'return=minimal' },
-        body: JSON.stringify({ vehicle_no: vehicle, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ vehicle_no: vehicle, department: department || null, updated_at: new Date().toISOString() })
       });
       showToast('更新しました');
     }else{
       await sb('card_vehicle_map', {
         method:'POST',
         headers:{ 'Prefer':'return=minimal' },
-        body: JSON.stringify({ card_no: card, vehicle_no: vehicle })
+        body: JSON.stringify({ card_no: card, vehicle_no: vehicle, department: department || null })
       });
       showToast('新しいカードを登録しました');
     }
     document.getElementById('c-card').value = '';
+    document.getElementById('c-department').value = '';
     document.getElementById('c-vehicle').value = '';
     loadCards();
   }catch(e){
@@ -664,68 +732,6 @@ let ALL_RECORDS = [];
 async function loadAllRecords(){
   const rows = await sb('waste_records?select=vehicle_no,item_type,record_date,net_weight,fee&order=record_date.asc&limit=5000');
   ALL_RECORDS = rows || [];
-}
-
-/* ---------- 月次集計タブ ---------- */
-async function loadMonthly(){
-  const body = document.getElementById('monthly-body');
-  try{
-    await loadAllRecords();
-    populateMonthlyFilters();
-    computeMonthly();
-  }catch(e){
-    body.innerHTML = `<tr><td colspan="2">読み込みに失敗しました: ${e.message}</td></tr>`;
-    console.error(e);
-  }
-}
-
-function populateMonthlyFilters(){
-  const yearSel = document.getElementById('m-year');
-  const monthSel = document.getElementById('m-month');
-  const vehicleSel = document.getElementById('m-vehicle');
-  if(yearSel.dataset.populated) return;
-
-  const now = new Date();
-  const curYear = String(now.getFullYear());
-  const curMonth = String(now.getMonth()+1);
-
-  const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort();
-  if(!years.includes(curYear)) years.push(curYear);
-  years.sort();
-  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  yearSel.value = curYear;
-
-  monthSel.innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}">${m}月</option>`).join('');
-  monthSel.value = curMonth;
-
-  const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
-  vehicleSel.innerHTML = '<option value="">(全車両)</option>' + vehicles.map(v=>`<option value="${v}">${v}</option>`).join('');
-
-  yearSel.addEventListener('change', computeMonthly);
-  monthSel.addEventListener('change', computeMonthly);
-  vehicleSel.addEventListener('change', computeMonthly);
-  yearSel.dataset.populated = '1';
-}
-
-function computeMonthly(){
-  const year = document.getElementById('m-year').value;
-  const monthPadded = String(document.getElementById('m-month').value).padStart(2,'0');
-  const vehicle = document.getElementById('m-vehicle').value;
-
-  const filtered = ALL_RECORDS.filter(r=>{
-    const [ry, rm] = r.record_date.split('-');
-    if(ry !== year || rm !== monthPadded) return false;
-    if(vehicle && r.vehicle_no !== vehicle) return false;
-    return true;
-  });
-
-  const count = filtered.length;
-  const netSum = filtered.reduce((s,r)=> s + Number(r.net_weight||0), 0);
-  const feeSum = filtered.reduce((s,r)=> s + Number(r.fee||0), 0);
-
-  document.getElementById('m-count').textContent = count.toLocaleString();
-  document.getElementById('m-net').textContent = netSum.toLocaleString();
-  document.getElementById('m-fee').textContent = feeSum.toLocaleString();
 }
 
 /* ---------- 車番別集計タブ（月別 運搬回数） ---------- */
@@ -760,11 +766,6 @@ function populateVehicleYearFilter(){
 
 function scrollVehicleTable(delta){
   const el = document.getElementById('vehicle-table-wrap');
-  if(el) el.scrollBy({left: delta, behavior:'smooth'});
-}
-
-function scrollYearlyTable(delta){
-  const el = document.getElementById('yearly-table-wrap');
   if(el) el.scrollBy({left: delta, behavior:'smooth'});
 }
 
@@ -815,55 +816,6 @@ function renderVehicleSummary(){
   feeRow.innerHTML = `<td>手数料合計</td>${feeCells}<td class="num">${grandFee.toLocaleString()}円</td>`;
 }
 
-/* ---------- 年別集計タブ（年別 運搬回数） ---------- */
-async function loadYearlySummary(){
-  const thead = document.getElementById('yearly-thead');
-  const body = document.getElementById('yearly-body');
-  const feeRow = document.getElementById('yearly-fee-row');
-  body.innerHTML = '<tr><td>読み込み中…</td></tr>';
-  try{
-    await loadAllRecords();
-    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort();
-    const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
-
-    thead.innerHTML = '<th>車番</th>' + years.map(y=>`<th class="num">${y}年</th>`).join('') + '<th class="num">合計</th>';
-
-    if(vehicles.length===0){
-      body.innerHTML = '<tr><td>データがありません</td></tr>';
-      feeRow.innerHTML = '';
-      return;
-    }
-    body.innerHTML = vehicles.map(v=>{
-      let totalCount = 0;
-      let totalNet = 0;
-      const cells = years.map(y=>{
-        const matched = ALL_RECORDS.filter(r=> r.vehicle_no===v && r.record_date.slice(0,4)===y);
-        const cnt = matched.length;
-        const net = matched.reduce((s,r)=> s + Number(r.net_weight||0), 0);
-        totalCount += cnt;
-        totalNet += net;
-        if(cnt===0) return `<td class="num">-</td>`;
-        return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
-      }).join('');
-      const totalCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-      return `<tr><td>${v}</td>${cells}<td class="num">${totalCell}</td></tr>`;
-    }).join('');
-
-    let grandFee = 0;
-    const feeCells = years.map(y=>{
-      const fee = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===y)
-        .reduce((s,r)=> s + Number(r.fee||0), 0);
-      grandFee += fee;
-      return `<td class="num">${fee.toLocaleString()}円</td>`;
-    }).join('');
-    feeRow.className = 'fee-total-row';
-    feeRow.innerHTML = `<td>手数料合計</td>${feeCells}<td class="num">${grandFee.toLocaleString()}円</td>`;
-  }catch(e){
-    body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
-    console.error(e);
-  }
-}
-
 /* ---------- 最新の状態に更新 ---------- */
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
@@ -879,15 +831,8 @@ async function refreshData(){
     if(document.getElementById('tab-cards').style.display !== 'none'){
       await loadCards();
     }
-    if(document.getElementById('tab-monthly').style.display !== 'none'){
-      await loadAllRecords();
-      computeMonthly();
-    }
     if(document.getElementById('tab-vehicle').style.display !== 'none'){
       await loadVehicleSummary();
-    }
-    if(document.getElementById('tab-yearly').style.display !== 'none'){
-      await loadYearlySummary();
     }
     const status = document.getElementById('update-status');
     status.textContent = '✓ 最新の状態に更新されました';
