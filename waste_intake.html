@@ -329,14 +329,14 @@
 
   <!-- 車番別集計タブ -->
   <div class="panel" id="tab-vehicle" style="display:none;">
-    <div class="inline-field" style="margin-bottom:10px;">
+    <div class="inline-field" style="margin-bottom:14px;">
       <div class="form-title" style="margin:0;">車番別集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="v-year"></select>
-    </div>
-    <div class="scroll-btn-row" style="margin-bottom:4px;">
-      <button class="scroll-btn" onclick="scrollVehicleTable(-240)" aria-label="左にスクロール">◀</button>
-      <button class="scroll-btn" onclick="scrollVehicleTable(240)" aria-label="右にスクロール">▶</button>
+      <div class="scroll-btn-row" style="margin-left:auto;margin-bottom:0;">
+        <button class="scroll-btn" onclick="scrollVehicleTable(-240)" aria-label="左にスクロール">◀</button>
+        <button class="scroll-btn" onclick="scrollVehicleTable(240)" aria-label="右にスクロール">▶</button>
+      </div>
     </div>
     <div class="table-wrap" id="vehicle-table-wrap">
       <table class="compact-cols">
@@ -351,14 +351,14 @@
 
   <!-- 持込部署集計タブ -->
   <div class="panel" id="tab-department" style="display:none;">
-    <div class="inline-field" style="margin-bottom:10px;">
+    <div class="inline-field" style="margin-bottom:14px;">
       <div class="form-title" style="margin:0;">持込部署集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="d-year"></select>
-    </div>
-    <div class="scroll-btn-row" style="margin-bottom:4px;">
-      <button class="scroll-btn" onclick="scrollDepartmentTable(-240)" aria-label="左にスクロール">◀</button>
-      <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
+      <div class="scroll-btn-row" style="margin-left:auto;margin-bottom:0;">
+        <button class="scroll-btn" onclick="scrollDepartmentTable(-240)" aria-label="左にスクロール">◀</button>
+        <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
+      </div>
     </div>
     <div class="table-wrap" id="department-table-wrap">
       <table class="compact-cols department-table">
