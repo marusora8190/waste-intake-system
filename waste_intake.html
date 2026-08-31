@@ -96,6 +96,8 @@
   th:last-child,td:last-child{border-right:none;}
   th{background:var(--accent-bg);color:var(--ink-dark);font-weight:700;position:sticky;top:0;}
   tbody tr:hover{background:#fbf7ee;}
+  tr.row-nonburn td{background:#fdead4;}
+  tr.row-nonburn:hover td{background:#fbdfc0;}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
   .num{text-align:center;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
@@ -110,6 +112,9 @@
   }
   .compact-cols thead th:first-child{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td:first-child{background:#fbf7ee;}
+  .department-table th:nth-child(2), .department-table td:nth-child(2){
+    text-align:center;padding-left:6px;padding-right:6px;white-space:nowrap;width:1%;
+  }
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -272,7 +277,7 @@
       <table>
         <thead>
           <tr>
-            <th>日付</th><th>時刻</th><th>受付No.</th><th>カードNo.</th><th>持込部署</th><th>車番</th>
+            <th class="num">日付</th><th>時刻</th><th class="num">受付No.</th><th class="num">カードNo.</th><th>持込部署</th><th class="num">車番</th>
             <th>品種</th><th class="num">総重量</th><th class="num">空車重量</th>
             <th class="num">正味重量</th><th class="num">手数料</th><th></th>
           </tr>
@@ -350,7 +355,7 @@
       <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
     </div>
     <div class="table-wrap" id="department-table-wrap">
-      <table class="compact-cols">
+      <table class="compact-cols department-table">
         <thead><tr id="department-thead"></tr></thead>
         <tbody id="department-body">
           <tr><td>読み込み中…</td></tr>
@@ -674,13 +679,13 @@ function renderListFiltered(){
     return;
   }
   body.innerHTML = rows.map(r => `
-    <tr>
-      <td>${r.record_date ?? ''}</td>
+    <tr class="${r.item_type==='不燃' ? 'row-nonburn' : ''}">
+      <td class="num">${r.record_date ?? ''}</td>
       <td>${r.record_time ?? ''}</td>
-      <td>${r.receipt_no ?? ''}</td>
-      <td>${r.card_no ?? ''}</td>
+      <td class="num">${r.receipt_no ?? ''}</td>
+      <td class="num">${r.card_no ?? ''}</td>
       <td>${r.department ?? ''}</td>
-      <td>${r.vehicle_no ?? ''}</td>
+      <td class="num">${r.vehicle_no ?? ''}</td>
       <td>${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
