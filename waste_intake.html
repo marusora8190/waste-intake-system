@@ -110,28 +110,29 @@
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
   .compact-cols th.num, .compact-cols td.num{white-space:nowrap;width:1%;}
-  .compact-cols th:first-child, .compact-cols td:first-child{
+  .compact-cols th.sticky-col, .compact-cols td.sticky-col{
     position:sticky;left:0;z-index:1;background:var(--panel);
-    text-align:center;padding-left:4px;padding-right:4px;white-space:nowrap;
+    white-space:nowrap;
     box-shadow:2px 0 3px -2px rgba(0,0,0,.15);
     border-right:1px solid var(--line);
     width:1%;
   }
-  .compact-cols thead th:first-child{z-index:2;background:var(--accent-bg);}
-  .compact-cols tbody tr:hover td:first-child{background:#fbf7ee;}
-  .department-table td:first-child{font-weight:700;color:var(--text);}
+  .compact-cols thead th.sticky-col{z-index:2;background:var(--accent-bg);}
+  .compact-cols tbody tr:hover td.sticky-col{background:#fbf7ee;}
+  .department-table td.sticky-col{font-weight:700;color:var(--text);padding-left:10px;}
   .card-no-cell{font-weight:700;color:var(--text);}
   .action-cell{width:1%;white-space:nowrap;padding-left:10px;padding-right:10px;}
   .department-table th:nth-child(2), .department-table td:nth-child(2){
     text-align:center;padding-left:6px;padding-right:6px;white-space:nowrap;width:1%;
   }
+  .sub-col{font-size:12px;color:var(--muted);font-weight:600;}
   .compact-cols th.veh-no, .compact-cols td.veh-no{
     padding-right:6px;padding-left:4px;
     font-variant-numeric:tabular-nums;font-feature-settings:"tnum";
     width:1%;white-space:nowrap;
   }
   .compact-cols th.veh-no{text-align:center !important;}
-  .compact-cols td.veh-no{text-align:right !important;font-weight:700;color:var(--text);}
+  .compact-cols td.veh-no{text-align:right !important;font-weight:700;color:var(--text);padding-right:22px;}
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -350,7 +351,7 @@
     </div>
     <div class="table-wrap" id="vehicle-table-wrap">
       <table class="compact-cols">
-        <thead><tr id="vehicle-thead"></tr></thead>
+        <thead id="vehicle-thead"></thead>
         <tbody id="vehicle-body">
           <tr><td>読み込み中…</td></tr>
         </tbody>
@@ -372,7 +373,7 @@
     </div>
     <div class="table-wrap" id="department-table-wrap">
       <table class="compact-cols department-table">
-        <thead><tr id="department-thead"></tr></thead>
+        <thead id="department-thead"></thead>
         <tbody id="department-body">
           <tr><td>読み込み中…</td></tr>
         </tbody>
@@ -894,17 +895,19 @@ function renderVehicleSummary(){
   const months = [...new Set(yearRecords.map(r=>r.record_date.slice(0,7)))].sort();
   const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
 
-  thead.innerHTML = '<th class="veh-no">車番</th>' + months.map(m=>{
+  const row1 = '<th class="veh-no sticky-col" rowspan="2">車番</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
-    return `<th class="num">${mo}月</th>`;
-  }).join('') + '<th class="num">合計<br>（手数料/正味重量/回数）</th>';
+    return `<th class="num" colspan="2">${mo}月</th>`;
+  }).join('') + '<th class="num" rowspan="2">正味重量合計</th><th class="num" rowspan="2">手数料合計</th>';
+  const row2 = months.map(()=> '<th class="num sub-col">kg</th><th class="num sub-col">回</th>').join('');
+  thead.innerHTML = `<tr>${row1}</tr><tr>${row2}</tr>`;
 
   if(vehicles.length===0 || months.length===0){
     body.innerHTML = '<tr><td>データがありません</td></tr>';
     feeRow.innerHTML = '';
     return;
   }
-  let grandCount = 0, grandNet = 0, grandFee = 0;
+  let grandCount = 0, grandNet = 0, grandFeeAll = 0;
   body.innerHTML = vehicles.map(v=>{
     let totalCount = 0;
     let totalNet = 0;
@@ -917,24 +920,26 @@ function renderVehicleSummary(){
       totalCount += cnt;
       totalNet += net;
       totalFee += fee;
-      if(cnt===0) return `<td class="num">-</td>`;
-      return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
+      if(cnt===0) return `<td class="num sub-col">-</td><td class="num sub-col">-</td>`;
+      return `<td class="num sub-col">${net.toLocaleString()}</td><td class="num sub-col">${cnt.toLocaleString()}</td>`;
     }).join('');
     grandCount += totalCount;
     grandNet += totalNet;
-    grandFee += totalFee;
-    const totalCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円/${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td class="veh-no">${last4(v)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    grandFeeAll += totalFee;
+    const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
+    const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
+    return `<tr><td class="veh-no sticky-col">${last4(v)}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const feeCells = months.map(m=>{
     const fee = yearRecords.filter(r=> r.record_date.slice(0,7)===m)
       .reduce((s,r)=> s + Number(r.fee||0), 0);
-    return `<td class="num">${fee.toLocaleString()}円</td>`;
+    return `<td class="num" colspan="2">${fee.toLocaleString()}円</td>`;
   }).join('');
-  const grandCell = grandCount===0 ? '-' : `${grandFee.toLocaleString()}円/${grandNet.toLocaleString()}kg/${grandCount.toLocaleString()}回`;
+  const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
+  const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td>手数料合計</td>${feeCells}<td class="num">${grandCell}</td>`;
+  feeRow.innerHTML = `<td class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
 }
 
 /* ---------- 持込部署集計タブ（月別 運搬回数） ---------- */
@@ -989,17 +994,19 @@ function renderDepartmentSummary(){
     return { department, vehicle_no };
   });
 
-  thead.innerHTML = '<th>持込部署</th><th class="veh-no">車番</th>' + months.map(m=>{
+  const row1 = '<th class="sticky-col" rowspan="2">持込部署</th><th class="veh-no" rowspan="2">車番</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
-    return `<th class="num">${mo}月</th>`;
-  }).join('') + '<th class="num">合計<br>（手数料/正味重量/回数）</th>';
+    return `<th class="num" colspan="2">${mo}月</th>`;
+  }).join('') + '<th class="num" rowspan="2">正味重量合計</th><th class="num" rowspan="2">手数料合計</th>';
+  const row2 = months.map(()=> '<th class="num sub-col">kg</th><th class="num sub-col">回</th>').join('');
+  thead.innerHTML = `<tr>${row1}</tr><tr>${row2}</tr>`;
 
   if(pairs.length===0 || months.length===0){
     body.innerHTML = '<tr><td>データがありません</td></tr>';
     feeRow.innerHTML = '';
     return;
   }
-  let grandCount = 0, grandNet = 0;
+  let grandCount = 0, grandNet = 0, grandFeeAll = 0;
   body.innerHTML = pairs.map(p=>{
     let totalCount = 0;
     let totalNet = 0;
@@ -1012,27 +1019,28 @@ function renderDepartmentSummary(){
       totalCount += cnt;
       totalNet += net;
       totalFee += fee;
-      if(cnt===0) return `<td class="num">-</td>`;
-      return `<td class="num">${net.toLocaleString()}kg/${cnt.toLocaleString()}回</td>`;
+      if(cnt===0) return `<td class="num sub-col">-</td><td class="num sub-col">-</td>`;
+      return `<td class="num sub-col">${net.toLocaleString()}</td><td class="num sub-col">${cnt.toLocaleString()}</td>`;
     }).join('');
     grandCount += totalCount;
     grandNet += totalNet;
-    const totalCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円/${totalNet.toLocaleString()}kg/${totalCount.toLocaleString()}回`;
-    return `<tr><td>${p.department}</td><td class="veh-no">${last4(p.vehicle_no)}</td>${cells}<td class="num">${totalCell}</td></tr>`;
+    grandFeeAll += totalFee;
+    const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
+    const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
+    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no">${last4(p.vehicle_no)}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const yearRecordsWithDept = yearRecords.filter(r=> r.department);
 
-  let grandFee = 0;
   const feeCells = months.map(m=>{
     const fee = yearRecordsWithDept.filter(r=> r.record_date.slice(0,7)===m)
       .reduce((s,r)=> s + Number(r.fee||0), 0);
-    grandFee += fee;
-    return `<td class="num">${fee.toLocaleString()}円</td>`;
+    return `<td class="num" colspan="2">${fee.toLocaleString()}円</td>`;
   }).join('');
-  const grandCell = grandCount===0 ? '-' : `${grandFee.toLocaleString()}円/${grandNet.toLocaleString()}kg/${grandCount.toLocaleString()}回`;
+  const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
+  const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td colspan="2">手数料合計</td>${feeCells}<td class="num">${grandCell}</td>`;
+  feeRow.innerHTML = `<td colspan="2" class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
 }
 
 /* ---------- 最新の状態に更新 ---------- */
