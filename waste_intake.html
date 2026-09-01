@@ -106,6 +106,9 @@
   td.cell-nonburn{background:#fdead4;}
   tr:hover td.cell-nonburn{background:#fbdfc0;}
   .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;}
+  .dept-inline-input{width:100%;min-width:88px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;}
+  .dept-inline-input:hover{border-color:var(--line);}
+  .dept-inline-input:focus{border-color:var(--ink);background:#fff;outline:none;}
   .num{text-align:center;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -686,6 +689,29 @@ async function loadList(){
   }
 }
 
+async function updateDepartmentInline(el){
+  const id = Number(el.dataset.id);
+  const value = el.value.trim();
+  el.disabled = true;
+  try{
+    await sb(`waste_records?id=eq.${id}`, {
+      method:'PATCH',
+      headers:{ 'Prefer':'return=minimal' },
+      body: JSON.stringify({ department: value || null })
+    });
+    const recAll = ALL_LIST_RECORDS.find(r => r.id === id);
+    if(recAll) recAll.department = value || null;
+    const recFiltered = LIST_RECORDS.find(r => r.id === id);
+    if(recFiltered) recFiltered.department = value || null;
+    showToast('持込部署を更新しました');
+  }catch(e){
+    showToast('更新に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }finally{
+    el.disabled = false;
+  }
+}
+
 function renderListFiltered(){
   const body = document.getElementById('list-body');
   const year = document.getElementById('list-year').value;
@@ -709,7 +735,7 @@ function renderListFiltered(){
       <td>${r.record_time ?? ''}</td>
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
-      <td>${r.department ?? ''}</td>
+      <td><input type="text" class="dept-inline-input" data-id="${r.id}" list="department-suggestions" autocomplete="off" value="${String(r.department ?? '').replace(/"/g,'&quot;')}" onchange="updateDepartmentInline(this)"></td>
       <td class="num">${r.vehicle_no ?? ''}</td>
       <td class="${r.item_type==='不燃' ? 'cell-nonburn' : ''}">${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
