@@ -649,7 +649,8 @@ function populateListYearFilter(){
   if(!years.includes(curYear)) years.push(curYear);
   years.sort();
   sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = years.includes(curYear) ? curYear : '';
+  const defaultYear = ALL_LIST_RECORDS.length ? ALL_LIST_RECORDS[0].record_date.slice(0,4) : curYear;
+  sel.value = years.includes(defaultYear) ? defaultYear : '';
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
@@ -660,7 +661,8 @@ function populateListMonthFilter(){
   const curMonth = String(new Date().getMonth() + 1);
   const months = Array.from({length:12}, (_, i) => i+1);
   sel.innerHTML = months.map(m=>`<option value="${m}">${m}月</option>`).join('') + '<option value="">年間</option>';
-  sel.value = curMonth;
+  const defaultMonth = ALL_LIST_RECORDS.length ? String(Number(ALL_LIST_RECORDS[0].record_date.slice(5,7))) : curMonth;
+  sel.value = defaultMonth;
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
