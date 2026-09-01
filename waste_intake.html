@@ -136,6 +136,15 @@
   }
   .compact-cols th.veh-no{text-align:center !important;}
   .compact-cols td.veh-no{text-align:left !important;font-weight:700;color:var(--text);padding-left:10px;}
+  .compact-cols th.car-type-sticky, .compact-cols td.car-type-sticky{
+    position:sticky;z-index:1;background:var(--panel);
+    white-space:nowrap;text-align:center;
+    box-shadow:2px 0 3px -2px rgba(0,0,0,.15);
+    border-right:1px solid var(--line);
+    width:1%;
+  }
+  .compact-cols thead th.car-type-sticky{z-index:2;background:var(--accent-bg);}
+  .compact-cols tbody tr:hover td.car-type-sticky{background:#fbf7ee;}
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -921,6 +930,23 @@ function scrollVehicleTable(delta){
   if(el) el.scrollBy({left: delta, behavior:'smooth'});
 }
 
+function getCarTypeByVehicle(vehicleNo){
+  for(const k in CARD_MAP){
+    if(CARD_MAP[k].vehicle === vehicleNo) return CARD_MAP[k].carType || '';
+  }
+  return '';
+}
+
+function alignVehicleStickyColumns(){
+  const wrap = document.getElementById('vehicle-table-wrap');
+  if(!wrap) return;
+  const vehTh = wrap.querySelector('th.sticky-col');
+  if(!vehTh) return;
+  const w = vehTh.getBoundingClientRect().width;
+  wrap.querySelectorAll('.car-type-sticky').forEach(el => { el.style.left = w + 'px'; });
+}
+window.addEventListener('resize', alignVehicleStickyColumns);
+
 function renderVehicleSummary(){
   const thead = document.getElementById('vehicle-thead');
   const body = document.getElementById('vehicle-body');
@@ -931,7 +957,7 @@ function renderVehicleSummary(){
   const months = [...new Set(yearRecords.map(r=>r.record_date.slice(0,7)))].sort();
   const vehicles = [...new Set(ALL_RECORDS.map(r=>r.vehicle_no).filter(Boolean))].sort();
 
-  const row1 = '<th class="veh-no sticky-col" rowspan="2">車番</th>' + months.map(m=>{
+  const row1 = '<th class="veh-no sticky-col" rowspan="2">車番</th><th class="car-type-sticky" rowspan="2">車　種</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
     return `<th class="num" colspan="2">${mo}月</th>`;
   }).join('') + '<th class="num" rowspan="2">正味重量合計</th><th class="num" rowspan="2">手数料合計</th>';
@@ -964,7 +990,8 @@ function renderVehicleSummary(){
     grandFeeAll += totalFee;
     const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
-    return `<tr><td class="veh-no sticky-col">${v}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    const carType = getCarTypeByVehicle(v);
+    return `<tr><td class="veh-no sticky-col">${v}</td><td class="car-type-sticky">${carType}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const feeCells = months.map(m=>{
@@ -975,7 +1002,9 @@ function renderVehicleSummary(){
   const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
   const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
+  feeRow.innerHTML = `<td class="sticky-col" colspan="2">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
+
+  alignVehicleStickyColumns();
 }
 
 /* ---------- 持込部署集計タブ（月別 運搬回数） ---------- */
