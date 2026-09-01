@@ -106,7 +106,7 @@
   td.cell-nonburn{background:#fdead4;}
   tr:hover td.cell-nonburn{background:#fbdfc0;}
   .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;}
-  .dept-inline-input{width:100%;min-width:88px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;}
+  .dept-inline-input{width:100%;min-width:88px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;text-align:center;}
   .dept-inline-input:hover{border-color:var(--line);}
   .dept-inline-input:focus{border-color:var(--ink);background:#fff;outline:none;}
   .num{text-align:center;}
@@ -241,8 +241,8 @@
         <datalist id="department-suggestions"></datalist>
       </div>
       <div class="field">
-        <label>車番（カードNo.から自動）</label>
-        <input type="text" id="f-vehicle" class="locked-field" readonly>
+        <label>車番（カードNo.から自動・手入力も可）</label>
+        <input type="text" id="f-vehicle" placeholder="例: 奈良45つ4226">
         <div class="field-hint" id="card-hint"></div>
       </div>
 
@@ -294,20 +294,22 @@
   <!-- 一覧タブ -->
   <div class="panel" id="tab-list" style="display:none;">
     <div class="list-toolbar">
-      <div class="form-title" style="margin:0;">一覧（日付の新しい順）</div>
+      <div class="form-title" style="margin:0;">一覧</div>
       <select id="list-year" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">すべての年</option>
       </select>
       <select id="list-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">年間</option>
       </select>
+      <input type="text" id="list-search-department" list="department-suggestions" autocomplete="off" placeholder="持込部署で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <input type="text" id="list-search-vehicle" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th class="num">日付</th><th>時刻</th><th class="num">受付No.</th><th class="num">カードNo.</th><th>持込部署</th><th class="num">車番</th>
+            <th class="num">日付</th><th>時刻</th><th class="num">受付No.</th><th class="num">カードNo.</th><th class="num">持込部署</th><th class="num">車番</th>
             <th>品種</th><th class="num">総重量</th><th class="num">空車重量</th>
             <th class="num">正味重量</th><th class="num">手数料</th><th></th>
           </tr>
@@ -518,7 +520,7 @@ document.getElementById('f-total').addEventListener('input', recalcPreview);
 document.getElementById('f-empty').addEventListener('input', recalcPreview);
 
 /* ---------- Enterキーで次の入力項目へ移動（ロック項目は自動で飛ばす） ---------- */
-const FORM_ORDER = ['f-date','f-time','f-receipt','f-card','f-department','f-item','f-total','f-empty'];
+const FORM_ORDER = ['f-date','f-time','f-receipt','f-card','f-department','f-vehicle','f-item','f-total','f-empty'];
 FORM_ORDER.forEach((id, idx) => {
   const el = document.getElementById(id);
   el.addEventListener('keydown', (e) => {
@@ -683,6 +685,15 @@ function populateListMonthFilter(){
   sel.dataset.populated = '1';
 }
 
+function setupListSearchFilters(){
+  const deptEl = document.getElementById('list-search-department');
+  const vehicleEl = document.getElementById('list-search-vehicle');
+  if(deptEl.dataset.bound) return;
+  deptEl.addEventListener('input', renderListFiltered);
+  vehicleEl.addEventListener('input', renderListFiltered);
+  deptEl.dataset.bound = '1';
+}
+
 async function loadList(){
   const body = document.getElementById('list-body');
   body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
@@ -691,6 +702,7 @@ async function loadList(){
     ALL_LIST_RECORDS = rows || [];
     populateListYearFilter();
     populateListMonthFilter();
+    setupListSearchFilters();
     renderListFiltered();
   }catch(e){
     body.innerHTML = `<tr><td colspan="12">読み込みに失敗しました: ${e.message}</td></tr>`;
@@ -725,10 +737,14 @@ function renderListFiltered(){
   const body = document.getElementById('list-body');
   const year = document.getElementById('list-year').value;
   const month = document.getElementById('list-month').value;
+  const deptKeyword = document.getElementById('list-search-department').value.trim();
+  const vehicleKeyword = document.getElementById('list-search-vehicle').value.trim();
 
   const rows = ALL_LIST_RECORDS.filter(r=>{
     if(year && r.record_date.slice(0,4) !== year) return false;
     if(month && r.record_date.slice(5,7) !== String(month).padStart(2,'0')) return false;
+    if(deptKeyword && !(r.department || '').includes(deptKeyword)) return false;
+    if(vehicleKeyword && !(r.vehicle_no || '').includes(vehicleKeyword)) return false;
     return true;
   });
   LIST_RECORDS = rows;
@@ -1138,6 +1154,7 @@ async function refreshData(){
 /* ---------- 起動時処理 ---------- */
 (async function init(){
   document.getElementById('f-date').value = todayStr();
+  document.getElementById('refresh-btn').style.display = 'none';
   await loadCardMap();
   recalcPreview();
 })();
