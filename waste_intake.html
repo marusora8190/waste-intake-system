@@ -31,8 +31,8 @@
   .update-status{font-size:13px;font-weight:700;color:#2f9e44;opacity:0;transition:opacity .3s;white-space:nowrap;}
   .update-status.show{opacity:1;}
 
-  .app-body{display:flex;gap:20px;align-items:flex-start;}
-  .sidebar{width:118px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+  .app-body{display:flex;flex-direction:column;gap:14px;align-items:stretch;}
+  .sidebar{width:100%;flex-shrink:0;display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;}
   .main-content{flex:1;min-width:0;}
 
   .refresh-btn{
@@ -51,6 +51,7 @@
   .tab{
     padding:9px 12px;border:1px solid var(--line);background:var(--panel);
     border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--muted);text-align:center;
+    flex:1 1 auto;
   }
   .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;}
 
@@ -445,7 +446,7 @@ function switchTab(name){
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
-  document.getElementById('refresh-btn').style.display = (name==='list') ? 'flex' : 'none';
+  document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
   document.getElementById('app-subtitle').style.display = (name==='input') ? 'none' : '';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
@@ -491,7 +492,6 @@ document.getElementById('f-card').addEventListener('blur', (e)=>{
 
 async function fetchDepartmentSuggestions(card){
   const dEl = document.getElementById('f-department');
-  const listEl = document.getElementById('department-suggestions');
   try{
     const rows = await sb(`waste_records?select=department&card_no=eq.${encodeURIComponent(card)}&department=not.is.null&order=id.desc&limit=20`);
     const seen = new Set();
@@ -500,10 +500,25 @@ async function fetchDepartmentSuggestions(card){
       const v = (r.department || '').trim();
       if(v && !seen.has(v)){ seen.add(v); values.push(v); }
     });
-    listEl.innerHTML = values.map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
     if(!dEl.value && values.length>0){
       dEl.value = values[0];
     }
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function loadDepartmentOptions(){
+  try{
+    const [wr, cm] = await Promise.all([
+      sb('waste_records?select=department&department=not.is.null&limit=5000'),
+      sb('card_vehicle_map?select=department&department=not.is.null&limit=1000')
+    ]);
+    const set = new Set();
+    (wr||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
+    (cm||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
+    const values = [...set].sort((a,b)=>a.localeCompare(b,'ja'));
+    document.getElementById('department-suggestions').innerHTML = values.map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
   }catch(e){
     console.error(e);
   }
@@ -1148,6 +1163,7 @@ async function refreshData(){
   label.textContent = '更新中…';
   try{
     await loadCardMap();
+    await loadDepartmentOptions();
     await loadList();
     await loadCards();
     await loadVehicleSummary();
@@ -1169,8 +1185,9 @@ async function refreshData(){
 /* ---------- 起動時処理 ---------- */
 (async function init(){
   document.getElementById('f-date').value = todayStr();
-  document.getElementById('refresh-btn').style.display = 'none';
+  document.getElementById('refresh-btn').style.display = 'flex';
   await loadCardMap();
+  await loadDepartmentOptions();
   recalcPreview();
 })();
 </script>
