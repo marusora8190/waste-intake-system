@@ -432,7 +432,7 @@ function switchTab(name){
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
-  document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
+  document.getElementById('refresh-btn').style.display = (name==='list') ? 'flex' : 'none';
   document.getElementById('app-subtitle').style.display = (name==='input') ? 'none' : '';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
@@ -1088,18 +1088,10 @@ async function refreshData(){
   label.textContent = '更新中…';
   try{
     await loadCardMap();
-    if(document.getElementById('tab-list').style.display !== 'none'){
-      await loadList();
-    }
-    if(document.getElementById('tab-cards').style.display !== 'none'){
-      await loadCards();
-    }
-    if(document.getElementById('tab-vehicle').style.display !== 'none'){
-      await loadVehicleSummary();
-    }
-    if(document.getElementById('tab-department').style.display !== 'none'){
-      await loadDepartmentSummary();
-    }
+    await loadList();
+    await loadCards();
+    await loadVehicleSummary();
+    await loadDepartmentSummary();
     const status = document.getElementById('update-status');
     status.textContent = '✓ 最新の状態に更新されました';
     status.classList.add('show');
