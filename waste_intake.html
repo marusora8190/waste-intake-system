@@ -301,6 +301,7 @@
       <select id="list-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">年間</option>
       </select>
+      <input type="text" id="list-search-card" autocomplete="off" placeholder="カードNo.で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-department" list="department-suggestions" autocomplete="off" placeholder="持込部署で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-vehicle" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
@@ -689,15 +690,18 @@ function populateListMonthFilter(){
 function clearListSearch(){
   document.getElementById('list-year').value = '';
   document.getElementById('list-month').value = '';
+  document.getElementById('list-search-card').value = '';
   document.getElementById('list-search-department').value = '';
   document.getElementById('list-search-vehicle').value = '';
   renderListFiltered();
 }
 
 function setupListSearchFilters(){
+  const cardEl = document.getElementById('list-search-card');
   const deptEl = document.getElementById('list-search-department');
   const vehicleEl = document.getElementById('list-search-vehicle');
   if(deptEl.dataset.bound) return;
+  cardEl.addEventListener('input', renderListFiltered);
   deptEl.addEventListener('input', renderListFiltered);
   vehicleEl.addEventListener('input', renderListFiltered);
   deptEl.dataset.bound = '1';
@@ -746,12 +750,14 @@ function renderListFiltered(){
   const body = document.getElementById('list-body');
   const year = document.getElementById('list-year').value;
   const month = document.getElementById('list-month').value;
+  const cardKeyword = document.getElementById('list-search-card').value.trim();
   const deptKeyword = document.getElementById('list-search-department').value.trim();
   const vehicleKeyword = document.getElementById('list-search-vehicle').value.trim();
 
   const rows = ALL_LIST_RECORDS.filter(r=>{
     if(year && r.record_date.slice(0,4) !== year) return false;
     if(month && r.record_date.slice(5,7) !== String(month).padStart(2,'0')) return false;
+    if(cardKeyword && !String(r.card_no || '').includes(cardKeyword)) return false;
     if(deptKeyword && !(r.department || '').includes(deptKeyword)) return false;
     if(vehicleKeyword && !(r.vehicle_no || '').includes(vehicleKeyword)) return false;
     return true;
