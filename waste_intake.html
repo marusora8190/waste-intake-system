@@ -101,11 +101,11 @@
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
   th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px 10px;text-align:left;white-space:nowrap;}
   th:last-child,td:last-child{border-right:none;}
-  th{background:var(--accent-bg);color:var(--ink-dark);font-weight:700;position:sticky;top:0;}
+  th{background:var(--accent-bg);color:var(--ink-dark);font-weight:700;position:sticky;top:0;z-index:1;}
   tbody tr:hover{background:#fbf7ee;}
   td.cell-nonburn{background:#fdead4;}
   tr:hover td.cell-nonburn{background:#fbdfc0;}
-  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
+  .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;}
   .num{text-align:center;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -132,7 +132,7 @@
     width:1%;white-space:nowrap;
   }
   .compact-cols th.veh-no{text-align:center !important;}
-  .compact-cols td.veh-no{text-align:right !important;font-weight:700;color:var(--text);padding-right:22px;}
+  .compact-cols td.veh-no{text-align:left !important;font-weight:700;color:var(--text);padding-left:10px;}
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -704,7 +704,7 @@ function renderListFiltered(){
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
       <td>${r.department ?? ''}</td>
-      <td>${r.vehicle_no ?? ''}</td>
+      <td class="num">${r.vehicle_no ?? ''}</td>
       <td class="${r.item_type==='不燃' ? 'cell-nonburn' : ''}">${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
@@ -928,7 +928,7 @@ function renderVehicleSummary(){
     grandFeeAll += totalFee;
     const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
-    return `<tr><td class="veh-no sticky-col">${last4(v)}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    return `<tr><td class="veh-no sticky-col">${v}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const feeCells = months.map(m=>{
@@ -1027,7 +1027,7 @@ function renderDepartmentSummary(){
     grandFeeAll += totalFee;
     const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
-    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no">${last4(p.vehicle_no)}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no">${p.vehicle_no}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const yearRecordsWithDept = yearRecords.filter(r=> r.department);
