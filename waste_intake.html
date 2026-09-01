@@ -181,11 +181,27 @@
   .compact-cols thead th.car-type-sticky{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td.car-type-sticky{background:#fbf7ee;}
   .compact-cols td.veh-no[data-dept], .compact-cols td.car-type-sticky[data-dept]{cursor:pointer;}
-  .compact-cols td.veh-no[data-dept]:hover::after,
-  .compact-cols td.car-type-sticky[data-dept]:hover::after,
   .compact-cols td.veh-no[data-dept].show-dept::after,
   .compact-cols td.car-type-sticky[data-dept].show-dept::after{
     content:attr(data-dept);
+    position:absolute;
+    left:0;
+    bottom:100%;
+    margin-bottom:4px;
+    background:#fff;
+    color:var(--text);
+    font-weight:700;
+    white-space:nowrap;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:0 6px 16px rgba(0,0,0,.18);
+    z-index:60;
+    pointer-events:none;
+  }
+  .department-table td.veh-no[data-cartype]{position:relative;cursor:pointer;}
+  .department-table td.veh-no[data-cartype].show-dept::after{
+    content:attr(data-cartype);
     position:absolute;
     left:0;
     bottom:100%;
@@ -1399,7 +1415,9 @@ function renderDepartmentSummary(){
     grandFeeAll += totalFee;
     const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
-    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no">${p.vehicle_no}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    const carType = getCarTypeByVehicle(p.vehicle_no);
+    const carTypeAttr = carType ? ` data-cartype="${carType.replace(/"/g,'&quot;')}" onclick="toggleDeptTooltip(this)"` : '';
+    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no"${carTypeAttr}>${p.vehicle_no}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const yearRecordsWithDept = yearRecords.filter(r=> r.department);
@@ -1765,7 +1783,10 @@ async function deleteInvoiceLine(id){
 /* ---------- 最新の状態に更新 ---------- */
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
-  btn.style.display = 'none';
+  const label = document.getElementById('refresh-btn-label');
+  btn.disabled = true;
+  const originalText = label.textContent;
+  label.textContent = '更新中…';
   try{
     await loadCardMap();
     await loadDepartmentOptions();
@@ -1776,11 +1797,14 @@ async function refreshData(){
     await loadDepartmentSummary();
     await loadYearSummary();
     await loadInvoiceTab();
+    label.textContent = '更新済';
+    btn.disabled = false;
+    setTimeout(()=>{ label.textContent = originalText; }, 1500);
   }catch(e){
     showToast('更新に失敗しました: ' + e.message, 6000);
     console.error(e);
-  }finally{
-    btn.style.display = 'flex';
+    btn.disabled = false;
+    label.textContent = originalText;
   }
 }
 
