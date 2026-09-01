@@ -303,6 +303,7 @@
       </select>
       <input type="text" id="list-search-department" list="department-suggestions" autocomplete="off" placeholder="持込部署で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-vehicle" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="table-wrap">
@@ -683,6 +684,14 @@ function populateListMonthFilter(){
   sel.value = defaultMonth;
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
+}
+
+function clearListSearch(){
+  document.getElementById('list-year').value = '';
+  document.getElementById('list-month').value = '';
+  document.getElementById('list-search-department').value = '';
+  document.getElementById('list-search-vehicle').value = '';
+  renderListFiltered();
 }
 
 function setupListSearchFilters(){
