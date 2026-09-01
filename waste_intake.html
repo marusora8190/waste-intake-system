@@ -32,7 +32,7 @@
   .update-status.show{opacity:1;}
 
   .app-body{display:flex;flex-direction:column;gap:14px;align-items:stretch;}
-  .sidebar{width:100%;flex-shrink:0;display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;}
+  .sidebar{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;}
   .main-content{flex:1;min-width:0;}
 
   .refresh-btn{
@@ -51,7 +51,7 @@
   .tab{
     padding:9px 12px;border:1px solid var(--line);background:var(--panel);
     border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--muted);text-align:center;
-    flex:1 1 auto;
+    white-space:nowrap;
   }
   .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;}
 
@@ -64,7 +64,7 @@
   }
   .edit-banner a{color:#9a5b12;font-weight:700;text-decoration:underline;}
 
-  .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 22px;align-items:start;}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px 18px;align-items:start;}
   .field{display:flex;flex-direction:column;gap:3px;}
   .field.full{grid-column:1 / -1;}
   .field label{font-size:12.5px;color:var(--muted);font-weight:600;}
@@ -106,10 +106,13 @@
   tbody tr:hover{background:#fbf7ee;}
   td.cell-nonburn{background:#fdead4;}
   tr:hover td.cell-nonburn{background:#fbdfc0;}
-  .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;}
-  .dept-inline-input{width:100%;min-width:88px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;text-align:center;}
+  .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;transition:max-height .2s;}
+  .table-wrap.expanded{max-height:85vh;}
+  .dept-inline-input{width:100%;min-width:60px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;text-align:center;}
   .dept-inline-input:hover{border-color:var(--line);}
   .dept-inline-input:focus{border-color:var(--ink);background:#fff;outline:none;}
+  #tab-list table th:nth-child(5), #tab-list table td:nth-child(5){width:80px;}
+  #tab-list table th:nth-child(6), #tab-list table td:nth-child(6){min-width:170px;}
   .num{text-align:center;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -173,12 +176,10 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  .card-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;}
+  .card-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;margin-bottom:22px;}
 
   @media (max-width:820px){
-    .app-body{flex-direction:column;}
-    .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;}
-    .tab{flex:1 1 auto;text-align:center;}
+    .sidebar{flex-wrap:wrap;}
   }
   @media (max-width:720px){
     .field-grid{grid-template-columns:1fr 1fr;}
@@ -193,22 +194,23 @@
   <div class="app-header">
     <div class="header-left">
       <h1><span>ごみ持込</span>量記録システム<span class="update-status" id="update-status"></span></h1>
+      <div class="sidebar" id="header-tabs">
+        <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
+        <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
+        <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
+        <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
+        <div class="tab" data-tab="department" onclick="switchTab('department')">持込部署集計</div>
+      </div>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
         <span id="refresh-btn-label">最新の状態に更新</span>
       </button>
     </div>
-    <p id="app-subtitle" style="display:none;">天理市 環境事業センター　計量票入力</p>
+    
   </div>
 
   <div class="app-body">
-  <div class="sidebar">
-    <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
-    <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
-    <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
-    <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
-    <div class="tab" data-tab="department" onclick="switchTab('department')">持込部署集計</div>
-  </div>
+  
 
   <div class="main-content">
 
@@ -326,32 +328,39 @@
 
   <!-- カード管理タブ -->
   <div class="panel" id="tab-cards" style="display:none;">
-    <div class="form-title">カード車番対応表</div>
-    <div class="edit-banner" id="card-edit-banner" style="display:none;">
-      編集中のカードがあります。<a href="#" onclick="cancelCardEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">カード車番対応表</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn" id="card-form-toggle-btn" onclick="toggleCardFormSection()">入力欄を隠す</button>
+        <button class="btn btn-primary" id="card-submit-btn" onclick="submitCard()">新規登録</button>
+      </div>
     </div>
-    <div class="card-form">
-      <div class="field">
-        <label>カードNo. *</label>
-        <input type="text" id="c-card" placeholder="例: 38">
+    <div id="card-form-section">
+      <div class="edit-banner" id="card-edit-banner" style="display:none;">
+        編集中のカードがあります。<a href="#" onclick="cancelCardEdit();return false;">編集をキャンセルして新規登録に戻る</a>
       </div>
-      <div class="field">
-        <label>車両保管部署</label>
-        <input type="text" id="c-department" placeholder="例: 営繕課">
+      <div class="card-form">
+        <div class="field">
+          <label>カードNo. *</label>
+          <input type="text" id="c-card" placeholder="例: 38">
+        </div>
+        <div class="field">
+          <label>車両保管部署</label>
+          <input type="text" id="c-department" placeholder="例: 営繕課">
+        </div>
+        <div class="field">
+          <label>車　種</label>
+          <input type="text" id="c-car-type" placeholder="例: 軽トラック">
+        </div>
+        <div class="field">
+          <label>車番 *</label>
+          <input type="text" id="c-vehicle" placeholder="例: 奈良45つ4226">
+        </div>
       </div>
-      <div class="field">
-        <label>車　種</label>
-        <input type="text" id="c-car-type" placeholder="例: 軽トラック">
-      </div>
-      <div class="field">
-        <label>車番 *</label>
-        <input type="text" id="c-vehicle" placeholder="例: 奈良45つ4226">
-      </div>
-      <button class="btn btn-primary" id="card-submit-btn" onclick="submitCard()">新規登録</button>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="cards-table-wrap">
       <table>
-        <thead><tr><th class="num">カードNo.</th><th class="num">車両保管部署</th><th class="num">車　種</th><th class="num">車番</th><th class="num">更新日時</th><th></th></tr></thead>
+        <thead><tr><th class="num">カードNo.</th><th class="num">車両保管部署</th><th class="num">車　種</th><th class="num">車番</th><th></th></tr></thead>
         <tbody id="card-body">
           <tr><td colspan="5">読み込み中…</td></tr>
         </tbody>
@@ -447,7 +456,6 @@ function switchTab(name){
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
   document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
-  document.getElementById('app-subtitle').style.display = (name==='input') ? 'none' : '';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
   if(name==='vehicle') loadVehicleSummary();
@@ -825,13 +833,13 @@ async function deleteRecord(id){
 /* ---------- カード管理タブ ---------- */
 async function loadCards(){
   const body = document.getElementById('card-body');
-  body.innerHTML = '<tr><td colspan="6">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="5">読み込み中…</td></tr>';
   try{
     const rows = await sb('card_vehicle_map?select=*&order=card_no.asc');
     CARD_MAP = {};
     (rows||[]).forEach(r => CARD_MAP[String(r.card_no).trim()] = { vehicle: r.vehicle_no, department: r.department || '', carType: r.car_type || '' });
     if(!rows || rows.length===0){
-      body.innerHTML = '<tr><td colspan="6">登録されているカードがありません</td></tr>';
+      body.innerHTML = '<tr><td colspan="5">登録されているカードがありません</td></tr>';
       return;
     }
     body.innerHTML = rows.map(r => `
@@ -840,7 +848,6 @@ async function loadCards(){
         <td class="num">${r.department ?? ''}</td>
         <td class="num">${r.car_type ?? ''}</td>
         <td class="num">${r.vehicle_no}</td>
-        <td class="num">${r.updated_at ? new Date(r.updated_at).toLocaleString('ja-JP') : ''}</td>
         <td class="action-cell">
           <button class="del-btn" onclick="editCard('${r.card_no.replace(/'/g,"\\'")}')">編集</button>
           <button class="del-btn" onclick="deleteCard('${r.card_no.replace(/'/g,"\\'")}')">削除</button>
@@ -848,7 +855,7 @@ async function loadCards(){
       </tr>
     `).join('');
   }catch(e){
-    body.innerHTML = `<tr><td colspan="6">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -868,6 +875,22 @@ function editCard(cardNo){
   document.getElementById('c-vehicle').value = info.vehicle || '';
   document.getElementById('card-submit-btn').textContent = '更新する';
   document.getElementById('card-edit-banner').style.display = '';
+}
+
+function toggleCardFormSection(){
+  const sec = document.getElementById('card-form-section');
+  const btn = document.getElementById('card-form-toggle-btn');
+  const wrap = document.getElementById('cards-table-wrap');
+  const isHidden = sec.style.display === 'none';
+  if(isHidden){
+    sec.style.display = '';
+    btn.textContent = '入力欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    sec.style.display = 'none';
+    btn.textContent = '入力欄を表示';
+    wrap.classList.add('expanded');
+  }
 }
 
 function cancelCardEdit(){
@@ -976,6 +999,15 @@ function scrollVehicleTable(delta){
   if(el) el.scrollBy({left: delta, behavior:'smooth'});
 }
 
+function alignStickyHeaderRows(theadId){
+  const thead = document.getElementById(theadId);
+  if(!thead || thead.rows.length < 2) return;
+  const row1 = thead.rows[0];
+  const row2 = thead.rows[1];
+  const row1Height = row1.getBoundingClientRect().height;
+  Array.from(row2.cells).forEach(cell => { cell.style.top = row1Height + 'px'; });
+}
+
 function getCarTypeByVehicle(vehicleNo){
   for(const k in CARD_MAP){
     if(CARD_MAP[k].vehicle === vehicleNo) return CARD_MAP[k].carType || '';
@@ -991,7 +1023,11 @@ function alignVehicleStickyColumns(){
   const w = vehTh.getBoundingClientRect().width;
   wrap.querySelectorAll('.car-type-sticky').forEach(el => { el.style.left = w + 'px'; });
 }
-window.addEventListener('resize', alignVehicleStickyColumns);
+window.addEventListener('resize', () => {
+  alignVehicleStickyColumns();
+  alignStickyHeaderRows('vehicle-thead');
+  alignStickyHeaderRows('department-thead');
+});
 
 function renderVehicleSummary(){
   const thead = document.getElementById('vehicle-thead');
@@ -1051,6 +1087,7 @@ function renderVehicleSummary(){
   feeRow.innerHTML = `<td class="sticky-col" colspan="2">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
 
   alignVehicleStickyColumns();
+  alignStickyHeaderRows('vehicle-thead');
 }
 
 /* ---------- 持込部署集計タブ（月別 運搬回数） ---------- */
@@ -1152,6 +1189,7 @@ function renderDepartmentSummary(){
   const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
   feeRow.innerHTML = `<td colspan="2" class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
+  alignStickyHeaderRows('department-thead');
 }
 
 /* ---------- 最新の状態に更新 ---------- */
