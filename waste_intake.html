@@ -114,6 +114,7 @@
   #tab-list table th:nth-child(5), #tab-list table td:nth-child(5){width:150px;}
   #tab-list table th:nth-child(6), #tab-list table td:nth-child(6){width:1%;white-space:nowrap;}
   .num{text-align:center;}
+  .fee-cell{text-align:right !important;padding-right:16px;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
   .compact-cols th.num, .compact-cols td.num{white-space:nowrap;width:1%;}
@@ -195,7 +196,7 @@
 <div class="app">
   <div class="app-header">
     <div class="header-left">
-      <h1><span>ごみ持込</span>量記録システム<span class="update-status" id="update-status"></span></h1>
+      <h1><span>天理市ごみ持込</span>量記録システム<span class="update-status" id="update-status"></span></h1>
       <div class="sidebar" id="header-tabs">
         <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
         <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
@@ -244,10 +245,11 @@
         <label>持込者部署</label>
         <input type="text" id="f-department" list="department-suggestions" placeholder="例: 営繕課" autocomplete="off">
         <datalist id="department-suggestions"></datalist>
+        <datalist id="vehicle-suggestions"></datalist>
       </div>
       <div class="field">
         <label>車番（カードNo.から自動・手入力も可）</label>
-        <input type="text" id="f-vehicle" placeholder="例: 奈良45つ4226">
+        <input type="text" id="f-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="例: 奈良45つ4226">
         <div class="field-hint" id="card-hint"></div>
       </div>
 
@@ -308,7 +310,12 @@
       </select>
       <input type="text" id="list-search-card" autocomplete="off" placeholder="カードNo.で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-department" list="department-suggestions" autocomplete="off" placeholder="持込部署で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <input type="text" id="list-search-vehicle" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <input type="text" id="list-search-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <select id="list-search-item" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+        <option value="">品種:すべて</option>
+        <option value="可燃">可燃</option>
+        <option value="不燃">不燃</option>
+      </select>
       <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
       <div class="list-summary" id="list-summary"></div>
     </div>
@@ -520,15 +527,27 @@ async function fetchDepartmentSuggestions(card){
 
 async function loadDepartmentOptions(){
   try{
-    const [wr, cm] = await Promise.all([
-      sb('waste_records?select=department&department=not.is.null&limit=5000'),
-      sb('card_vehicle_map?select=department&department=not.is.null&limit=1000')
-    ]);
+    const wr = await sb('waste_records?select=department&department=not.is.null&limit=5000');
     const set = new Set();
     (wr||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
-    (cm||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
     const values = [...set].sort((a,b)=>a.localeCompare(b,'ja'));
     document.getElementById('department-suggestions').innerHTML = values.map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function loadVehicleOptions(){
+  try{
+    const [wr, cm] = await Promise.all([
+      sb('waste_records?select=vehicle_no&vehicle_no=not.is.null&limit=5000'),
+      sb('card_vehicle_map?select=vehicle_no&vehicle_no=not.is.null&limit=1000')
+    ]);
+    const set = new Set();
+    (wr||[]).forEach(r=>{ const v=(r.vehicle_no||'').trim(); if(v) set.add(v); });
+    (cm||[]).forEach(r=>{ const v=(r.vehicle_no||'').trim(); if(v) set.add(v); });
+    const values = [...set].sort((a,b)=>a.localeCompare(b,'ja'));
+    document.getElementById('vehicle-suggestions').innerHTML = values.map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
   }catch(e){
     console.error(e);
   }
@@ -718,6 +737,7 @@ function clearListSearch(){
   document.getElementById('list-search-card').value = '';
   document.getElementById('list-search-department').value = '';
   document.getElementById('list-search-vehicle').value = '';
+  document.getElementById('list-search-item').value = '';
   renderListFiltered();
 }
 
@@ -725,10 +745,12 @@ function setupListSearchFilters(){
   const cardEl = document.getElementById('list-search-card');
   const deptEl = document.getElementById('list-search-department');
   const vehicleEl = document.getElementById('list-search-vehicle');
+  const itemEl = document.getElementById('list-search-item');
   if(deptEl.dataset.bound) return;
   cardEl.addEventListener('input', renderListFiltered);
   deptEl.addEventListener('input', renderListFiltered);
   vehicleEl.addEventListener('input', renderListFiltered);
+  itemEl.addEventListener('change', renderListFiltered);
   deptEl.dataset.bound = '1';
 }
 
@@ -745,6 +767,35 @@ async function loadList(){
   }catch(e){
     body.innerHTML = `<tr><td colspan="12">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
+  }
+}
+
+async function updateVehicleInline(el){
+  const id = Number(el.dataset.id);
+  const value = el.value.trim();
+  if(!value){
+    showToast('車番は空にできません');
+    const rec = ALL_LIST_RECORDS.find(r => r.id === id);
+    el.value = rec ? (rec.vehicle_no || '') : '';
+    return;
+  }
+  el.disabled = true;
+  try{
+    await sb(`waste_records?id=eq.${id}`, {
+      method:'PATCH',
+      headers:{ 'Prefer':'return=minimal' },
+      body: JSON.stringify({ vehicle_no: value })
+    });
+    const recAll = ALL_LIST_RECORDS.find(r => r.id === id);
+    if(recAll) recAll.vehicle_no = value;
+    const recFiltered = LIST_RECORDS.find(r => r.id === id);
+    if(recFiltered) recFiltered.vehicle_no = value;
+    showToast('車番を更新しました');
+  }catch(e){
+    showToast('更新に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }finally{
+    el.disabled = false;
   }
 }
 
@@ -778,6 +829,7 @@ function renderListFiltered(){
   const cardKeyword = document.getElementById('list-search-card').value.trim();
   const deptKeyword = document.getElementById('list-search-department').value.trim();
   const vehicleKeyword = document.getElementById('list-search-vehicle').value.trim();
+  const itemFilter = document.getElementById('list-search-item').value;
 
   const rows = ALL_LIST_RECORDS.filter(r=>{
     if(year && r.record_date.slice(0,4) !== year) return false;
@@ -785,6 +837,7 @@ function renderListFiltered(){
     if(cardKeyword && !String(r.card_no || '').includes(cardKeyword)) return false;
     if(deptKeyword && !(r.department || '').includes(deptKeyword)) return false;
     if(vehicleKeyword && !(r.vehicle_no || '').includes(vehicleKeyword)) return false;
+    if(itemFilter && r.item_type !== itemFilter) return false;
     return true;
   });
   LIST_RECORDS = rows;
@@ -801,12 +854,12 @@ function renderListFiltered(){
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
       <td><input type="text" class="dept-inline-input" data-id="${r.id}" list="department-suggestions" autocomplete="off" value="${String(r.department ?? '').replace(/"/g,'&quot;')}" onchange="updateDepartmentInline(this)"></td>
-      <td class="num">${r.vehicle_no ?? ''}</td>
+      <td><input type="text" class="dept-inline-input" data-id="${r.id}" data-field="vehicle_no" list="vehicle-suggestions" autocomplete="off" value="${String(r.vehicle_no ?? '').replace(/"/g,'&quot;')}" onchange="updateVehicleInline(this)"></td>
       <td class="${r.item_type==='不燃' ? 'cell-nonburn' : ''}">${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
       <td class="num">${Number(r.net_weight).toLocaleString()}</td>
-      <td class="num">${Number(r.fee).toLocaleString()}</td>
+      <td class="num fee-cell">${Number(r.fee).toLocaleString()}</td>
       <td class="action-cell">
         <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
@@ -1204,6 +1257,7 @@ async function refreshData(){
   try{
     await loadCardMap();
     await loadDepartmentOptions();
+    await loadVehicleOptions();
     await loadList();
     await loadCards();
     await loadVehicleSummary();
@@ -1228,6 +1282,7 @@ async function refreshData(){
   document.getElementById('refresh-btn').style.display = 'flex';
   await loadCardMap();
   await loadDepartmentOptions();
+  await loadVehicleOptions();
   recalcPreview();
 })();
 </script>
