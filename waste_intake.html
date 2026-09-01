@@ -180,8 +180,11 @@
   .compact-cols td.car-type-sticky{text-align:left !important;font-weight:700;color:var(--text);}
   .compact-cols thead th.car-type-sticky{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td.car-type-sticky{background:#fbf7ee;}
+  .compact-cols td.veh-no[data-dept], .compact-cols td.car-type-sticky[data-dept]{cursor:pointer;}
   .compact-cols td.veh-no[data-dept]:hover::after,
-  .compact-cols td.car-type-sticky[data-dept]:hover::after{
+  .compact-cols td.car-type-sticky[data-dept]:hover::after,
+  .compact-cols td.veh-no[data-dept].show-dept::after,
+  .compact-cols td.car-type-sticky[data-dept].show-dept::after{
     content:attr(data-dept);
     position:absolute;
     left:0;
@@ -239,6 +242,7 @@
 <div class="app">
   <div class="app-header">
     <div class="header-left">
+      <h1><span>天理市ごみ持込量記録システム</span></h1>
       <div class="sidebar" id="header-tabs">
         <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
         <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
@@ -248,7 +252,6 @@
         <div class="tab" data-tab="summary" onclick="switchTab('summary')">月次サマリー</div>
         <div class="tab" data-tab="invoice" onclick="switchTab('invoice')">請求書照合</div>
       </div>
-      <h1><span>天理市ごみ持込量記録システム</span></h1>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
         <span id="refresh-btn-label">最新の状態に更新</span>
@@ -1223,6 +1226,17 @@ function getDepartmentByVehicle(vehicleNo){
   return '';
 }
 
+function toggleDeptTooltip(el){
+  const wasOpen = el.classList.contains('show-dept');
+  document.querySelectorAll('.show-dept').forEach(e => e.classList.remove('show-dept'));
+  if(!wasOpen) el.classList.add('show-dept');
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('td.veh-no, td.car-type-sticky')){
+    document.querySelectorAll('.show-dept').forEach(el => el.classList.remove('show-dept'));
+  }
+});
+
 function alignVehicleStickyColumns(){
   const wrap = document.getElementById('vehicle-table-wrap');
   if(!wrap) return;
@@ -1282,7 +1296,7 @@ function renderVehicleSummary(){
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
     const carType = getCarTypeByVehicle(v);
     const dept = getDepartmentByVehicle(v);
-    const deptAttr = dept ? ` data-dept="${dept.replace(/"/g,'&quot;')}"` : '';
+    const deptAttr = dept ? ` data-dept="${dept.replace(/"/g,'&quot;')}" onclick="toggleDeptTooltip(this)"` : '';
     return `<tr><td class="veh-no sticky-col"${deptAttr}>${v}</td><td class="car-type-sticky"${deptAttr}>${carType}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
