@@ -1765,10 +1765,7 @@ async function deleteInvoiceLine(id){
 /* ---------- 最新の状態に更新 ---------- */
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
-  const label = document.getElementById('refresh-btn-label');
-  btn.disabled = true;
-  const originalText = label.textContent;
-  label.textContent = '更新中…';
+  btn.style.display = 'none';
   try{
     await loadCardMap();
     await loadDepartmentOptions();
@@ -1783,8 +1780,7 @@ async function refreshData(){
     showToast('更新に失敗しました: ' + e.message, 6000);
     console.error(e);
   }finally{
-    btn.disabled = false;
-    label.textContent = originalText;
+    btn.style.display = 'flex';
   }
 }
 
