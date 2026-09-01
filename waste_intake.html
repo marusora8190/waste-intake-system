@@ -25,20 +25,20 @@
   .app{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
   .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:nowrap;gap:14px;overflow-x:auto;}
   .header-left{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;}
-  .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;}
+  .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;white-space:nowrap;flex-shrink:0;}
   .app-header h1 span{color:var(--ink);}
   .app-header p{margin:0;color:var(--muted);font-size:12.5px;white-space:nowrap;}
   .update-status{font-size:13px;font-weight:700;color:#2f9e44;opacity:0;transition:opacity .3s;white-space:nowrap;}
   .update-status.show{opacity:1;}
 
   .app-body{display:flex;flex-direction:column;gap:14px;align-items:stretch;}
-  .sidebar{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;}
+  .sidebar{display:flex;flex-direction:row;flex-wrap:nowrap;flex-shrink:0;gap:6px;}
   .main-content{flex:1;min-width:0;}
 
   .refresh-btn{
     padding:9px 14px;border-radius:8px;border:none;background:var(--ink);
     color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;
-    display:flex;align-items:center;gap:8px;white-space:nowrap;
+    display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;
   }
   .refresh-btn:hover{background:var(--ink-dark);}
   .refresh-btn:disabled{opacity:.6;cursor:not-allowed;}
@@ -81,6 +81,14 @@
   .num-field{text-align:center;}
   .field-hint{font-size:11.5px;color:var(--muted);margin-top:4px;}
   .inline-field{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .summary-total-card{background:var(--accent-bg);border-radius:12px;padding:16px 22px;min-width:160px;}
+  .summary-total-card .label{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:6px;}
+  .summary-total-card .value{font-size:22px;font-weight:700;color:var(--ink-dark);}
+  .bar-chart-bar-label{font-size:11.5px;color:var(--muted);text-anchor:middle;}
+  .bar-chart-value-label{font-size:11.5px;color:var(--text);font-weight:700;text-anchor:middle;}
+  .invoice-ok{color:#2f9e44;font-weight:700;}
+  .invoice-ng{color:#c0392b;font-weight:700;}
+  .invoice-total-row{display:flex;gap:24px;flex-wrap:wrap;}
   .inline-field .form-title{margin-right:8px;}
   .inline-field label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
   .inline-field select{
@@ -111,8 +119,8 @@
   .dept-inline-input{width:100%;min-width:60px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;text-align:center;}
   .dept-inline-input:hover{border-color:var(--line);}
   .dept-inline-input:focus{border-color:var(--ink);background:#fff;outline:none;}
-  #tab-list table th:nth-child(3), #tab-list table td:nth-child(3){width:1%;}
-  #tab-list table th:nth-child(4), #tab-list table td:nth-child(4){width:1%;}
+  #tab-list table th:nth-child(3), #tab-list table td:nth-child(3){width:1%;min-width:50px;}
+  #tab-list table th:nth-child(4), #tab-list table td:nth-child(4){width:1%;min-width:50px;}
   #tab-list table th:nth-child(5), #tab-list table td:nth-child(5){width:100px;}
   #tab-list table th:nth-child(6), #tab-list table td:nth-child(6){min-width:200px;}
   .num{text-align:center;}
@@ -201,9 +209,6 @@
 
   .card-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;margin-bottom:22px;}
 
-  @media (max-width:820px){
-    .sidebar{flex-wrap:wrap;}
-  }
   @media (max-width:720px){
     .field-grid{grid-template-columns:1fr 1fr;}
     .card-form{grid-template-columns:1fr;}
@@ -223,6 +228,8 @@
         <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
         <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
         <div class="tab" data-tab="department" onclick="switchTab('department')">持込部署集計</div>
+        <div class="tab" data-tab="summary" onclick="switchTab('summary')">月次サマリー</div>
+        <div class="tab" data-tab="invoice" onclick="switchTab('invoice')">請求書照合</div>
       </div>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
@@ -337,13 +344,14 @@
         <option value="不燃">不燃</option>
       </select>
       <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
+      <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th class="num">日付</th><th>時刻</th><th class="num" style="white-space:normal;font-size:12px;">受付<br>No.</th><th class="num" style="white-space:normal;font-size:12px;">カード<br>No.</th><th class="num">持込部署</th><th class="num">車番</th>
+            <th class="num">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
             <th class="num">正味重量</th><th class="num">手数料</th><th></th>
           </tr>
@@ -403,6 +411,7 @@
       <div class="form-title" style="margin:0;">車番別集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="v-year"></select>
+      <button type="button" class="btn" onclick="exportVehicleSummaryToExcel()">Excelダウンロード</button>
       <div class="scroll-btn-row" style="margin-left:auto;margin-bottom:0;">
         <button class="scroll-btn" onclick="scrollVehicleTable(-240)" aria-label="左にスクロール">◀</button>
         <button class="scroll-btn" onclick="scrollVehicleTable(240)" aria-label="右にスクロール">▶</button>
@@ -425,6 +434,7 @@
       <div class="form-title" style="margin:0;">持込部署集計（月別 運搬回数）</div>
       <label>年</label>
       <select id="d-year"></select>
+      <button type="button" class="btn" onclick="exportDepartmentSummaryToExcel()">Excelダウンロード</button>
       <div class="scroll-btn-row" style="margin-left:auto;margin-bottom:0;">
         <button class="scroll-btn" onclick="scrollDepartmentTable(-240)" aria-label="左にスクロール">◀</button>
         <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
@@ -441,12 +451,73 @@
     </div>
   </div>
 
+  <!-- 月次サマリータブ -->
+  <div class="panel" id="tab-summary" style="display:none;">
+    <div class="inline-field" style="margin-bottom:14px;">
+      <div class="form-title" style="margin:0;">月次・年次サマリー</div>
+      <label>年</label>
+      <select id="s-year"></select>
+      <button class="btn" style="margin-left:auto;" onclick="exportSummaryToExcel()">Excelダウンロード</button>
+    </div>
+    <div id="summary-totals" style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:22px;"></div>
+    <div style="margin-bottom:10px;font-weight:700;color:var(--ink-dark);">月別 正味重量合計(kg)</div>
+    <div id="summary-chart-weight" style="margin-bottom:30px;"></div>
+    <div style="margin-bottom:10px;font-weight:700;color:var(--ink-dark);">月別 手数料合計(円)</div>
+    <div id="summary-chart-fee"></div>
+  </div>
+
+  <!-- 請求書照合タブ -->
+  <div class="panel" id="tab-invoice" style="display:none;">
+    <div class="inline-field" style="margin-bottom:16px;">
+      <div class="form-title" style="margin:0;">請求書照合</div>
+      <label>年</label>
+      <select id="i-year"></select>
+      <label>月</label>
+      <select id="i-month">
+        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
+        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
+        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+    </div>
+
+    <div id="invoice-total-card" style="margin-bottom:24px;"></div>
+
+    <div class="form-title" style="font-size:14px;margin-bottom:10px;">車番ごとの明細</div>
+    <div class="edit-banner" id="invoice-edit-banner" style="display:none;">
+      編集中の明細があります。<a href="#" onclick="cancelInvoiceEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;">
+      <div class="field">
+        <label>車番</label>
+        <input type="text" id="inv-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="例: 奈良45つ4226">
+      </div>
+      <div class="field">
+        <label>請求金額(円)</label>
+        <input type="number" id="inv-amount" placeholder="例: 10080">
+      </div>
+      <button class="btn btn-primary" id="invoice-submit-btn" onclick="submitInvoiceLine()">登録する</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
+        </tr></thead>
+        <tbody id="invoice-body">
+          <tr><td colspan="6">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const SUPABASE_URL = "https://zhxuntrhxnrssqpvcmvl.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoeHVudHJoeG5yc3NxcHZjbXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNDcyNjYsImV4cCI6MjA5NzgyMzI2Nn0.l3pwvKZVVJqDA4HORqt-Op-cTvVF3bkX1ovWgAuSO58";
@@ -480,7 +551,7 @@ function showToast(msg, duration=2600){
 }
 
 function switchTab(name){
-  ['input','list','cards','vehicle','department'].forEach(n=>{
+  ['input','list','cards','vehicle','department','summary','invoice'].forEach(n=>{
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
     document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
   });
@@ -489,6 +560,8 @@ function switchTab(name){
   if(name==='cards') loadCards();
   if(name==='vehicle') loadVehicleSummary();
   if(name==='department') loadDepartmentSummary();
+  if(name==='summary') loadYearSummary();
+  if(name==='invoice') loadInvoiceTab();
 }
 
 /* ---------- カード⇔車番 対応表（メモリキャッシュ） ---------- */
@@ -1269,6 +1342,332 @@ function renderDepartmentSummary(){
   alignStickyHeaderRows('department-thead');
 }
 
+/* ---------- 月次・年次サマリー ---------- */
+async function loadYearSummary(){
+  await loadAllRecords();
+  const yearSel = document.getElementById('s-year');
+  if(!yearSel.dataset.populated){
+    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort().reverse();
+    const curYear = String(new Date().getFullYear());
+    if(!years.includes(curYear)) years.unshift(curYear);
+    yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+    yearSel.value = years[0];
+    yearSel.addEventListener('change', renderYearSummary);
+    yearSel.dataset.populated = '1';
+  }
+  renderYearSummary();
+}
+
+function buildBarChartSVG(labels, values, opts){
+  opts = opts || {};
+  const valueFormatter = opts.valueFormatter || (v => v.toLocaleString());
+  const barColor = opts.color || '#e2604a';
+  const width = 900, height = 220;
+  const padLeft = 10, padRight = 10, padTop = 24, padBottom = 30;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+  const maxVal = Math.max(1, ...values);
+  const n = labels.length;
+  const gap = 10;
+  const barW = (chartW - gap * (n - 1)) / n;
+  let bars = '';
+  for(let i=0;i<n;i++){
+    const v = values[i];
+    const barH = maxVal === 0 ? 0 : (v / maxVal) * chartH;
+    const x = padLeft + i * (barW + gap);
+    const y = padTop + chartH - barH;
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${barColor}" rx="3"></rect>`;
+    if(v > 0){
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-6).toFixed(1)}" class="bar-chart-value-label">${valueFormatter(v)}</text>`;
+    }
+    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${height-8}" class="bar-chart-bar-label">${labels[i]}</text>`;
+  }
+  return `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;">${bars}</svg>`;
+}
+
+function renderYearSummary(){
+  const year = document.getElementById('s-year').value;
+  const yearRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4) === year);
+
+  const months = [];
+  for(let m=1;m<=12;m++) months.push(String(m).padStart(2,'0'));
+  const netByMonth = months.map(m => yearRecords.filter(r=>r.record_date.slice(5,7)===m).reduce((s,r)=>s+Number(r.net_weight||0),0));
+  const feeByMonth = months.map(m => yearRecords.filter(r=>r.record_date.slice(5,7)===m).reduce((s,r)=>s+Number(r.fee||0),0));
+  const labels = months.map(m => `${Number(m)}月`);
+
+  const totalCount = yearRecords.length;
+  const totalNet = yearRecords.reduce((s,r)=>s+Number(r.net_weight||0),0);
+  const totalFee = yearRecords.reduce((s,r)=>s+Number(r.fee||0),0);
+
+  document.getElementById('summary-totals').innerHTML = `
+    <div class="summary-total-card"><div class="label">${year}年 搬入件数</div><div class="value">${totalCount.toLocaleString()}件</div></div>
+    <div class="summary-total-card"><div class="label">${year}年 正味重量合計</div><div class="value">${totalNet.toLocaleString()}kg</div></div>
+    <div class="summary-total-card"><div class="label">${year}年 手数料合計</div><div class="value">${totalFee.toLocaleString()}円</div></div>
+  `;
+
+  document.getElementById('summary-chart-weight').innerHTML = buildBarChartSVG(labels, netByMonth, { color:'#e2604a', valueFormatter: v => v.toLocaleString() });
+  document.getElementById('summary-chart-fee').innerHTML = buildBarChartSVG(labels, feeByMonth, { color:'#b8412c', valueFormatter: v => v.toLocaleString() });
+
+  window._summaryExportData = { year, months: labels, netByMonth, feeByMonth, totalCount, totalNet, totalFee };
+}
+
+/* ---------- Excelダウンロード ---------- */
+function downloadWorkbook(sheets, filename){
+  if(typeof XLSX === 'undefined'){
+    showToast('Excel出力ライブラリの読み込みに失敗しました。通信環境をご確認ください。', 6000);
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+  sheets.forEach(s => {
+    const ws = XLSX.utils.aoa_to_sheet(s.rows);
+    XLSX.utils.book_append_sheet(wb, ws, s.name);
+  });
+  XLSX.writeFile(wb, filename);
+}
+
+function exportListToExcel(){
+  const header = ['日付','時刻','受付No.','カードNo.','持込部署','車番','品種','総重量(kg)','空車重量(kg)','正味重量(kg)','手数料(円)'];
+  const rows = [header, ...LIST_RECORDS.map(r => [
+    r.record_date, r.record_time || '', r.receipt_no ?? '', r.card_no ?? '', r.department ?? '',
+    r.vehicle_no ?? '', r.item_type ?? '', Number(r.total_weight||0), Number(r.empty_weight||0),
+    Number(r.net_weight||0), Number(r.fee||0)
+  ])];
+  downloadWorkbook([{ name:'一覧', rows }], `waste_intake_一覧_${todayStr()}.xlsx`);
+}
+
+function exportVehicleSummaryToExcel(){
+  const table = document.querySelector('#vehicle-table-wrap table');
+  if(!table){ showToast('表が見つかりませんでした'); return; }
+  const wb_rows = [];
+  Array.from(table.rows).forEach(tr => {
+    wb_rows.push(Array.from(tr.cells).map(td => td.textContent.trim()));
+  });
+  downloadWorkbook([{ name:'車番別集計', rows: wb_rows }], `waste_intake_車番別集計_${todayStr()}.xlsx`);
+}
+
+function exportDepartmentSummaryToExcel(){
+  const table = document.querySelector('#department-table-wrap table');
+  if(!table){ showToast('表が見つかりませんでした'); return; }
+  const wb_rows = [];
+  Array.from(table.rows).forEach(tr => {
+    wb_rows.push(Array.from(tr.cells).map(td => td.textContent.trim()));
+  });
+  downloadWorkbook([{ name:'持込部署集計', rows: wb_rows }], `waste_intake_持込部署集計_${todayStr()}.xlsx`);
+}
+
+function exportSummaryToExcel(){
+  const d = window._summaryExportData;
+  if(!d){ showToast('データがありません'); return; }
+  const rows = [
+    ['月','正味重量合計(kg)','手数料合計(円)'],
+    ...d.months.map((m,i)=>[m, d.netByMonth[i], d.feeByMonth[i]]),
+    [],
+    ['年間合計件数', d.totalCount],
+    ['年間正味重量合計(kg)', d.totalNet],
+    ['年間手数料合計(円)', d.totalFee]
+  ];
+  downloadWorkbook([{ name:`${d.year}年サマリー`, rows }], `waste_intake_サマリー_${d.year}.xlsx`);
+}
+
+/* ---------- 請求書照合 ---------- */
+let EDITING_INVOICE_ID = null;
+let INVOICE_LINES = [];
+
+async function loadInvoiceTab(){
+  await loadAllRecords();
+  const yearSel = document.getElementById('i-year');
+  if(!yearSel.dataset.populated){
+    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort().reverse();
+    const curYear = String(new Date().getFullYear());
+    if(!years.includes(curYear)) years.unshift(curYear);
+    yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+    yearSel.value = years[0];
+    yearSel.addEventListener('change', renderInvoiceTab);
+    yearSel.dataset.populated = '1';
+    const monthSel = document.getElementById('i-month');
+    monthSel.value = String(new Date().getMonth()+1).padStart(2,'0');
+    monthSel.addEventListener('change', renderInvoiceTab);
+  }
+  await renderInvoiceTab();
+}
+
+async function renderInvoiceTab(){
+  const year = document.getElementById('i-year').value;
+  const month = document.getElementById('i-month').value;
+  const body = document.getElementById('invoice-body');
+  body.innerHTML = '<tr><td colspan="6">読み込み中…</td></tr>';
+  try{
+    const rows = await sb(`invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
+    INVOICE_LINES = (rows||[]).filter(r=>r.vehicle_no);
+    const totalRow = (rows||[]).find(r=>!r.vehicle_no) || null;
+
+    const monthRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===year && r.record_date.slice(5,7)===month);
+    const sysByVehicle = {};
+    monthRecords.forEach(r=>{
+      const v = r.vehicle_no || '';
+      sysByVehicle[v] = (sysByVehicle[v]||0) + Number(r.fee||0);
+    });
+    const sysTotal = monthRecords.reduce((s,r)=>s+Number(r.fee||0),0);
+
+    const vehicleSet = new Set([...INVOICE_LINES.map(l=>l.vehicle_no), ...Object.keys(sysByVehicle)]);
+    const vehicles = [...vehicleSet].filter(Boolean).sort((a,b)=>a.localeCompare(b,'ja'));
+
+    let lineSum = 0;
+    if(vehicles.length===0){
+      body.innerHTML = '<tr><td colspan="6">データがありません</td></tr>';
+    }else{
+      body.innerHTML = vehicles.map(v=>{
+        const line = INVOICE_LINES.find(l=>l.vehicle_no===v);
+        const billed = line ? Number(line.amount) : null;
+        const sys = sysByVehicle[v] || 0;
+        if(billed!==null) lineSum += billed;
+        const diff = billed===null ? null : billed - sys;
+        const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
+        const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
+        return `<tr>
+          <td class="num">${v}</td>
+          <td class="num">${billed===null ? '-' : billed.toLocaleString()+'円'}</td>
+          <td class="num">${sys.toLocaleString()}円</td>
+          <td class="num">${billed===null ? '-' : (diff>0?'+':'')+diff.toLocaleString()+'円'}</td>
+          <td class="num ${okClass}">${okLabel}</td>
+          <td class="action-cell">
+            ${line ? `<button class="del-btn" onclick="editInvoiceLine(${line.id})">編集</button><button class="del-btn" onclick="deleteInvoiceLine(${line.id})">削除</button>` : ''}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    renderInvoiceTotalCard(totalRow, lineSum, sysTotal, year, month);
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="6">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function renderInvoiceTotalCard(totalRow, lineSum, sysTotal, year, month){
+  const el = document.getElementById('invoice-total-card');
+  const billedTotal = totalRow ? Number(totalRow.amount) : null;
+  const diffVsSys = billedTotal===null ? null : billedTotal - sysTotal;
+  el.innerHTML = `
+    <div class="invoice-total-row">
+      <div class="summary-total-card">
+        <div class="label">請求書の合計金額(${year}年${Number(month)}月)</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+          <input type="number" id="inv-total-input" value="${billedTotal===null?'':billedTotal}" placeholder="例: 46200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;">
+          <button class="btn" onclick="saveInvoiceTotal()">保存</button>
+        </div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">明細合計(入力分)</div>
+        <div class="value" style="font-size:18px;">${lineSum.toLocaleString()}円</div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">システム手数料合計</div>
+        <div class="value" style="font-size:18px;">${sysTotal.toLocaleString()}円</div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">差額(請求書 − システム)</div>
+        <div class="value ${billedTotal===null?'':(diffVsSys===0?'invoice-ok':'invoice-ng')}" style="font-size:18px;">${billedTotal===null?'-':(diffVsSys>0?'+':'')+diffVsSys.toLocaleString()+'円'}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveInvoiceTotal(){
+  const year = document.getElementById('i-year').value;
+  const month = document.getElementById('i-month').value;
+  const val = document.getElementById('inv-total-input').value;
+  if(val === ''){ showToast('金額を入力してください'); return; }
+  try{
+    const existing = await sb(`invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=is.null`);
+    if(existing && existing.length>0){
+      await sb(`invoices?id=eq.${existing[0].id}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ amount: Number(val), updated_at: new Date().toISOString() })
+      });
+    }else{
+      await sb('invoices', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ billing_year: year, billing_month: month, vehicle_no: null, amount: Number(val) })
+      });
+    }
+    showToast('請求書合計金額を保存しました');
+    renderInvoiceTab();
+  }catch(e){
+    showToast('保存に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function editInvoiceLine(id){
+  const line = INVOICE_LINES.find(l=>l.id===id);
+  if(!line) return;
+  EDITING_INVOICE_ID = id;
+  document.getElementById('inv-vehicle').value = line.vehicle_no;
+  document.getElementById('inv-amount').value = line.amount;
+  document.getElementById('invoice-submit-btn').textContent = '更新する';
+  document.getElementById('invoice-edit-banner').style.display = '';
+}
+
+function cancelInvoiceEdit(){
+  EDITING_INVOICE_ID = null;
+  document.getElementById('inv-vehicle').value = '';
+  document.getElementById('inv-amount').value = '';
+  document.getElementById('invoice-submit-btn').textContent = '登録する';
+  document.getElementById('invoice-edit-banner').style.display = 'none';
+}
+
+async function submitInvoiceLine(){
+  const year = document.getElementById('i-year').value;
+  const month = document.getElementById('i-month').value;
+  const vehicle = document.getElementById('inv-vehicle').value.trim();
+  const amount = document.getElementById('inv-amount').value;
+  if(!vehicle || amount===''){
+    showToast('車番と請求金額の両方を入力してください');
+    return;
+  }
+  try{
+    if(EDITING_INVOICE_ID){
+      await sb(`invoices?id=eq.${EDITING_INVOICE_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ vehicle_no: vehicle, amount: Number(amount), updated_at: new Date().toISOString() })
+      });
+      showToast('明細を更新しました');
+    }else{
+      const existing = await sb(`invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=eq.${encodeURIComponent(vehicle)}`);
+      if(existing && existing.length>0){
+        await sb(`invoices?id=eq.${existing[0].id}`, {
+          method:'PATCH', headers:{'Prefer':'return=minimal'},
+          body: JSON.stringify({ amount: Number(amount), updated_at: new Date().toISOString() })
+        });
+        showToast('既存の明細を更新しました');
+      }else{
+        await sb('invoices', {
+          method:'POST', headers:{'Prefer':'return=minimal'},
+          body: JSON.stringify({ billing_year: year, billing_month: month, vehicle_no: vehicle, amount: Number(amount) })
+        });
+        showToast('明細を登録しました');
+      }
+    }
+    cancelInvoiceEdit();
+    renderInvoiceTab();
+  }catch(e){
+    showToast('保存に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+async function deleteInvoiceLine(id){
+  if(!confirm('この明細を削除しますか？')) return;
+  try{
+    await sb(`invoices?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    renderInvoiceTab();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
 /* ---------- 最新の状態に更新 ---------- */
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
@@ -1284,6 +1683,8 @@ async function refreshData(){
     await loadCards();
     await loadVehicleSummary();
     await loadDepartmentSummary();
+    await loadYearSummary();
+    await loadInvoiceTab();
     const status = document.getElementById('update-status');
     status.textContent = '✓ 最新の状態に更新されました';
     status.classList.add('show');
