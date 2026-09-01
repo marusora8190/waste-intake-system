@@ -89,6 +89,8 @@
   .invoice-ok{color:#2f9e44;font-weight:700;}
   .invoice-ng{color:#c0392b;font-weight:700;}
   .invoice-total-row{display:flex;gap:24px;flex-wrap:wrap;}
+  #tab-list table td, #tab-list table th{padding:3px 10px;}
+  #tab-list .dept-inline-input{padding:2px 6px;}
   .inline-field .form-title{margin-right:8px;}
   .inline-field label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
   .inline-field select{
@@ -180,6 +182,24 @@
   .compact-cols td.car-type-sticky{text-align:left !important;font-weight:700;color:var(--text);}
   .compact-cols thead th.car-type-sticky{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td.car-type-sticky{background:#fbf7ee;}
+  .compact-cols td.veh-no[data-dept]:hover::after,
+  .compact-cols td.car-type-sticky[data-dept]:hover::after{
+    content:attr(data-dept);
+    position:absolute;
+    left:0;
+    bottom:100%;
+    margin-bottom:4px;
+    background:#fff;
+    color:var(--text);
+    font-weight:700;
+    white-space:nowrap;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    box-shadow:0 6px 16px rgba(0,0,0,.18);
+    z-index:60;
+    pointer-events:none;
+  }
 
   .scroll-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;}
   .scroll-btn{
@@ -353,11 +373,11 @@
           <tr>
             <th class="num">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
-            <th class="num">正味重量</th><th class="num">手数料</th><th></th>
+            <th class="num">正味重量</th><th class="num">手数料</th><th></th><th class="num">照合</th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="12">読み込み中…</td></tr>
+          <tr><td colspan="13">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -483,18 +503,22 @@
 
     <div id="invoice-total-card" style="margin-bottom:24px;"></div>
 
-    <div class="form-title" style="font-size:14px;margin-bottom:10px;">車番ごとの明細</div>
+    <div class="form-title" style="font-size:14px;margin-bottom:10px;">日ごとの明細</div>
     <div class="edit-banner" id="invoice-edit-banner" style="display:none;">
       編集中の明細があります。<a href="#" onclick="cancelInvoiceEdit();return false;">編集をキャンセルして新規登録に戻る</a>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;">
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="inv-date">
+      </div>
       <div class="field">
         <label>車番</label>
         <input type="text" id="inv-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="例: 奈良45つ4226">
       </div>
       <div class="field">
         <label>請求金額(円)</label>
-        <input type="number" id="inv-amount" placeholder="例: 10080">
+        <input type="number" id="inv-amount" placeholder="例: 560">
       </div>
       <button class="btn btn-primary" id="invoice-submit-btn" onclick="submitInvoiceLine()">登録する</button>
     </div>
@@ -502,10 +526,10 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
+          <th class="num">日付</th><th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
         </tr></thead>
         <tbody id="invoice-body">
-          <tr><td colspan="6">読み込み中…</td></tr>
+          <tr><td colspan="7">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -847,18 +871,46 @@ function setupListSearchFilters(){
   deptEl.dataset.bound = '1';
 }
 
+let INVOICE_MATCH_MAP = {};
+
+async function loadInvoiceMatchMap(){
+  try{
+    const rows = await sb('invoices?select=billing_date,vehicle_no,amount&vehicle_no=not.is.null&billing_date=not.is.null');
+    INVOICE_MATCH_MAP = {};
+    (rows||[]).forEach(r=>{
+      const key = r.billing_date + '|' + r.vehicle_no;
+      INVOICE_MATCH_MAP[key] = Number(r.amount);
+    });
+  }catch(e){
+    console.error(e);
+  }
+}
+
+function invoiceMatchBadge(r){
+  const key = r.record_date + '|' + (r.vehicle_no||'');
+  if(!(key in INVOICE_MATCH_MAP)) return '';
+  const invoiced = INVOICE_MATCH_MAP[key];
+  const sysTotal = ALL_LIST_RECORDS
+    .filter(x => x.record_date===r.record_date && x.vehicle_no===r.vehicle_no)
+    .reduce((s,x)=>s+Number(x.fee||0), 0);
+  return invoiced === sysTotal
+    ? '<span class="invoice-ok">✓一致</span>'
+    : '<span class="invoice-ng">✕不一致</span>';
+}
+
 async function loadList(){
   const body = document.getElementById('list-body');
-  body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
   try{
     const rows = await sb('waste_records?select=*&order=record_date.desc,record_time.desc,id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
+    await loadInvoiceMatchMap();
     populateListYearFilter();
     populateListMonthFilter();
     setupListSearchFilters();
     renderListFiltered();
   }catch(e){
-    body.innerHTML = `<tr><td colspan="12">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="13">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -938,7 +990,7 @@ function renderListFiltered(){
   LIST_RECORDS = rows;
 
   if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="12">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="13">記録がありません</td></tr>';
     document.getElementById('list-summary').textContent = '';
     return;
   }
@@ -959,6 +1011,7 @@ function renderListFiltered(){
         <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
       </td>
+      <td class="num">${invoiceMatchBadge(r)}</td>
     </tr>
   `).join('');
 
@@ -1165,6 +1218,13 @@ function getCarTypeByVehicle(vehicleNo){
   return '';
 }
 
+function getDepartmentByVehicle(vehicleNo){
+  for(const k in CARD_MAP){
+    if(CARD_MAP[k].vehicle === vehicleNo) return CARD_MAP[k].department || '';
+  }
+  return '';
+}
+
 function alignVehicleStickyColumns(){
   const wrap = document.getElementById('vehicle-table-wrap');
   if(!wrap) return;
@@ -1223,7 +1283,9 @@ function renderVehicleSummary(){
     const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
     const carType = getCarTypeByVehicle(v);
-    return `<tr><td class="veh-no sticky-col">${v}</td><td class="car-type-sticky">${carType}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    const dept = getDepartmentByVehicle(v);
+    const deptAttr = dept ? ` data-dept="${dept.replace(/"/g,'&quot;')}"` : '';
+    return `<tr><td class="veh-no sticky-col"${deptAttr}>${v}</td><td class="car-type-sticky"${deptAttr}>${carType}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
   }).join('');
 
   const feeCells = months.map(m=>{
@@ -1495,36 +1557,43 @@ async function renderInvoiceTab(){
   const year = document.getElementById('i-year').value;
   const month = document.getElementById('i-month').value;
   const body = document.getElementById('invoice-body');
-  body.innerHTML = '<tr><td colspan="6">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="7">読み込み中…</td></tr>';
   try{
     const rows = await sb(`invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
-    INVOICE_LINES = (rows||[]).filter(r=>r.vehicle_no);
+    INVOICE_LINES = (rows||[]).filter(r=>r.vehicle_no && r.billing_date);
     const totalRow = (rows||[]).find(r=>!r.vehicle_no) || null;
 
     const monthRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===year && r.record_date.slice(5,7)===month);
-    const sysByVehicle = {};
+    // システム側：日付+車番ごとの手数料合計（同日同車番が複数回ある場合は合算）
+    const sysByDateVehicle = {};
     monthRecords.forEach(r=>{
-      const v = r.vehicle_no || '';
-      sysByVehicle[v] = (sysByVehicle[v]||0) + Number(r.fee||0);
+      const key = r.record_date + '|' + (r.vehicle_no||'');
+      sysByDateVehicle[key] = (sysByDateVehicle[key]||0) + Number(r.fee||0);
     });
     const sysTotal = monthRecords.reduce((s,r)=>s+Number(r.fee||0),0);
 
-    const vehicleSet = new Set([...INVOICE_LINES.map(l=>l.vehicle_no), ...Object.keys(sysByVehicle)]);
-    const vehicles = [...vehicleSet].filter(Boolean).sort((a,b)=>a.localeCompare(b,'ja'));
+    // 明細行（請求書）＋システム側にあって明細未入力のもの、両方を日付順で列挙
+    const keySet = new Set([
+      ...INVOICE_LINES.map(l => l.billing_date + '|' + l.vehicle_no),
+      ...Object.keys(sysByDateVehicle)
+    ]);
+    const keys = [...keySet].sort();
 
     let lineSum = 0;
-    if(vehicles.length===0){
-      body.innerHTML = '<tr><td colspan="6">データがありません</td></tr>';
+    if(keys.length===0){
+      body.innerHTML = '<tr><td colspan="7">データがありません</td></tr>';
     }else{
-      body.innerHTML = vehicles.map(v=>{
-        const line = INVOICE_LINES.find(l=>l.vehicle_no===v);
+      body.innerHTML = keys.map(key=>{
+        const [date, v] = key.split('|');
+        const line = INVOICE_LINES.find(l=> l.billing_date===date && l.vehicle_no===v);
         const billed = line ? Number(line.amount) : null;
-        const sys = sysByVehicle[v] || 0;
+        const sys = sysByDateVehicle[key] || 0;
         if(billed!==null) lineSum += billed;
         const diff = billed===null ? null : billed - sys;
         const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
         const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
         return `<tr>
+          <td class="num">${date}</td>
           <td class="num">${v}</td>
           <td class="num">${billed===null ? '-' : billed.toLocaleString()+'円'}</td>
           <td class="num">${sys.toLocaleString()}円</td>
@@ -1538,7 +1607,7 @@ async function renderInvoiceTab(){
     }
     renderInvoiceTotalCard(totalRow, lineSum, sysTotal, year, month);
   }catch(e){
-    body.innerHTML = `<tr><td colspan="6">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -1602,6 +1671,7 @@ function editInvoiceLine(id){
   const line = INVOICE_LINES.find(l=>l.id===id);
   if(!line) return;
   EDITING_INVOICE_ID = id;
+  document.getElementById('inv-date').value = line.billing_date;
   document.getElementById('inv-vehicle').value = line.vehicle_no;
   document.getElementById('inv-amount').value = line.amount;
   document.getElementById('invoice-submit-btn').textContent = '更新する';
@@ -1610,6 +1680,7 @@ function editInvoiceLine(id){
 
 function cancelInvoiceEdit(){
   EDITING_INVOICE_ID = null;
+  document.getElementById('inv-date').value = '';
   document.getElementById('inv-vehicle').value = '';
   document.getElementById('inv-amount').value = '';
   document.getElementById('invoice-submit-btn').textContent = '登録する';
@@ -1617,24 +1688,32 @@ function cancelInvoiceEdit(){
 }
 
 async function submitInvoiceLine(){
-  const year = document.getElementById('i-year').value;
-  const month = document.getElementById('i-month').value;
+  const date = document.getElementById('inv-date').value;
   const vehicle = document.getElementById('inv-vehicle').value.trim();
   const amount = document.getElementById('inv-amount').value;
-  if(!vehicle || amount===''){
-    showToast('車番と請求金額の両方を入力してください');
+  if(!date || !vehicle || amount===''){
+    showToast('日付・車番・請求金額をすべて入力してください');
     return;
   }
+  const year = date.slice(0,4);
+  const month = date.slice(5,7);
   try{
     if(EDITING_INVOICE_ID){
       await sb(`invoices?id=eq.${EDITING_INVOICE_ID}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ vehicle_no: vehicle, amount: Number(amount), updated_at: new Date().toISOString() })
+        body: JSON.stringify({ billing_year: year, billing_month: month, billing_date: date, vehicle_no: vehicle, amount: Number(amount), updated_at: new Date().toISOString() })
       });
       showToast('明細を更新しました');
     }else{
-      const existing = await sb(`invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=eq.${encodeURIComponent(vehicle)}`);
+      const existing = await sb(`invoices?select=id,amount&billing_date=eq.${date}&vehicle_no=eq.${encodeURIComponent(vehicle)}`);
       if(existing && existing.length>0){
+        const oldAmount = Number(existing[0].amount).toLocaleString();
+        const newAmount = Number(amount).toLocaleString();
+        const ok = confirm(`${date} ${vehicle} はすでに ${oldAmount}円 で登録されています。\n${newAmount}円 に上書きしますか？`);
+        if(!ok){
+          showToast('登録をキャンセルしました');
+          return;
+        }
         await sb(`invoices?id=eq.${existing[0].id}`, {
           method:'PATCH', headers:{'Prefer':'return=minimal'},
           body: JSON.stringify({ amount: Number(amount), updated_at: new Date().toISOString() })
@@ -1643,11 +1722,14 @@ async function submitInvoiceLine(){
       }else{
         await sb('invoices', {
           method:'POST', headers:{'Prefer':'return=minimal'},
-          body: JSON.stringify({ billing_year: year, billing_month: month, vehicle_no: vehicle, amount: Number(amount) })
+          body: JSON.stringify({ billing_year: year, billing_month: month, billing_date: date, vehicle_no: vehicle, amount: Number(amount) })
         });
         showToast('明細を登録しました');
       }
     }
+    // 入力した日付の年月が現在表示中のタブと違う場合は、そちらに切り替える
+    document.getElementById('i-year').value = year;
+    document.getElementById('i-month').value = month;
     cancelInvoiceEdit();
     renderInvoiceTab();
   }catch(e){
