@@ -28,8 +28,6 @@
   .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;white-space:nowrap;flex-shrink:0;}
   .app-header h1 span{color:var(--ink);}
   .app-header p{margin:0;color:var(--muted);font-size:12.5px;white-space:nowrap;}
-  .update-status{font-size:13px;font-weight:700;color:#2f9e44;opacity:0;transition:opacity .3s;white-space:nowrap;}
-  .update-status.show{opacity:1;}
 
   .app-body{display:flex;flex-direction:column;gap:14px;align-items:stretch;}
   .sidebar{display:flex;flex-direction:row;flex-wrap:nowrap;flex-shrink:0;gap:6px;}
@@ -241,7 +239,6 @@
 <div class="app">
   <div class="app-header">
     <div class="header-left">
-      <h1><span>天理市ごみ持込量記録システム</span><span class="update-status" id="update-status"></span></h1>
       <div class="sidebar" id="header-tabs">
         <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
         <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
@@ -251,6 +248,7 @@
         <div class="tab" data-tab="summary" onclick="switchTab('summary')">月次サマリー</div>
         <div class="tab" data-tab="invoice" onclick="switchTab('invoice')">請求書照合</div>
       </div>
+      <h1><span>天理市ごみ持込量記録システム</span></h1>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
         <span id="refresh-btn-label">最新の状態に更新</span>
@@ -1767,11 +1765,6 @@ async function refreshData(){
     await loadDepartmentSummary();
     await loadYearSummary();
     await loadInvoiceTab();
-    const status = document.getElementById('update-status');
-    status.textContent = '✓ 最新の状態に更新されました';
-    status.classList.add('show');
-    clearTimeout(status._timer);
-    status._timer = setTimeout(()=>status.classList.remove('show'), 3000);
   }catch(e){
     showToast('更新に失敗しました: ' + e.message, 6000);
     console.error(e);
