@@ -276,11 +276,11 @@
       <div class="tab" data-tab="invoice" data-system="waste" onclick="switchTab('invoice')">請求書照合</div>
       <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">入　力</div>
       <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">一　覧</div>
-      <div class="tab" data-tab="iwprice" data-system="industrial" style="display:none;" onclick="switchTab('iwprice')">単価表</div>
+      <div class="tab" data-tab="iwprice" data-system="industrial" style="display:none;" onclick="switchTab('iwprice')">廃材単価表</div>
       <div class="tab" data-tab="iwmb" data-system="industrial" style="display:none;" onclick="switchTab('iwmb')">蛍光灯・水銀灯・電池処理</div>
       <div class="tab" data-tab="matinput" data-system="industrial" style="display:none;" onclick="switchTab('matinput')">再生材購入 入力</div>
       <div class="tab" data-tab="matlist" data-system="industrial" style="display:none;" onclick="switchTab('matlist')">再生材購入 一覧</div>
-      <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生材 単価表</div>
+      <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生資材・雑品単価表</div>
       <div class="tab" data-tab="miwinvoice" data-system="industrial" style="display:none;" onclick="switchTab('miwinvoice')">請求書照合</div>
       <div class="tab" data-tab="mbinvoice" data-system="industrial" style="display:none;" onclick="switchTab('mbinvoice')">蛍光灯等 請求書照合</div>
     </div>
@@ -419,6 +419,7 @@
       <div class="form-title" style="margin:0;">カード車番対応表</div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button class="btn" id="card-form-toggle-btn" onclick="toggleCardFormSection()">入力欄を隠す</button>
+        <button class="btn" onclick="cancelCardEdit()">クリア</button>
         <button class="btn btn-primary" id="card-submit-btn" onclick="submitCard()">新規登録</button>
       </div>
     </div>
@@ -573,9 +574,10 @@
   <!-- 産廃：単価表タブ -->
   <div class="panel" id="tab-iwprice" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">産業廃棄物 単価表（品名×業者）</div>
+      <div class="form-title" style="margin:0;">廃材単価表（品名×業者）</div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button class="btn" id="iwprice-form-toggle-btn" onclick="toggleIWPriceFormSection()">入力欄を隠す</button>
+        <button class="btn" onclick="cancelIWPriceEdit()">クリア</button>
         <button class="btn btn-primary" id="iwprice-submit-btn" onclick="submitIWPrice()">新規登録</button>
       </div>
     </div>
@@ -796,9 +798,10 @@
   <!-- 再生材：単価表タブ -->
   <div class="panel" id="tab-matprice" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">再生材 単価表（品名×業者）</div>
+      <div class="form-title" style="margin:0;">再生資材・雑品単価表（品名×業者）</div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button class="btn" id="matp-form-toggle-btn" onclick="toggleMatPriceFormSection()">入力欄を隠す</button>
+        <button class="btn" onclick="cancelMatPriceEdit()">クリア</button>
         <button class="btn btn-primary" id="matp-submit-btn" onclick="submitMatPrice()">新規登録</button>
       </div>
     </div>
