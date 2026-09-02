@@ -181,6 +181,24 @@
     border-right:1px solid var(--line);
     width:1%;
   }
+  .compact-cols th.sticky-right, .compact-cols td.sticky-right{
+    position:sticky;right:0;z-index:1;background:var(--panel);
+    white-space:nowrap;
+    box-shadow:-2px 0 3px -2px rgba(0,0,0,.15);
+    border-left:1px solid var(--line);
+    width:1%;
+  }
+  .compact-cols thead th.sticky-right{z-index:2;background:var(--accent-bg);}
+  .compact-cols tbody tr:hover td.sticky-right{background:#fbf7ee;}
+  .compact-cols th.sticky-right2, .compact-cols td.sticky-right2{
+    position:sticky;z-index:1;background:var(--panel);
+    white-space:nowrap;
+    box-shadow:-2px 0 3px -2px rgba(0,0,0,.15);
+    border-left:1px solid var(--line);
+    width:1%;
+  }
+  .compact-cols thead th.sticky-right2{z-index:2;background:var(--accent-bg);}
+  .compact-cols tbody tr:hover td.sticky-right2{background:#fbf7ee;}
   .compact-cols td.car-type-sticky{text-align:left !important;font-weight:700;color:var(--text);}
   .compact-cols thead th.car-type-sticky{z-index:2;background:var(--accent-bg);}
   .compact-cols tbody tr:hover td.car-type-sticky{background:#fbf7ee;}
@@ -280,7 +298,7 @@
   <div class="app-body">
   
 
-  <div class="sidebar" id="header-tabs">
+  <div class="sidebar" id="header-tabs" style="width:130px;">
       <div class="tab active" data-tab="input" data-system="waste" onclick="switchTab('input')">入　力</div>
       <div class="tab" data-tab="list" data-system="waste" onclick="switchTab('list')">一　覧</div>
       <div class="tab" data-tab="cards" data-system="waste" onclick="switchTab('cards')">カード管理</div>
@@ -1057,6 +1075,7 @@ function switchSystem(sys){
   document.querySelectorAll('#header-tabs .tab').forEach(el=>{
     el.style.display = (el.dataset.system===sys) ? '' : 'none';
   });
+  document.getElementById('header-tabs').style.width = (sys==='waste') ? '130px' : '200px';
   const defaultTab = ALL_TAB_NAMES.find(n=>TAB_SYSTEM[n]===sys);
   switchTab(defaultTab);
 }
@@ -2885,12 +2904,28 @@ function alignVehicleStickyColumns(){
   const wrap = document.getElementById('vehicle-table-wrap');
   if(!wrap) return;
   const vehTh = wrap.querySelector('th.sticky-col');
-  if(!vehTh) return;
-  const w = vehTh.getBoundingClientRect().width;
-  wrap.querySelectorAll('.car-type-sticky').forEach(el => { el.style.left = w + 'px'; });
+  if(vehTh){
+    const w = vehTh.getBoundingClientRect().width;
+    wrap.querySelectorAll('.car-type-sticky').forEach(el => { el.style.left = w + 'px'; });
+  }
+  const feeTh = wrap.querySelector('th.sticky-right');
+  if(feeTh){
+    const w2 = feeTh.getBoundingClientRect().width;
+    wrap.querySelectorAll('.sticky-right2').forEach(el => { el.style.right = w2 + 'px'; });
+  }
+}
+
+function alignDeptRightStickyColumns(){
+  const wrap = document.getElementById('department-table-wrap');
+  if(!wrap) return;
+  const feeTh = wrap.querySelector('th.sticky-right');
+  if(!feeTh) return;
+  const w = feeTh.getBoundingClientRect().width;
+  wrap.querySelectorAll('.sticky-right2').forEach(el => { el.style.right = w + 'px'; });
 }
 window.addEventListener('resize', () => {
   alignVehicleStickyColumns();
+  alignDeptRightStickyColumns();
   alignStickyHeaderRows('vehicle-thead');
   alignStickyHeaderRows('department-thead');
 });
@@ -2908,7 +2943,7 @@ function renderVehicleSummary(){
   const row1 = '<th class="veh-no sticky-col" rowspan="2">車番</th><th class="car-type-sticky" rowspan="2">車　種</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
     return `<th class="num" colspan="2">${mo}月</th>`;
-  }).join('') + '<th class="num" rowspan="2">正味重量合計</th><th class="num" rowspan="2">手数料合計</th>';
+  }).join('') + '<th class="num sticky-right2" rowspan="2">正味重量合計</th><th class="num sticky-right" rowspan="2">手数料合計</th>';
   const row2 = months.map(()=> '<th class="num sub-col">kg</th><th class="num sub-col">回</th>').join('');
   thead.innerHTML = `<tr>${row1}</tr><tr>${row2}</tr>`;
 
@@ -2941,7 +2976,7 @@ function renderVehicleSummary(){
     const carType = getCarTypeByVehicle(v);
     const dept = getDepartmentByVehicle(v);
     const deptAttr = dept ? ` data-dept="${dept.replace(/"/g,'&quot;')}" onclick="toggleDeptTooltip(this)"` : '';
-    return `<tr><td class="veh-no sticky-col"${deptAttr}>${v}</td><td class="car-type-sticky"${deptAttr}>${carType}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    return `<tr><td class="veh-no sticky-col"${deptAttr}>${v}</td><td class="car-type-sticky"${deptAttr}>${carType}</td>${cells}<td class="num sticky-right2">${netCell}</td><td class="num sticky-right">${feeCell}</td></tr>`;
   }).join('');
 
   const feeCells = months.map(m=>{
@@ -2952,7 +2987,7 @@ function renderVehicleSummary(){
   const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
   const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td class="sticky-col" colspan="2">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
+  feeRow.innerHTML = `<td class="sticky-col" colspan="2">手数料合計</td>${feeCells}<td class="num sticky-right2">${grandNetCell}</td><td class="num sticky-right">${grandFeeCell}</td>`;
 
   alignVehicleStickyColumns();
   alignStickyHeaderRows('vehicle-thead');
@@ -3013,7 +3048,7 @@ function renderDepartmentSummary(){
   const row1 = '<th class="sticky-col" rowspan="2">持込部署</th><th class="veh-no" rowspan="2">車番</th>' + months.map(m=>{
     const mo = Number(m.split('-')[1]);
     return `<th class="num" colspan="2">${mo}月</th>`;
-  }).join('') + '<th class="num" rowspan="2">正味重量合計</th><th class="num" rowspan="2">手数料合計</th>';
+  }).join('') + '<th class="num sticky-right2" rowspan="2">正味重量合計</th><th class="num sticky-right" rowspan="2">手数料合計</th>';
   const row2 = months.map(()=> '<th class="num sub-col">kg</th><th class="num sub-col">回</th>').join('');
   thead.innerHTML = `<tr>${row1}</tr><tr>${row2}</tr>`;
 
@@ -3045,7 +3080,7 @@ function renderDepartmentSummary(){
     const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
     const carType = getCarTypeByVehicle(p.vehicle_no);
     const carTypeAttr = carType ? ` data-cartype="${carType.replace(/"/g,'&quot;')}" onclick="toggleDeptTooltip(this)"` : '';
-    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no"${carTypeAttr}>${p.vehicle_no}</td>${cells}<td class="num">${netCell}</td><td class="num">${feeCell}</td></tr>`;
+    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no"${carTypeAttr}>${p.vehicle_no}</td>${cells}<td class="num sticky-right2">${netCell}</td><td class="num sticky-right">${feeCell}</td></tr>`;
   }).join('');
 
   const yearRecordsWithDept = yearRecords.filter(r=> r.department);
@@ -3058,7 +3093,8 @@ function renderDepartmentSummary(){
   const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
   const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
   feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td colspan="2" class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandNetCell}</td><td class="num">${grandFeeCell}</td>`;
+  feeRow.innerHTML = `<td colspan="2" class="sticky-col">手数料合計</td>${feeCells}<td class="num sticky-right2">${grandNetCell}</td><td class="num sticky-right">${grandFeeCell}</td>`;
+  alignDeptRightStickyColumns();
   alignStickyHeaderRows('department-thead');
 }
 
