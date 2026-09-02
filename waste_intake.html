@@ -23,14 +23,23 @@
     color:var(--text);
   }
   .app{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
-  .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:nowrap;gap:14px;overflow-x:auto;}
+  .app-header{display:flex;flex-direction:column;align-items:stretch;margin-bottom:22px;gap:12px;}
+  .app-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:14px;overflow-x:auto;}
   .header-left{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;}
   .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;white-space:nowrap;flex-shrink:0;}
   .app-header h1 span{color:var(--ink);}
   .app-header p{margin:0;color:var(--muted);font-size:12.5px;white-space:nowrap;}
 
+  .system-tabs{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;overflow-x:auto;}
+  .system-tab{
+    padding:11px 18px;border:1px solid var(--line);background:var(--panel);
+    border-radius:10px;cursor:pointer;font-size:14.5px;font-weight:700;color:var(--muted);
+    white-space:nowrap;
+  }
+  .system-tab.active{background:var(--ink-dark);border-color:var(--ink-dark);color:#fff;}
+
   .app-body{display:flex;flex-direction:column;gap:14px;align-items:stretch;}
-  .sidebar{display:flex;flex-direction:row;flex-wrap:nowrap;flex-shrink:0;gap:6px;}
+  .sidebar{display:flex;flex-direction:row;flex-wrap:nowrap;flex-shrink:0;gap:6px;overflow-x:auto;}
   .main-content{flex:1;min-width:0;}
 
   .refresh-btn{
@@ -239,24 +248,32 @@
 <body>
 <div class="app">
   <div class="app-header">
-    <div class="header-left">
-      <h1><span>天理市ごみ持込量記録システム</span></h1>
-      <div class="sidebar" id="header-tabs">
-        <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
-        <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
-        <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
-        <div class="tab" data-tab="industrial" onclick="switchTab('industrial')">産廃カード管理</div>
-        <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
-        <div class="tab" data-tab="department" onclick="switchTab('department')">持込部署集計</div>
-        <div class="tab" data-tab="summary" onclick="switchTab('summary')">月次サマリー</div>
-        <div class="tab" data-tab="invoice" onclick="switchTab('invoice')">請求書照合</div>
+    <div class="app-header-top">
+      <div class="header-left">
+        <h1><span>天理市 廃棄物管理システム</span></h1>
+        <div class="system-tabs" id="system-tabs">
+          <div class="system-tab active" data-system="waste" onclick="switchSystem('waste')">①天理市ごみ持込量記録システム</div>
+          <div class="system-tab" data-system="industrial" onclick="switchSystem('industrial')">②産業廃棄物処理管理システム</div>
+        </div>
       </div>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
         <span id="refresh-btn-label">最新の状態に更新</span>
       </button>
     </div>
-    
+    <div class="sidebar" id="header-tabs">
+      <div class="tab active" data-tab="input" data-system="waste" onclick="switchTab('input')">入　力</div>
+      <div class="tab" data-tab="list" data-system="waste" onclick="switchTab('list')">一　覧</div>
+      <div class="tab" data-tab="cards" data-system="waste" onclick="switchTab('cards')">カード管理</div>
+      <div class="tab" data-tab="vehicle" data-system="waste" onclick="switchTab('vehicle')">車番別集計</div>
+      <div class="tab" data-tab="department" data-system="waste" onclick="switchTab('department')">持込部署集計</div>
+      <div class="tab" data-tab="summary" data-system="waste" onclick="switchTab('summary')">月次サマリー</div>
+      <div class="tab" data-tab="invoice" data-system="waste" onclick="switchTab('invoice')">請求書照合</div>
+      <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">入　力</div>
+      <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">一　覧</div>
+      <div class="tab" data-tab="iwprice" data-system="industrial" style="display:none;" onclick="switchTab('iwprice')">単価表</div>
+      <div class="tab" data-tab="iwmb" data-system="industrial" style="display:none;" onclick="switchTab('iwmb')">蛍光灯・水銀灯・電池処理</div>
+    </div>
   </div>
 
   <div class="app-body">
@@ -425,43 +442,252 @@
     </div>
   </div>
 
-  <!-- 産廃カード管理タブ -->
-  <div class="panel" id="tab-industrial" style="display:none;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">産業廃棄物処理費 カードNo.管理</div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <button class="btn" id="icard-form-toggle-btn" onclick="toggleIndustrialCardFormSection()">入力欄を隠す</button>
-        <button class="btn btn-primary" id="icard-submit-btn" onclick="submitIndustrialCard()">新規登録</button>
+  <!-- 産廃：入力タブ -->
+  <div class="panel" id="tab-iwinput" style="display:none;">
+    <div class="form-title">産業廃棄物処理 入力</div>
+    <div class="edit-banner" id="iw-edit-banner" style="display:none;">
+      編集中の記録があります。<a href="#" onclick="cancelIWEdit();return false;">編集をキャンセルして新規入力に戻る</a>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>日付 *</label>
+        <input type="date" id="iw-date">
+      </div>
+      <div class="field">
+        <label>時間</label>
+        <input type="time" id="iw-time">
+      </div>
+      <div class="field">
+        <label>運搬先（業者） *</label>
+        <input type="text" id="iw-vendor" list="iw-vendor-suggestions" autocomplete="off" placeholder="例: ㈱ITO奈良" oninput="onIWVendorChange()">
+        <datalist id="iw-vendor-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label>交付番号</label>
+        <input type="text" id="iw-manifest" placeholder="例: 76772507641">
+      </div>
+
+      <div class="field">
+        <label>事業場</label>
+        <input type="text" id="iw-site" value="旧海外部">
+      </div>
+      <div class="field">
+        <label>車番</label>
+        <input type="text" id="iw-vehicle" list="iw-vehicle-suggestions" autocomplete="off" placeholder="例: 5750">
+        <datalist id="iw-vehicle-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label>品名（廃棄物種類） *</label>
+        <input type="text" id="iw-item" list="iw-item-suggestions" autocomplete="off" placeholder="例: ｶﾞﾚｷS1ｶﾞﾚｷ類" oninput="onIWItemChange()">
+        <datalist id="iw-item-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label>単位</label>
+        <select id="iw-unit" onchange="recalcIWPreview()">
+          <option value="ｔ" selected>ｔ</option>
+          <option value="㎥">㎥</option>
+          <option value="枚">枚</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>総重量（数量） *</label>
+        <input type="number" id="iw-qty" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+      </div>
+      <div class="field">
+        <label>単価（円）</label>
+        <input type="number" id="iw-price" class="num-field" step="1" inputmode="decimal" oninput="recalcIWPreview()">
+        <div class="field-hint" id="iw-price-hint"></div>
+      </div>
+      <div class="field">
+        <label>小計（円）</label>
+        <input type="text" id="iw-amount" class="calc-field" readonly value="0">
+      </div>
+      <div class="field">
+        <label>運転手</label>
+        <input type="text" id="iw-driver" list="iw-driver-suggestions" autocomplete="off" placeholder="例: 小川裕士">
+        <datalist id="iw-driver-suggestions"></datalist>
+      </div>
+
+      <div class="field full">
+        <label>備考</label>
+        <input type="text" id="iw-note" placeholder="任意">
       </div>
     </div>
-    <div id="icard-form-section">
-      <div class="edit-banner" id="icard-edit-banner" style="display:none;">
-        編集中のカードがあります。<a href="#" onclick="cancelIndustrialCardEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="iw-submit-btn" onclick="submitIWRecord()">登録する</button>
+      <button class="btn" onclick="clearIWForm()">クリア</button>
+    </div>
+  </div>
+
+  <!-- 産廃：一覧タブ -->
+  <div class="panel" id="tab-iwlist" style="display:none;">
+    <div class="list-toolbar">
+      <div class="form-title" style="margin:0;">産業廃棄物処理 一覧</div>
+      <select id="iwlist-year" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+        <option value="">すべての年</option>
+      </select>
+      <select id="iwlist-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+        <option value="">年間</option>
+      </select>
+      <input type="text" id="iwlist-search-vendor" list="iw-vendor-suggestions" autocomplete="off" placeholder="業者で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <input type="text" id="iwlist-search-item" list="iw-item-suggestions" autocomplete="off" placeholder="品名で検索" style="width:160px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <input type="text" id="iwlist-search-manifest" autocomplete="off" placeholder="交付番号で検索" style="width:150px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn" onclick="clearIWListSearch()">検索解除</button>
+      <button type="button" class="btn" onclick="exportIWListToExcel()">Excelダウンロード</button>
+      <div class="list-summary" id="iwlist-summary"></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">日付</th><th>時間</th><th class="num">業者</th><th class="num">交付番号</th>
+            <th class="num">事業場</th><th class="num">車番</th><th>品名</th><th class="num">数量</th>
+            <th class="num">単価</th><th class="num">小計</th><th class="num">運転手</th><th>備考</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="iwlist-body">
+          <tr><td colspan="13">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 産廃：単価表タブ -->
+  <div class="panel" id="tab-iwprice" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">産業廃棄物 単価表（品名×業者）</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn" id="iwprice-form-toggle-btn" onclick="toggleIWPriceFormSection()">入力欄を隠す</button>
+        <button class="btn btn-primary" id="iwprice-submit-btn" onclick="submitIWPrice()">新規登録</button>
+      </div>
+    </div>
+    <div id="iwprice-form-section">
+      <div class="edit-banner" id="iwprice-edit-banner" style="display:none;">
+        編集中の単価があります。<a href="#" onclick="cancelIWPriceEdit();return false;">編集をキャンセルして新規登録に戻る</a>
       </div>
       <div class="card-form">
         <div class="field">
-          <label>カードNo. *</label>
-          <input type="text" id="ic-card" placeholder="例: 12">
+          <label>品名 *</label>
+          <input type="text" id="iwp-item" placeholder="例: ｺﾝｸﾘｰﾄ廃材処理">
         </div>
         <div class="field">
-          <label>処理業者</label>
-          <input type="text" id="ic-processor" placeholder="例: ○○産業">
+          <label>業者 *</label>
+          <input type="text" id="iwp-vendor" list="iw-vendor-suggestions" autocomplete="off" placeholder="例: ㈱ｶﾞｲｱｰﾄ">
         </div>
         <div class="field">
-          <label>単価（円/kg）</label>
-          <input type="number" id="ic-unit-price" class="num-field" step="0.1" inputmode="decimal" placeholder="例: 25">
+          <label>単価（円） *</label>
+          <input type="number" id="iwp-price" class="num-field" step="1" inputmode="decimal" placeholder="例: 1800">
         </div>
         <div class="field">
           <label>備考</label>
-          <input type="text" id="ic-note" placeholder="任意">
+          <input type="text" id="iwp-note" placeholder="任意">
         </div>
       </div>
     </div>
-    <div class="table-wrap" id="icards-table-wrap">
+    <div class="table-wrap" id="iwprice-table-wrap">
       <table>
-        <thead><tr><th class="num">カードNo.</th><th class="num">処理業者</th><th class="num">単価（円/kg）</th><th>備考</th><th></th></tr></thead>
-        <tbody id="icard-body">
+        <thead><tr><th class="num">品名</th><th class="num">業者</th><th class="num">単価（円）</th><th>備考</th><th></th></tr></thead>
+        <tbody id="iwprice-body">
           <tr><td colspan="5">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 産廃：蛍光灯・水銀灯・電池処理タブ -->
+  <div class="panel" id="tab-iwmb" style="display:none;">
+    <div class="form-title">蛍光灯・水銀灯・電池処理</div>
+
+    <div style="background:var(--accent-bg);border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;">単価設定（円/㎏）</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:end;">
+        <div class="field" style="width:110px;">
+          <label>蛍光灯</label>
+          <input type="number" id="mbp-蛍光灯" class="num-field" step="1">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>水銀灯</label>
+          <input type="number" id="mbp-水銀灯" class="num-field" step="1">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>電池</label>
+          <input type="number" id="mbp-電池" class="num-field" step="1">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>二次電池</label>
+          <input type="number" id="mbp-二次電池" class="num-field" step="1">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>ボタン電池</label>
+          <input type="number" id="mbp-ボタン電池" class="num-field" step="1">
+        </div>
+        <button class="btn" onclick="saveMBPrices()">単価を保存</button>
+      </div>
+      <div class="field-hint" style="margin-top:8px;">※ここでの変更は今後の新規登録にのみ適用され、過去の記録の金額は変わりません。</div>
+    </div>
+
+    <div class="edit-banner" id="mb-edit-banner" style="display:none;">
+      編集中の記録があります。<a href="#" onclick="cancelMBEdit();return false;">編集をキャンセルして新規入力に戻る</a>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>搬入日 *</label>
+        <input type="date" id="mb-date">
+      </div>
+      <div class="field">
+        <label>蛍光灯（㎏）</label>
+        <input type="number" id="mb-fluorescent" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
+        <label>水銀灯（㎏）</label>
+        <input type="number" id="mb-mercury" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
+        <label>電池（㎏）</label>
+        <input type="number" id="mb-battery" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
+      </div>
+
+      <div class="field">
+        <label>二次電池（㎏）</label>
+        <input type="number" id="mb-secondary" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
+        <label>ボタン電池（㎏）</label>
+        <input type="number" id="mb-button" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
+        <label>金額合計（円）</label>
+        <input type="text" id="mb-amount" class="calc-field" readonly value="0">
+      </div>
+      <div class="field full">
+        <label>備考</label>
+        <input type="text" id="mb-note" placeholder="任意">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="mb-submit-btn" onclick="submitMBRecord()">登録する</button>
+      <button class="btn" onclick="clearMBForm()">クリア</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin:26px 0 12px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">記録一覧</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button type="button" class="btn" onclick="exportMBListToExcel()">Excelダウンロード</button>
+        <div class="list-summary" id="mb-summary"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">搬入日</th><th class="num">蛍光灯</th><th class="num">水銀灯</th><th class="num">電池</th>
+            <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">金額合計</th><th>備考</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="mb-body">
+          <tr><td colspan="9">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -616,19 +842,39 @@ function showToast(msg, duration=2600){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), duration);
 }
 
+const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb'];
+const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial' };
+let CURRENT_SYSTEM = 'waste';
+
 function switchTab(name){
-  ['input','list','cards','vehicle','department','summary','invoice'].forEach(n=>{
+  ALL_TAB_NAMES.forEach(n=>{
     document.getElementById('tab-'+n).style.display = (n===name) ? '' : 'none';
-    document.querySelector(`.tab[data-tab="${n}"]`).classList.toggle('active', n===name);
+    const btn = document.querySelector(`.tab[data-tab="${n}"]`);
+    if(btn) btn.classList.toggle('active', n===name);
   });
-  document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
+  document.getElementById('refresh-btn').style.display = (name==='input' || name==='iwinput') ? 'flex' : 'none';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
-  if(name==='industrial') loadIndustrialCards();
   if(name==='vehicle') loadVehicleSummary();
   if(name==='department') loadDepartmentSummary();
   if(name==='summary') loadYearSummary();
   if(name==='invoice') loadInvoiceTab();
+  if(name==='iwinput') loadIWPriceList();
+  if(name==='iwlist') loadIWList();
+  if(name==='iwprice') loadIWPriceList();
+  if(name==='iwmb'){ loadMBPriceList(); loadMBRecords(); }
+}
+
+function switchSystem(sys){
+  CURRENT_SYSTEM = sys;
+  document.querySelectorAll('.system-tab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.system===sys);
+  });
+  document.querySelectorAll('#header-tabs .tab').forEach(el=>{
+    el.style.display = (el.dataset.system===sys) ? '' : 'none';
+  });
+  const defaultTab = ALL_TAB_NAMES.find(n=>TAB_SYSTEM[n]===sys);
+  switchTab(defaultTab);
 }
 
 /* ---------- カード⇔車番 対応表（メモリキャッシュ） ---------- */
@@ -1195,58 +1441,87 @@ async function deleteCard(cardNo){
   }
 }
 
-/* ---------- 産廃カード管理タブ ---------- */
-let INDUSTRIAL_CARD_MAP = {};
-let EDITING_ICARD_NO = null;
+/* ---------- 産廃：単価表（品名×業者） ---------- */
+let IW_PRICE_LIST = [];
+let EDITING_IWPRICE_ID = null;
 
-async function loadIndustrialCards(){
-  const body = document.getElementById('icard-body');
-  body.innerHTML = '<tr><td colspan="5">読み込み中…</td></tr>';
+async function loadIWPriceList(){
   try{
-    const rows = await sb('industrial_waste_card_map?select=*&order=card_no.asc');
-    INDUSTRIAL_CARD_MAP = {};
-    (rows||[]).forEach(r => INDUSTRIAL_CARD_MAP[String(r.card_no).trim()] = { processor: r.processor || '', unitPrice: r.unit_price, note: r.note || '' });
-    if(!rows || rows.length===0){
-      body.innerHTML = '<tr><td colspan="5">登録されているカードがありません</td></tr>';
-      return;
-    }
-    body.innerHTML = rows.map(r => `
-      <tr>
-        <td class="num card-no-cell">${r.card_no}</td>
-        <td class="card-dept-cell">${r.processor ?? ''}</td>
-        <td class="num">${r.unit_price===null||r.unit_price===undefined ? '' : Number(r.unit_price).toLocaleString()}</td>
-        <td class="card-dept-cell">${r.note ?? ''}</td>
-        <td class="action-cell">
-          <button class="del-btn" onclick="editIndustrialCard('${r.card_no.replace(/'/g,"\\'")}')">編集</button>
-          <button class="del-btn" onclick="deleteIndustrialCard('${r.card_no.replace(/'/g,"\\'")}')">削除</button>
-        </td>
-      </tr>
-    `).join('');
+    const rows = await sb('industrial_waste_price_list?select=*&order=vendor_name.asc,item_name.asc');
+    IW_PRICE_LIST = rows || [];
+    populateIWVendorOptions();
+    renderIWPriceTable();
   }catch(e){
-    body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
+    const body = document.getElementById('iwprice-body');
+    if(body) body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
   }
 }
 
-function editIndustrialCard(cardNo){
-  const info = INDUSTRIAL_CARD_MAP[String(cardNo).trim()];
-  if(!info){
-    showToast('カードのデータが見つかりませんでした');
+function renderIWPriceTable(){
+  const body = document.getElementById('iwprice-body');
+  if(!body) return;
+  if(IW_PRICE_LIST.length===0){
+    body.innerHTML = '<tr><td colspan="5">登録されている単価がありません</td></tr>';
     return;
   }
-  EDITING_ICARD_NO = cardNo;
-  document.getElementById('ic-card').value = cardNo;
-  document.getElementById('ic-processor').value = info.processor || '';
-  document.getElementById('ic-unit-price').value = info.unitPrice ?? '';
-  document.getElementById('ic-note').value = info.note || '';
-  document.getElementById('icard-submit-btn').textContent = '更新する';
-  document.getElementById('icard-edit-banner').style.display = '';
+  body.innerHTML = IW_PRICE_LIST.map(r => `
+    <tr>
+      <td class="card-dept-cell">${r.item_name ?? ''}</td>
+      <td class="card-dept-cell">${r.vendor_name ?? ''}</td>
+      <td class="num">${Number(r.unit_price).toLocaleString()}</td>
+      <td class="card-dept-cell">${r.note ?? ''}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editIWPrice(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteIWPrice(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
 }
 
-function toggleIndustrialCardFormSection(){
-  const sec = document.getElementById('icard-form-section');
-  const btn = document.getElementById('icard-form-toggle-btn');
-  const wrap = document.getElementById('icards-table-wrap');
+function populateIWVendorOptions(){
+  const vendors = new Set(IW_PRICE_LIST.map(r=>r.vendor_name).filter(Boolean));
+  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
+  const dl = document.getElementById('iw-vendor-suggestions');
+  if(dl) dl.innerHTML = [...vendors].sort((a,b)=>a.localeCompare(b,'ja')).map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
+function onIWVendorChange(){
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const dl = document.getElementById('iw-item-suggestions');
+  const items = IW_PRICE_LIST.filter(r => !vendor || r.vendor_name === vendor).map(r=>r.item_name);
+  if(dl) dl.innerHTML = [...new Set(items)].map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+  onIWItemChange();
+}
+
+function onIWItemChange(){
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const item = document.getElementById('iw-item').value.trim();
+  const hint = document.getElementById('iw-price-hint');
+  const match = IW_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
+  if(match){
+    document.getElementById('iw-price').value = match.unit_price;
+    hint.textContent = '単価表から自動入力しました（変更可）';
+    hint.style.color = 'var(--muted)';
+  }else if(vendor && item){
+    hint.textContent = '※単価表に未登録の組み合わせです。単価を手入力してください';
+    hint.style.color = '#c94f3c';
+  }else{
+    hint.textContent = '';
+  }
+  recalcIWPreview();
+}
+
+function recalcIWPreview(){
+  const qty = Number(document.getElementById('iw-qty').value) || 0;
+  const price = Number(document.getElementById('iw-price').value) || 0;
+  document.getElementById('iw-amount').value = Math.round(qty * price).toLocaleString();
+}
+
+function toggleIWPriceFormSection(){
+  const sec = document.getElementById('iwprice-form-section');
+  const btn = document.getElementById('iwprice-form-toggle-btn');
+  const wrap = document.getElementById('iwprice-table-wrap');
   const isHidden = sec.style.display === 'none';
   if(isHidden){
     sec.style.display = '';
@@ -1259,61 +1534,492 @@ function toggleIndustrialCardFormSection(){
   }
 }
 
-function cancelIndustrialCardEdit(){
-  EDITING_ICARD_NO = null;
-  document.getElementById('ic-card').value = '';
-  document.getElementById('ic-processor').value = '';
-  document.getElementById('ic-unit-price').value = '';
-  document.getElementById('ic-note').value = '';
-  document.getElementById('icard-submit-btn').textContent = '新規登録';
-  document.getElementById('icard-edit-banner').style.display = 'none';
+function editIWPrice(id){
+  const info = IW_PRICE_LIST.find(r=>r.id===id);
+  if(!info){ showToast('単価データが見つかりませんでした'); return; }
+  EDITING_IWPRICE_ID = id;
+  document.getElementById('iwp-item').value = info.item_name || '';
+  document.getElementById('iwp-vendor').value = info.vendor_name || '';
+  document.getElementById('iwp-price').value = info.unit_price ?? '';
+  document.getElementById('iwp-note').value = info.note || '';
+  document.getElementById('iwprice-submit-btn').textContent = '更新する';
+  document.getElementById('iwprice-edit-banner').style.display = '';
 }
 
-async function submitIndustrialCard(){
-  const card = document.getElementById('ic-card').value.trim();
-  const processor = document.getElementById('ic-processor').value.trim();
-  const unitPriceRaw = document.getElementById('ic-unit-price').value;
-  const note = document.getElementById('ic-note').value.trim();
-  if(!card){
-    showToast('カードNo.を入力してください');
+function cancelIWPriceEdit(){
+  EDITING_IWPRICE_ID = null;
+  document.getElementById('iwp-item').value = '';
+  document.getElementById('iwp-vendor').value = '';
+  document.getElementById('iwp-price').value = '';
+  document.getElementById('iwp-note').value = '';
+  document.getElementById('iwprice-submit-btn').textContent = '新規登録';
+  document.getElementById('iwprice-edit-banner').style.display = 'none';
+}
+
+async function submitIWPrice(){
+  const item = document.getElementById('iwp-item').value.trim();
+  const vendor = document.getElementById('iwp-vendor').value.trim();
+  const priceRaw = document.getElementById('iwp-price').value;
+  const note = document.getElementById('iwp-note').value.trim();
+  if(!item || !vendor || priceRaw===''){
+    showToast('品名・業者・単価をすべて入力してください');
     return;
   }
-  const unitPrice = unitPriceRaw === '' ? null : Number(unitPriceRaw);
   try{
-    if(EDITING_ICARD_NO){
-      await sb(`industrial_waste_card_map?card_no=eq.${encodeURIComponent(EDITING_ICARD_NO)}`, {
-        method:'PATCH',
-        headers:{ 'Prefer':'return=minimal' },
-        body: JSON.stringify({ card_no: card, processor: processor || null, unit_price: unitPrice, note: note || null, updated_at: new Date().toISOString() })
+    if(EDITING_IWPRICE_ID){
+      await sb(`industrial_waste_price_list?id=eq.${EDITING_IWPRICE_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), note: note || null, updated_at: new Date().toISOString() })
       });
       showToast('更新しました');
     }else{
-      await sb('industrial_waste_card_map', {
-        method:'POST',
-        headers:{ 'Prefer':'return=minimal' },
-        body: JSON.stringify({ card_no: card, processor: processor || null, unit_price: unitPrice, note: note || null })
+      await sb('industrial_waste_price_list', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), note: note || null })
       });
-      showToast('新しいカードを登録しました');
+      showToast('新しい単価を登録しました');
     }
-    cancelIndustrialCardEdit();
-    loadIndustrialCards();
+    cancelIWPriceEdit();
+    loadIWPriceList();
   }catch(e){
-    showToast((EDITING_ICARD_NO ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_IWPRICE_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
     console.error(e);
   }
 }
 
-async function deleteIndustrialCard(cardNo){
-  if(!confirm(`カードNo.「${cardNo}」の登録を削除しますか？`)) return;
+async function deleteIWPrice(id){
+  if(!confirm('この単価を削除しますか？')) return;
   try{
-    await sb(`industrial_waste_card_map?card_no=eq.${encodeURIComponent(cardNo)}`, { method:'DELETE' });
+    await sb(`industrial_waste_price_list?id=eq.${id}`, { method:'DELETE' });
     showToast('削除しました');
-    if(EDITING_ICARD_NO === cardNo) cancelIndustrialCardEdit();
-    loadIndustrialCards();
+    if(EDITING_IWPRICE_ID === id) cancelIWPriceEdit();
+    loadIWPriceList();
   }catch(e){
     showToast('削除に失敗しました: ' + e.message, 6000);
     console.error(e);
   }
+}
+
+/* ---------- 産廃：入力タブ ---------- */
+let EDITING_IW_ID = null;
+
+function populateIWDriverVehicleOptions(){
+  const drivers = new Set(), vehicles = new Set();
+  ALL_IW_RECORDS.forEach(r=>{
+    if(r.driver) drivers.add(r.driver);
+    if(r.vehicle_no) vehicles.add(r.vehicle_no);
+  });
+  const dDl = document.getElementById('iw-driver-suggestions');
+  if(dDl) dDl.innerHTML = [...drivers].sort((a,b)=>a.localeCompare(b,'ja')).map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+  const vDl = document.getElementById('iw-vehicle-suggestions');
+  if(vDl) vDl.innerHTML = [...vehicles].sort().map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
+function clearIWForm(){
+  EDITING_IW_ID = null;
+  document.getElementById('iw-date').value = todayStr();
+  document.getElementById('iw-time').value = '';
+  document.getElementById('iw-vendor').value = '';
+  document.getElementById('iw-manifest').value = '';
+  document.getElementById('iw-site').value = '旧海外部';
+  document.getElementById('iw-vehicle').value = '';
+  document.getElementById('iw-item').value = '';
+  document.getElementById('iw-unit').value = 'ｔ';
+  document.getElementById('iw-qty').value = '';
+  document.getElementById('iw-price').value = '';
+  document.getElementById('iw-driver').value = '';
+  document.getElementById('iw-note').value = '';
+  document.getElementById('iw-price-hint').textContent = '';
+  document.getElementById('iw-submit-btn').textContent = '登録する';
+  document.getElementById('iw-edit-banner').style.display = 'none';
+  recalcIWPreview();
+}
+
+function cancelIWEdit(){ clearIWForm(); }
+
+async function submitIWRecord(){
+  const date = document.getElementById('iw-date').value;
+  const time = document.getElementById('iw-time').value;
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const manifest = document.getElementById('iw-manifest').value.trim();
+  const site = document.getElementById('iw-site').value.trim();
+  const vehicle = document.getElementById('iw-vehicle').value.trim();
+  const item = document.getElementById('iw-item').value.trim();
+  const unit = document.getElementById('iw-unit').value;
+  const qty = document.getElementById('iw-qty').value;
+  const price = document.getElementById('iw-price').value;
+  const driver = document.getElementById('iw-driver').value.trim();
+  const note = document.getElementById('iw-note').value.trim();
+
+  if(!date || !vendor || !item || qty===''){
+    showToast('日付・運搬先（業者）・品名・総重量は必須です');
+    return;
+  }
+
+  const payload = {
+    record_date: date,
+    record_time: time || null,
+    vendor_name: vendor,
+    manifest_no: manifest || null,
+    business_site: site || null,
+    vehicle_no: vehicle || null,
+    item_name: item,
+    unit: unit || null,
+    quantity: Number(qty),
+    unit_price: price==='' ? null : Number(price),
+    driver: driver || null,
+    note: note || null
+  };
+
+  try{
+    if(EDITING_IW_ID){
+      await sb(`industrial_waste_records?id=eq.${EDITING_IW_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
+      });
+      showToast('記録を更新しました');
+    }else{
+      await sb('industrial_waste_records', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify(payload)
+      });
+      showToast('記録を登録しました');
+    }
+    clearIWForm();
+    loadIWList();
+  }catch(e){
+    showToast((EDITING_IW_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function editIWRecord(id){
+  const r = ALL_IW_RECORDS.find(x=>x.id===id);
+  if(!r){ showToast('記録が見つかりませんでした'); return; }
+  EDITING_IW_ID = id;
+  document.getElementById('iw-date').value = r.record_date || '';
+  document.getElementById('iw-time').value = r.record_time || '';
+  document.getElementById('iw-vendor').value = r.vendor_name || '';
+  document.getElementById('iw-manifest').value = r.manifest_no || '';
+  document.getElementById('iw-site').value = r.business_site || '';
+  document.getElementById('iw-vehicle').value = r.vehicle_no || '';
+  document.getElementById('iw-item').value = r.item_name || '';
+  document.getElementById('iw-unit').value = r.unit || 'ｔ';
+  document.getElementById('iw-qty').value = r.quantity ?? '';
+  document.getElementById('iw-price').value = r.unit_price ?? '';
+  document.getElementById('iw-driver').value = r.driver || '';
+  document.getElementById('iw-note').value = r.note || '';
+  document.getElementById('iw-submit-btn').textContent = '更新する';
+  document.getElementById('iw-edit-banner').style.display = '';
+  recalcIWPreview();
+  switchTab('iwinput');
+}
+
+async function deleteIWRecord(id){
+  if(!confirm('この記録を削除しますか？')) return;
+  try{
+    await sb(`industrial_waste_records?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    loadIWList();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+/* ---------- 産廃：一覧タブ ---------- */
+let ALL_IW_RECORDS = [];
+let IW_LIST_RECORDS = [];
+
+async function loadIWList(){
+  const body = document.getElementById('iwlist-body');
+  if(body) body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
+  try{
+    const rows = await sb('industrial_waste_records?select=*&order=record_date.desc,record_time.desc,id.desc&limit=5000');
+    ALL_IW_RECORDS = rows || [];
+    populateIWDriverVehicleOptions();
+    populateIWVendorOptions();
+    populateIWListYearFilter();
+    populateIWListMonthFilter();
+    setupIWListSearchFilters();
+    renderIWListFiltered();
+  }catch(e){
+    if(body) body.innerHTML = `<tr><td colspan="13">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function populateIWListYearFilter(){
+  const sel = document.getElementById('iwlist-year');
+  if(!sel) return;
+  const current = sel.value;
+  const years = [...new Set(ALL_IW_RECORDS.map(r=>String(r.record_date||'').slice(0,4)).filter(Boolean))].sort().reverse();
+  sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  sel.value = years.includes(current) ? current : '';
+}
+
+function populateIWListMonthFilter(){
+  const sel = document.getElementById('iwlist-month');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">年間</option>' + Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}">${m}月</option>`).join('');
+  sel.value = current || '';
+}
+
+let IW_FILTERS_BOUND = false;
+function setupIWListSearchFilters(){
+  if(IW_FILTERS_BOUND) return;
+  IW_FILTERS_BOUND = true;
+  ['iwlist-year','iwlist-month','iwlist-search-vendor','iwlist-search-item','iwlist-search-manifest'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener(el.tagName==='SELECT' ? 'change' : 'input', renderIWListFiltered);
+  });
+}
+
+function clearIWListSearch(){
+  document.getElementById('iwlist-year').value = '';
+  document.getElementById('iwlist-month').value = '';
+  document.getElementById('iwlist-search-vendor').value = '';
+  document.getElementById('iwlist-search-item').value = '';
+  document.getElementById('iwlist-search-manifest').value = '';
+  renderIWListFiltered();
+}
+
+function renderIWListFiltered(){
+  const body = document.getElementById('iwlist-body');
+  const year = document.getElementById('iwlist-year').value;
+  const month = document.getElementById('iwlist-month').value;
+  const vendorKeyword = document.getElementById('iwlist-search-vendor').value.trim();
+  const itemKeyword = document.getElementById('iwlist-search-item').value.trim();
+  const manifestKeyword = document.getElementById('iwlist-search-manifest').value.trim();
+
+  const rows = ALL_IW_RECORDS.filter(r=>{
+    if(year && String(r.record_date||'').slice(0,4) !== year) return false;
+    if(month && String(r.record_date||'').slice(5,7) !== String(month).padStart(2,'0')) return false;
+    if(vendorKeyword && !(r.vendor_name||'').includes(vendorKeyword)) return false;
+    if(itemKeyword && !(r.item_name||'').includes(itemKeyword)) return false;
+    if(manifestKeyword && !(r.manifest_no||'').includes(manifestKeyword)) return false;
+    return true;
+  });
+  IW_LIST_RECORDS = rows;
+
+  if(rows.length===0){
+    body.innerHTML = '<tr><td colspan="13">記録がありません</td></tr>';
+    document.getElementById('iwlist-summary').textContent = '';
+    return;
+  }
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td class="num">${r.record_date ?? ''}</td>
+      <td>${r.record_time ?? ''}</td>
+      <td class="num">${r.vendor_name ?? ''}</td>
+      <td class="num">${r.manifest_no ?? ''}</td>
+      <td class="num">${r.business_site ?? ''}</td>
+      <td class="num">${r.vehicle_no ?? ''}</td>
+      <td>${r.item_name ?? ''}</td>
+      <td class="num">${Number(r.quantity||0).toLocaleString()}${r.unit ?? ''}</td>
+      <td class="num">${Number(r.unit_price||0).toLocaleString()}</td>
+      <td class="num fee-cell">${Number(r.amount||0).toLocaleString()}</td>
+      <td class="num">${r.driver ?? ''}</td>
+      <td>${r.note ?? ''}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editIWRecord(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteIWRecord(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
+
+  const totalAmount = rows.reduce((s,r)=> s + Number(r.amount||0), 0);
+  document.getElementById('iwlist-summary').textContent = `${rows.length}件 ／ 小計合計 ${totalAmount.toLocaleString()} 円`;
+}
+
+function exportIWListToExcel(){
+  const header = ['日付','時間','業者','交付番号','事業場','車番','品名','数量','単位','単価(円)','小計(円)','運転手','備考'];
+  const rows = [header, ...IW_LIST_RECORDS.map(r => [
+    r.record_date, r.record_time || '', r.vendor_name ?? '', r.manifest_no ?? '', r.business_site ?? '',
+    r.vehicle_no ?? '', r.item_name ?? '', Number(r.quantity||0), r.unit ?? '', Number(r.unit_price||0),
+    Number(r.amount||0), r.driver ?? '', r.note ?? ''
+  ])];
+  downloadWorkbook([{ name:'産廃一覧', rows }], `industrial_waste_一覧_${todayStr()}.xlsx`);
+}
+
+/* ---------- 産廃：蛍光灯・水銀灯・電池処理タブ ---------- */
+const MB_CATEGORIES = ['蛍光灯','水銀灯','電池','二次電池','ボタン電池'];
+let MB_PRICES = { '蛍光灯':200, '水銀灯':200, '電池':200, '二次電池':200, 'ボタン電池':200 };
+let ALL_MB_RECORDS = [];
+let EDITING_MB_ID = null;
+
+async function loadMBPriceList(){
+  try{
+    const rows = await sb('mb_price_list?select=*');
+    (rows||[]).forEach(r => { MB_PRICES[r.category] = Number(r.unit_price); });
+    MB_CATEGORIES.forEach(c => {
+      const el = document.getElementById('mbp-'+c);
+      if(el) el.value = MB_PRICES[c];
+    });
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function saveMBPrices(){
+  try{
+    for(const c of MB_CATEGORIES){
+      const val = Number(document.getElementById('mbp-'+c).value || 0);
+      await sb(`mb_price_list?category=eq.${encodeURIComponent(c)}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ unit_price: val, updated_at: new Date().toISOString() })
+      });
+      MB_PRICES[c] = val;
+    }
+    showToast('単価を保存しました');
+  }catch(e){
+    showToast('単価の保存に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function recalcMBPreview(){
+  const f = Number(document.getElementById('mb-fluorescent').value) || 0;
+  const m = Number(document.getElementById('mb-mercury').value) || 0;
+  const b = Number(document.getElementById('mb-battery').value) || 0;
+  const s = Number(document.getElementById('mb-secondary').value) || 0;
+  const bt = Number(document.getElementById('mb-button').value) || 0;
+  const total = f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'];
+  document.getElementById('mb-amount').value = Math.round(total).toLocaleString();
+}
+
+function clearMBForm(){
+  EDITING_MB_ID = null;
+  document.getElementById('mb-date').value = todayStr();
+  document.getElementById('mb-fluorescent').value = '';
+  document.getElementById('mb-mercury').value = '';
+  document.getElementById('mb-battery').value = '';
+  document.getElementById('mb-secondary').value = '';
+  document.getElementById('mb-button').value = '';
+  document.getElementById('mb-note').value = '';
+  document.getElementById('mb-submit-btn').textContent = '登録する';
+  document.getElementById('mb-edit-banner').style.display = 'none';
+  recalcMBPreview();
+}
+
+function cancelMBEdit(){ clearMBForm(); }
+
+async function submitMBRecord(){
+  const date = document.getElementById('mb-date').value;
+  if(!date){ showToast('搬入日は必須です'); return; }
+  const f = Number(document.getElementById('mb-fluorescent').value) || 0;
+  const m = Number(document.getElementById('mb-mercury').value) || 0;
+  const b = Number(document.getElementById('mb-battery').value) || 0;
+  const s = Number(document.getElementById('mb-secondary').value) || 0;
+  const bt = Number(document.getElementById('mb-button').value) || 0;
+  const note = document.getElementById('mb-note').value.trim();
+  const totalAmount = Math.round(f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池']);
+
+  const payload = {
+    record_date: date,
+    fluorescent_kg: f, mercury_lamp_kg: m, battery_kg: b, secondary_battery_kg: s, button_battery_kg: bt,
+    note: note || null, total_amount: totalAmount
+  };
+
+  try{
+    if(EDITING_MB_ID){
+      await sb(`mb_records?id=eq.${EDITING_MB_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
+      });
+      showToast('記録を更新しました');
+    }else{
+      await sb('mb_records', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify(payload)
+      });
+      showToast('記録を登録しました');
+    }
+    clearMBForm();
+    loadMBRecords();
+  }catch(e){
+    showToast((EDITING_MB_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function editMBRecord(id){
+  const r = ALL_MB_RECORDS.find(x=>x.id===id);
+  if(!r){ showToast('記録が見つかりませんでした'); return; }
+  EDITING_MB_ID = id;
+  document.getElementById('mb-date').value = r.record_date || '';
+  document.getElementById('mb-fluorescent').value = r.fluorescent_kg ?? '';
+  document.getElementById('mb-mercury').value = r.mercury_lamp_kg ?? '';
+  document.getElementById('mb-battery').value = r.battery_kg ?? '';
+  document.getElementById('mb-secondary').value = r.secondary_battery_kg ?? '';
+  document.getElementById('mb-button').value = r.button_battery_kg ?? '';
+  document.getElementById('mb-note').value = r.note || '';
+  document.getElementById('mb-submit-btn').textContent = '更新する';
+  document.getElementById('mb-edit-banner').style.display = '';
+  recalcMBPreview();
+}
+
+async function deleteMBRecord(id){
+  if(!confirm('この記録を削除しますか？')) return;
+  try{
+    await sb(`mb_records?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    loadMBRecords();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+async function loadMBRecords(){
+  const body = document.getElementById('mb-body');
+  if(body) body.innerHTML = '<tr><td colspan="9">読み込み中…</td></tr>';
+  try{
+    const rows = await sb('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
+    ALL_MB_RECORDS = rows || [];
+    renderMBList();
+  }catch(e){
+    if(body) body.innerHTML = `<tr><td colspan="9">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function renderMBList(){
+  const body = document.getElementById('mb-body');
+  if(!body) return;
+  if(ALL_MB_RECORDS.length===0){
+    body.innerHTML = '<tr><td colspan="9">記録がありません</td></tr>';
+    document.getElementById('mb-summary').textContent = '';
+    return;
+  }
+  body.innerHTML = ALL_MB_RECORDS.map(r => `
+    <tr>
+      <td class="num">${r.record_date ?? ''}</td>
+      <td class="num">${Number(r.fluorescent_kg||0).toLocaleString()}</td>
+      <td class="num">${Number(r.mercury_lamp_kg||0).toLocaleString()}</td>
+      <td class="num">${Number(r.battery_kg||0).toLocaleString()}</td>
+      <td class="num">${Number(r.secondary_battery_kg||0).toLocaleString()}</td>
+      <td class="num">${Number(r.button_battery_kg||0).toLocaleString()}</td>
+      <td class="num fee-cell">${Number(r.total_amount||0).toLocaleString()}</td>
+      <td>${r.note ?? ''}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editMBRecord(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteMBRecord(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
+  const totalAmount = ALL_MB_RECORDS.reduce((s,r)=> s + Number(r.total_amount||0), 0);
+  document.getElementById('mb-summary').textContent = `${ALL_MB_RECORDS.length}件 ／ 金額合計 ${totalAmount.toLocaleString()} 円`;
+}
+
+function exportMBListToExcel(){
+  const header = ['搬入日','蛍光灯(kg)','水銀灯(kg)','電池(kg)','二次電池(kg)','ボタン電池(kg)','金額合計(円)','備考'];
+  const rows = [header, ...ALL_MB_RECORDS.map(r => [
+    r.record_date, Number(r.fluorescent_kg||0), Number(r.mercury_lamp_kg||0), Number(r.battery_kg||0),
+    Number(r.secondary_battery_kg||0), Number(r.button_battery_kg||0), Number(r.total_amount||0), r.note ?? ''
+  ])];
+  downloadWorkbook([{ name:'蛍光灯水銀灯電池処理', rows }], `mb_records_${todayStr()}.xlsx`);
 }
 
 /* ---------- 集計共通：全記録を取得 ---------- */
@@ -1939,7 +2645,10 @@ async function refreshData(){
     await loadVehicleOptions();
     await loadList();
     await loadCards();
-    await loadIndustrialCards();
+    await loadIWPriceList();
+    await loadIWList();
+    await loadMBPriceList();
+    await loadMBRecords();
     await loadVehicleSummary();
     await loadDepartmentSummary();
     await loadYearSummary();
@@ -1957,11 +2666,19 @@ async function refreshData(){
 /* ---------- 起動時処理 ---------- */
 (async function init(){
   document.getElementById('f-date').value = todayStr();
+  document.getElementById('iw-date').value = todayStr();
+  document.getElementById('mb-date').value = todayStr();
   document.getElementById('refresh-btn').style.display = 'flex';
   await loadCardMap();
   await loadDepartmentOptions();
   await loadVehicleOptions();
   recalcPreview();
+  await loadIWPriceList();
+  await loadIWList();
+  recalcIWPreview();
+  await loadMBPriceList();
+  await loadMBRecords();
+  recalcMBPreview();
 })();
 </script>
 </body>
