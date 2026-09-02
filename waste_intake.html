@@ -24,7 +24,7 @@
   }
   .app{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
   .app-header{display:flex;flex-direction:column;align-items:stretch;margin-bottom:22px;gap:12px;}
-  .app-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:14px;overflow-x:auto;}
+  .app-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
   .header-left{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;}
   .app-header h1{font-size:22px;margin:0;letter-spacing:.04em;display:flex;align-items:center;gap:12px;white-space:nowrap;flex-shrink:0;}
   .app-header h1 span{color:var(--ink);}
@@ -124,6 +124,7 @@
   td.cell-nonburn{background:#fdead4;}
   tr:hover td.cell-nonburn{background:#fbdfc0;}
   .table-wrap{overflow-x:auto;overflow-y:auto;max-height:65vh;border:1px solid var(--line);border-radius:10px;transition:max-height .2s;}
+  body.nav-collapsed .table-wrap{max-height:88vh;}
   .table-wrap.expanded{max-height:85vh;}
   .dept-inline-input{width:100%;min-width:60px;border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:4px 6px;border-radius:6px;box-sizing:border-box;text-align:center;}
   .dept-inline-input:hover{border-color:var(--line);}
@@ -255,14 +256,15 @@
       <div class="header-left">
         <h1><span>ごみ・廃棄物管理システム</span></h1>
         <div class="system-tabs" id="system-tabs">
-          <div class="system-tab active" data-system="waste" onclick="switchSystem('waste')">①天理市ごみ持込量記録システム</div>
-          <div class="system-tab" data-system="industrial" onclick="switchSystem('industrial')">②産業廃棄物処理管理システム</div>
+          <div class="system-tab active" data-system="waste" onclick="switchSystem('waste')">①ごみ(可燃物・不燃物)</div>
+          <div class="system-tab" data-system="industrial" onclick="switchSystem('industrial')">②産業廃棄物</div>
         </div>
       </div>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
         <span id="refresh-btn-label">最新の状態に更新</span>
       </button>
+      <button class="btn" id="nav-toggle-btn" onclick="toggleNavArea()" style="flex-shrink:0;">メニューを隠す</button>
     </div>
     <div class="sidebar" id="header-tabs">
       <div class="tab active" data-tab="input" data-system="waste" onclick="switchTab('input')">入　力</div>
@@ -374,6 +376,11 @@
   <div class="panel" id="tab-list" style="display:none;">
     <div class="list-toolbar">
       <div class="form-title" style="margin:0;">一覧</div>
+      <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
+      <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
+      <div class="list-summary" id="list-summary"></div>
+    </div>
+    <div class="list-toolbar" id="list-filter-row">
       <select id="list-year" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">すべての年</option>
       </select>
@@ -389,10 +396,8 @@
         <option value="不燃">不燃</option>
       </select>
       <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
-      <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
-      <div class="list-summary" id="list-summary"></div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="list-table-wrap">
       <table>
         <thead>
           <tr>
@@ -533,6 +538,11 @@
   <div class="panel" id="tab-iwlist" style="display:none;">
     <div class="list-toolbar">
       <div class="form-title" style="margin:0;">産業廃棄物処理 一覧</div>
+      <button type="button" class="btn" id="iwlist-filter-toggle-btn" onclick="toggleIWListFilters()">検索欄を隠す</button>
+      <button type="button" class="btn" onclick="exportIWListToExcel()">Excelダウンロード</button>
+      <div class="list-summary" id="iwlist-summary"></div>
+    </div>
+    <div class="list-toolbar" id="iwlist-filter-row">
       <select id="iwlist-year" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">すべての年</option>
       </select>
@@ -543,10 +553,8 @@
       <input type="text" id="iwlist-search-item" list="iw-item-suggestions" autocomplete="off" placeholder="品名で検索" style="width:160px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="iwlist-search-manifest" autocomplete="off" placeholder="交付番号で検索" style="width:150px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <button type="button" class="btn" onclick="clearIWListSearch()">検索解除</button>
-      <button type="button" class="btn" onclick="exportIWListToExcel()">Excelダウンロード</button>
-      <div class="list-summary" id="iwlist-summary"></div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="iwlist-table-wrap">
       <table>
         <thead>
           <tr>
@@ -606,7 +614,11 @@
 
   <!-- 産廃：蛍光灯・水銀灯・電池処理タブ -->
   <div class="panel" id="tab-iwmb" style="display:none;">
-    <div class="form-title">蛍光灯・水銀灯・電池処理</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理</div>
+      <button class="btn" id="mb-form-toggle-btn" onclick="toggleMBFormSection()">入力欄を隠す</button>
+    </div>
+    <div id="mb-form-section">
 
     <div style="background:var(--accent-bg);border-radius:10px;padding:14px 18px;margin-bottom:20px;">
       <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;">単価設定（円/㎏）</div>
@@ -679,6 +691,8 @@
       <button class="btn" onclick="clearMBForm()">クリア</button>
     </div>
 
+    </div>
+
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin:26px 0 12px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">記録一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
@@ -686,7 +700,7 @@
         <div class="list-summary" id="mb-summary"></div>
       </div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="mb-table-wrap">
       <table>
         <thead>
           <tr>
@@ -829,6 +843,10 @@
       <input type="date" id="miw-date-from" class="period-date-input" onchange="renderMIWTable()">
       <span style="color:var(--muted);">〜</span>
       <input type="date" id="miw-date-to" class="period-date-input" onchange="renderMIWTable()">
+      <label style="margin-left:10px;">業者</label>
+      <select id="miw-vendor-filter" onchange="renderMIWTable()" style="width:auto;padding:8px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;background:#fffefb;">
+        <option value="">すべての業者</option>
+      </select>
     </div>
     <div class="field-hint" style="margin-bottom:14px;">指定した期間の産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
     <div class="table-wrap">
@@ -998,6 +1016,24 @@ function switchTab(name){
   if(name==='matprice') loadMatPriceList();
   if(name==='miwinvoice') loadMIWInvoiceTab();
   if(name==='mbinvoice') loadMBInvoiceTab();
+}
+
+function toggleNavArea(){
+  const sysTabs = document.getElementById('system-tabs');
+  const subTabs = document.getElementById('header-tabs');
+  const btn = document.getElementById('nav-toggle-btn');
+  const isHidden = sysTabs.style.display === 'none';
+  if(isHidden){
+    sysTabs.style.display = '';
+    subTabs.style.display = '';
+    btn.textContent = 'メニューを隠す';
+    document.body.classList.remove('nav-collapsed');
+  }else{
+    sysTabs.style.display = 'none';
+    subTabs.style.display = 'none';
+    btn.textContent = 'メニューを表示';
+    document.body.classList.add('nav-collapsed');
+  }
 }
 
 function switchSystem(sys){
@@ -1282,6 +1318,22 @@ function populateListMonthFilter(){
   sel.value = '';
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
+}
+
+function toggleListFilters(){
+  const row = document.getElementById('list-filter-row');
+  const btn = document.getElementById('list-filter-toggle-btn');
+  const wrap = document.getElementById('list-table-wrap');
+  const isHidden = row.style.display === 'none';
+  if(isHidden){
+    row.style.display = '';
+    btn.textContent = '検索欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    row.style.display = 'none';
+    btn.textContent = '検索欄を表示';
+    wrap.classList.add('expanded');
+  }
 }
 
 function clearListSearch(){
@@ -1910,6 +1962,22 @@ function setupIWListSearchFilters(){
   });
 }
 
+function toggleIWListFilters(){
+  const row = document.getElementById('iwlist-filter-row');
+  const btn = document.getElementById('iwlist-filter-toggle-btn');
+  const wrap = document.getElementById('iwlist-table-wrap');
+  const isHidden = row.style.display === 'none';
+  if(isHidden){
+    row.style.display = '';
+    btn.textContent = '検索欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    row.style.display = 'none';
+    btn.textContent = '検索欄を表示';
+    wrap.classList.add('expanded');
+  }
+}
+
 function clearIWListSearch(){
   document.getElementById('iwlist-year').value = '';
   document.getElementById('iwlist-month').value = '';
@@ -2010,6 +2078,22 @@ async function saveMBPrices(){
   }catch(e){
     showToast('単価の保存に失敗しました: ' + e.message, 6000);
     console.error(e);
+  }
+}
+
+function toggleMBFormSection(){
+  const sec = document.getElementById('mb-form-section');
+  const btn = document.getElementById('mb-form-toggle-btn');
+  const wrap = document.getElementById('mb-table-wrap');
+  const isHidden = sec.style.display === 'none';
+  if(isHidden){
+    sec.style.display = '';
+    btn.textContent = '入力欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    sec.style.display = 'none';
+    btn.textContent = '入力欄を表示';
+    wrap.classList.add('expanded');
   }
 }
 
@@ -2549,6 +2633,17 @@ async function saveMBInvoiceTotal(){
   }
 }
 
+function populateMIWVendorFilter(){
+  const sel = document.getElementById('miw-vendor-filter');
+  if(sel.dataset.populated) return;
+  const vendors = new Set();
+  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
+  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
+  const sorted = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
+  sel.innerHTML = '<option value="">すべての業者</option>' + sorted.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+  sel.dataset.populated = '1';
+}
+
 async function loadMIWInvoiceTab(){
   const fromEl = document.getElementById('miw-date-from');
   const toEl = document.getElementById('miw-date-to');
@@ -2575,6 +2670,9 @@ async function renderMIWTable(){
   const month = to.slice(5,7);
   body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
   try{
+    populateMIWVendorFilter();
+    const filterVendor = document.getElementById('miw-vendor-filter').value;
+
     const invRows = await sb(`material_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
     const invByVendor = {};
     (invRows||[]).forEach(r=> invByVendor[r.vendor_name] = r);
@@ -2592,8 +2690,13 @@ async function renderMIWTable(){
       matByVendor[r.vendor_name] = (matByVendor[r.vendor_name]||0) + Number(r.amount||0);
     });
 
-    const vendors = new Set([...Object.keys(iwByVendor), ...Object.keys(matByVendor), ...Object.keys(invByVendor)]);
-    const vendorList = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
+    let vendorList;
+    if(filterVendor){
+      vendorList = [filterVendor];
+    }else{
+      const vendors = new Set([...Object.keys(iwByVendor), ...Object.keys(matByVendor), ...Object.keys(invByVendor)]);
+      vendorList = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
+    }
     const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
 
     if(vendorList.length===0){
