@@ -133,6 +133,7 @@
   #tab-list table th:nth-child(5), #tab-list table td:nth-child(5){width:120px;}
   #tab-list table th:nth-child(6), #tab-list table td:nth-child(6){min-width:200px;}
   .num{text-align:center;}
+  .date-col{min-width:76px;width:1%;padding-left:6px !important;padding-right:6px !important;white-space:nowrap;}
   .fee-cell{text-align:right !important;padding-right:16px;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -273,6 +274,7 @@
       <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">一　覧</div>
       <div class="tab" data-tab="iwprice" data-system="industrial" style="display:none;" onclick="switchTab('iwprice')">単価表</div>
       <div class="tab" data-tab="iwmb" data-system="industrial" style="display:none;" onclick="switchTab('iwmb')">蛍光灯・水銀灯・電池処理</div>
+      <div class="tab" data-tab="material" data-system="industrial" style="display:none;" onclick="switchTab('material')">再生材購入</div>
     </div>
   </div>
 
@@ -388,7 +390,7 @@
       <table>
         <thead>
           <tr>
-            <th class="num">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
+            <th class="num date-col">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
             <th class="num">正味重量</th><th class="num">手数料</th><th></th><th class="num">照合</th>
           </tr>
@@ -542,7 +544,7 @@
       <table>
         <thead>
           <tr>
-            <th class="num">日付</th><th>時間</th><th class="num">業者</th><th class="num">交付番号</th>
+            <th class="num date-col">日付</th><th>時間</th><th class="num">業者</th><th class="num">交付番号</th>
             <th class="num">事業場</th><th class="num">車番</th><th>品名</th><th class="num">数量</th>
             <th class="num">単価</th><th class="num">小計</th><th class="num">運転手</th><th>備考</th><th></th>
           </tr>
@@ -682,12 +684,125 @@
       <table>
         <thead>
           <tr>
-            <th class="num">搬入日</th><th class="num">蛍光灯</th><th class="num">水銀灯</th><th class="num">電池</th>
+            <th class="num date-col">搬入日</th><th class="num">蛍光灯</th><th class="num">水銀灯</th><th class="num">電池</th>
             <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">金額合計</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="mb-body">
           <tr><td colspan="9">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 産廃：再生材購入タブ -->
+  <div class="panel" id="tab-material" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">再生材 単価表（品名×業者）</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn" id="matp-form-toggle-btn" onclick="toggleMatPriceFormSection()">入力欄を隠す</button>
+        <button class="btn btn-primary" id="matp-submit-btn" onclick="submitMatPrice()">新規登録</button>
+      </div>
+    </div>
+    <div id="matp-form-section">
+      <div class="edit-banner" id="matp-edit-banner" style="display:none;">
+        編集中の単価があります。<a href="#" onclick="cancelMatPriceEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+      </div>
+      <div class="card-form">
+        <div class="field">
+          <label>品名 *</label>
+          <input type="text" id="matp-item" placeholder="例: 再生密粒度アスコン(13)">
+        </div>
+        <div class="field">
+          <label>業者 *</label>
+          <input type="text" id="matp-vendor" list="material-vendor-suggestions" autocomplete="off" placeholder="例: ㈱ｶﾞｲｱｰﾄ">
+        </div>
+        <div class="field">
+          <label>単価（円）</label>
+          <input type="number" id="matp-price" class="num-field" step="1" placeholder="例: 5500">
+        </div>
+        <div class="field">
+          <label>備考</label>
+          <input type="text" id="matp-note" placeholder="任意">
+        </div>
+      </div>
+    </div>
+    <div class="table-wrap" id="matp-table-wrap">
+      <table>
+        <thead><tr><th class="num">品名</th><th class="num">業者</th><th class="num">単価（円）</th><th>備考</th><th></th></tr></thead>
+        <tbody id="matp-body">
+          <tr><td colspan="5">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="edit-banner" id="mat-edit-banner" style="display:none;margin-top:26px;">
+      編集中の記録があります。<a href="#" onclick="cancelMatEdit();return false;">編集をキャンセルして新規入力に戻る</a>
+    </div>
+    <div class="form-title" style="margin-top:26px;">再生材購入 入力</div>
+    <div class="field-grid">
+      <div class="field">
+        <label>購入日 *</label>
+        <input type="date" id="mat-date">
+      </div>
+      <div class="field">
+        <label>業者 *</label>
+        <input type="text" id="mat-vendor" list="material-vendor-suggestions" autocomplete="off" placeholder="例: ㈱ｶﾞｲｱｰﾄ" oninput="onMatVendorChange()">
+        <datalist id="material-vendor-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label>品名 *</label>
+        <input type="text" id="mat-item" list="material-item-suggestions" autocomplete="off" placeholder="例: 再生密粒度アスコン(13)" oninput="onMatItemChange()">
+        <datalist id="material-item-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label>単位</label>
+        <select id="mat-unit">
+          <option value="ｔ" selected>ｔ</option>
+          <option value="㎥">㎥</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>数量 *</label>
+        <input type="number" id="mat-qty" class="num-field" step="0.01" inputmode="decimal" oninput="recalcMatPreview()">
+      </div>
+      <div class="field">
+        <label>単価（円）</label>
+        <input type="number" id="mat-price" class="num-field" step="1" inputmode="decimal" oninput="recalcMatPreview()">
+        <div class="field-hint" id="mat-price-hint"></div>
+      </div>
+      <div class="field">
+        <label>金額（円）</label>
+        <input type="text" id="mat-amount" class="calc-field" readonly value="0">
+      </div>
+      <div class="field">
+        <label>備考</label>
+        <input type="text" id="mat-note" placeholder="任意">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="mat-submit-btn" onclick="submitMatRecord()">登録する</button>
+      <button class="btn" onclick="clearMatForm()">クリア</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin:26px 0 12px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">購入記録一覧</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button type="button" class="btn" onclick="exportMatListToExcel()">Excelダウンロード</button>
+        <div class="list-summary" id="mat-summary"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+          <th class="num date-col">購入日</th><th class="num">業者</th><th>品名</th><th class="num">数量</th>
+            <th class="num">単価</th><th class="num">金額</th><th>備考</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="mat-body">
+          <tr><td colspan="8">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -794,7 +909,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th class="num">日付</th><th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
+          <th class="num date-col">日付</th><th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
         </tr></thead>
         <tbody id="invoice-body">
           <tr><td colspan="7">読み込み中…</td></tr>
@@ -842,8 +957,8 @@ function showToast(msg, duration=2600){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), duration);
 }
 
-const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb'];
-const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial' };
+const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb','material'];
+const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', material:'industrial' };
 let CURRENT_SYSTEM = 'waste';
 
 function switchTab(name){
@@ -863,6 +978,7 @@ function switchTab(name){
   if(name==='iwlist') loadIWList();
   if(name==='iwprice') loadIWPriceList();
   if(name==='iwmb'){ loadMBPriceList(); loadMBRecords(); }
+  if(name==='material'){ loadMatPriceList(); loadMatRecords(); }
 }
 
 function switchSystem(sys){
@@ -997,6 +1113,21 @@ let EDITING_ID = null;
 function todayStr(){
   const d = new Date();
   return d.toISOString().slice(0,10);
+}
+
+/* ---------- 和暦表示 ---------- */
+function toWareki(dateStr){
+  if(!dateStr) return '';
+  const parts = String(dateStr).slice(0,10).split('-');
+  if(parts.length!==3) return dateStr;
+  const y = Number(parts[0]), m = Number(parts[1]), d = Number(parts[2]);
+  if(!y || !m || !d) return dateStr;
+  // 令和は 2019-05-01 から
+  if(y > 2019 || (y===2019 && m>=5)){
+    return `R${y-2018}.${m}.${d}`;
+  }
+  // 令和以前の日付は変換せずそのまま表示
+  return dateStr;
 }
 
 function clearForm(){
@@ -1285,7 +1416,7 @@ function renderListFiltered(){
   }
   body.innerHTML = rows.map(r => `
     <tr>
-      <td class="num">${r.record_date ?? ''}</td>
+      <td class="num date-col">${toWareki(r.record_date)}</td>
       <td>${r.record_time ?? ''}</td>
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
@@ -1810,7 +1941,7 @@ function renderIWListFiltered(){
   }
   body.innerHTML = rows.map(r => `
     <tr>
-      <td class="num">${r.record_date ?? ''}</td>
+      <td class="num date-col">${toWareki(r.record_date)}</td>
       <td>${r.record_time ?? ''}</td>
       <td class="num">${r.vendor_name ?? ''}</td>
       <td class="num">${r.manifest_no ?? ''}</td>
@@ -1836,7 +1967,7 @@ function renderIWListFiltered(){
 function exportIWListToExcel(){
   const header = ['日付','時間','業者','交付番号','事業場','車番','品名','数量','単位','単価(円)','小計(円)','運転手','備考'];
   const rows = [header, ...IW_LIST_RECORDS.map(r => [
-    r.record_date, r.record_time || '', r.vendor_name ?? '', r.manifest_no ?? '', r.business_site ?? '',
+    toWareki(r.record_date), r.record_time || '', r.vendor_name ?? '', r.manifest_no ?? '', r.business_site ?? '',
     r.vehicle_no ?? '', r.item_name ?? '', Number(r.quantity||0), r.unit ?? '', Number(r.unit_price||0),
     Number(r.amount||0), r.driver ?? '', r.note ?? ''
   ])];
@@ -1995,7 +2126,7 @@ function renderMBList(){
   }
   body.innerHTML = ALL_MB_RECORDS.map(r => `
     <tr>
-      <td class="num">${r.record_date ?? ''}</td>
+      <td class="num date-col">${toWareki(r.record_date)}</td>
       <td class="num">${Number(r.fluorescent_kg||0).toLocaleString()}</td>
       <td class="num">${Number(r.mercury_lamp_kg||0).toLocaleString()}</td>
       <td class="num">${Number(r.battery_kg||0).toLocaleString()}</td>
@@ -2016,10 +2147,313 @@ function renderMBList(){
 function exportMBListToExcel(){
   const header = ['搬入日','蛍光灯(kg)','水銀灯(kg)','電池(kg)','二次電池(kg)','ボタン電池(kg)','金額合計(円)','備考'];
   const rows = [header, ...ALL_MB_RECORDS.map(r => [
-    r.record_date, Number(r.fluorescent_kg||0), Number(r.mercury_lamp_kg||0), Number(r.battery_kg||0),
+    toWareki(r.record_date), Number(r.fluorescent_kg||0), Number(r.mercury_lamp_kg||0), Number(r.battery_kg||0),
     Number(r.secondary_battery_kg||0), Number(r.button_battery_kg||0), Number(r.total_amount||0), r.note ?? ''
   ])];
   downloadWorkbook([{ name:'蛍光灯水銀灯電池処理', rows }], `mb_records_${todayStr()}.xlsx`);
+}
+
+/* ---------- 産廃：再生材購入タブ ---------- */
+let MAT_PRICE_LIST = [];
+let EDITING_MATPRICE_ID = null;
+let ALL_MAT_RECORDS = [];
+let EDITING_MAT_ID = null;
+
+async function loadMatPriceList(){
+  try{
+    const rows = await sb('material_price_list?select=*&order=vendor_name.asc,item_name.asc');
+    MAT_PRICE_LIST = rows || [];
+    populateMatVendorOptions();
+    renderMatPriceTable();
+  }catch(e){
+    console.error(e);
+    const body = document.getElementById('matp-body');
+    if(body) body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
+  }
+}
+
+function renderMatPriceTable(){
+  const body = document.getElementById('matp-body');
+  if(!body) return;
+  if(MAT_PRICE_LIST.length===0){
+    body.innerHTML = '<tr><td colspan="5">登録されている単価がありません</td></tr>';
+    return;
+  }
+  body.innerHTML = MAT_PRICE_LIST.map(r => `
+    <tr>
+      <td class="card-dept-cell">${r.item_name ?? ''}</td>
+      <td class="card-dept-cell">${r.vendor_name ?? ''}</td>
+      <td class="num">${r.unit_price===null||r.unit_price===undefined ? '未設定' : Number(r.unit_price).toLocaleString()}</td>
+      <td class="card-dept-cell">${r.note ?? ''}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editMatPrice(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteMatPrice(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function populateMatVendorOptions(){
+  const vendors = new Set(MAT_PRICE_LIST.map(r=>r.vendor_name).filter(Boolean));
+  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
+  const dl = document.getElementById('material-vendor-suggestions');
+  if(dl) dl.innerHTML = [...vendors].sort((a,b)=>a.localeCompare(b,'ja')).map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
+function onMatVendorChange(){
+  const vendor = document.getElementById('mat-vendor').value.trim();
+  const dl = document.getElementById('material-item-suggestions');
+  const items = MAT_PRICE_LIST.filter(r => !vendor || r.vendor_name === vendor).map(r=>r.item_name);
+  if(dl) dl.innerHTML = [...new Set(items)].map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+  onMatItemChange();
+}
+
+function onMatItemChange(){
+  const vendor = document.getElementById('mat-vendor').value.trim();
+  const item = document.getElementById('mat-item').value.trim();
+  const hint = document.getElementById('mat-price-hint');
+  const match = MAT_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
+  if(match && match.unit_price!==null && match.unit_price!==undefined){
+    document.getElementById('mat-price').value = match.unit_price;
+    hint.textContent = '単価表から自動入力しました（変更可）';
+    hint.style.color = 'var(--muted)';
+  }else if(vendor && item){
+    hint.textContent = '※単価表に単価が未設定です。単価を手入力してください';
+    hint.style.color = '#c94f3c';
+  }else{
+    hint.textContent = '';
+  }
+  recalcMatPreview();
+}
+
+function recalcMatPreview(){
+  const qty = Number(document.getElementById('mat-qty').value) || 0;
+  const price = Number(document.getElementById('mat-price').value) || 0;
+  document.getElementById('mat-amount').value = Math.round(qty * price).toLocaleString();
+}
+
+function toggleMatPriceFormSection(){
+  const sec = document.getElementById('matp-form-section');
+  const btn = document.getElementById('matp-form-toggle-btn');
+  const wrap = document.getElementById('matp-table-wrap');
+  const isHidden = sec.style.display === 'none';
+  if(isHidden){
+    sec.style.display = '';
+    btn.textContent = '入力欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    sec.style.display = 'none';
+    btn.textContent = '入力欄を表示';
+    wrap.classList.add('expanded');
+  }
+}
+
+function editMatPrice(id){
+  const info = MAT_PRICE_LIST.find(r=>r.id===id);
+  if(!info){ showToast('単価データが見つかりませんでした'); return; }
+  EDITING_MATPRICE_ID = id;
+  document.getElementById('matp-item').value = info.item_name || '';
+  document.getElementById('matp-vendor').value = info.vendor_name || '';
+  document.getElementById('matp-price').value = info.unit_price ?? '';
+  document.getElementById('matp-note').value = info.note || '';
+  document.getElementById('matp-submit-btn').textContent = '更新する';
+  document.getElementById('matp-edit-banner').style.display = '';
+}
+
+function cancelMatPriceEdit(){
+  EDITING_MATPRICE_ID = null;
+  document.getElementById('matp-item').value = '';
+  document.getElementById('matp-vendor').value = '';
+  document.getElementById('matp-price').value = '';
+  document.getElementById('matp-note').value = '';
+  document.getElementById('matp-submit-btn').textContent = '新規登録';
+  document.getElementById('matp-edit-banner').style.display = 'none';
+}
+
+async function submitMatPrice(){
+  const item = document.getElementById('matp-item').value.trim();
+  const vendor = document.getElementById('matp-vendor').value.trim();
+  const priceRaw = document.getElementById('matp-price').value;
+  const note = document.getElementById('matp-note').value.trim();
+  if(!item || !vendor){
+    showToast('品名・業者を入力してください');
+    return;
+  }
+  const price = priceRaw==='' ? null : Number(priceRaw);
+  try{
+    if(EDITING_MATPRICE_ID){
+      await sb(`material_price_list?id=eq.${EDITING_MATPRICE_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: price, note: note || null, updated_at: new Date().toISOString() })
+      });
+      showToast('更新しました');
+    }else{
+      await sb('material_price_list', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: price, note: note || null })
+      });
+      showToast('新しい単価を登録しました');
+    }
+    cancelMatPriceEdit();
+    loadMatPriceList();
+  }catch(e){
+    showToast((EDITING_MATPRICE_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+async function deleteMatPrice(id){
+  if(!confirm('この単価を削除しますか？')) return;
+  try{
+    await sb(`material_price_list?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    if(EDITING_MATPRICE_ID === id) cancelMatPriceEdit();
+    loadMatPriceList();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function clearMatForm(){
+  EDITING_MAT_ID = null;
+  document.getElementById('mat-date').value = todayStr();
+  document.getElementById('mat-vendor').value = '';
+  document.getElementById('mat-item').value = '';
+  document.getElementById('mat-unit').value = 'ｔ';
+  document.getElementById('mat-qty').value = '';
+  document.getElementById('mat-price').value = '';
+  document.getElementById('mat-note').value = '';
+  document.getElementById('mat-price-hint').textContent = '';
+  document.getElementById('mat-submit-btn').textContent = '登録する';
+  document.getElementById('mat-edit-banner').style.display = 'none';
+  recalcMatPreview();
+}
+
+function cancelMatEdit(){ clearMatForm(); }
+
+async function submitMatRecord(){
+  const date = document.getElementById('mat-date').value;
+  const vendor = document.getElementById('mat-vendor').value.trim();
+  const item = document.getElementById('mat-item').value.trim();
+  const unit = document.getElementById('mat-unit').value;
+  const qty = document.getElementById('mat-qty').value;
+  const price = document.getElementById('mat-price').value;
+  const note = document.getElementById('mat-note').value.trim();
+
+  if(!date || !vendor || !item || qty===''){
+    showToast('購入日・業者・品名・数量は必須です');
+    return;
+  }
+
+  const payload = {
+    purchase_date: date,
+    vendor_name: vendor,
+    item_name: item,
+    unit: unit || null,
+    quantity: Number(qty),
+    unit_price: price==='' ? null : Number(price),
+    note: note || null
+  };
+
+  try{
+    if(EDITING_MAT_ID){
+      await sb(`material_purchases?id=eq.${EDITING_MAT_ID}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
+      });
+      showToast('記録を更新しました');
+    }else{
+      await sb('material_purchases', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify(payload)
+      });
+      showToast('記録を登録しました');
+    }
+    clearMatForm();
+    loadMatRecords();
+  }catch(e){
+    showToast((EDITING_MAT_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+function editMatRecord(id){
+  const r = ALL_MAT_RECORDS.find(x=>x.id===id);
+  if(!r){ showToast('記録が見つかりませんでした'); return; }
+  EDITING_MAT_ID = id;
+  document.getElementById('mat-date').value = r.purchase_date || '';
+  document.getElementById('mat-vendor').value = r.vendor_name || '';
+  document.getElementById('mat-item').value = r.item_name || '';
+  document.getElementById('mat-unit').value = r.unit || 'ｔ';
+  document.getElementById('mat-qty').value = r.quantity ?? '';
+  document.getElementById('mat-price').value = r.unit_price ?? '';
+  document.getElementById('mat-note').value = r.note || '';
+  document.getElementById('mat-submit-btn').textContent = '更新する';
+  document.getElementById('mat-edit-banner').style.display = '';
+  recalcMatPreview();
+}
+
+async function deleteMatRecord(id){
+  if(!confirm('この記録を削除しますか？')) return;
+  try{
+    await sb(`material_purchases?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    loadMatRecords();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+async function loadMatRecords(){
+  const body = document.getElementById('mat-body');
+  if(body) body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
+  try{
+    const rows = await sb('material_purchases?select=*&order=purchase_date.desc,id.desc&limit=2000');
+    ALL_MAT_RECORDS = rows || [];
+    populateMatVendorOptions();
+    renderMatList();
+  }catch(e){
+    if(body) body.innerHTML = `<tr><td colspan="8">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function renderMatList(){
+  const body = document.getElementById('mat-body');
+  if(!body) return;
+  if(ALL_MAT_RECORDS.length===0){
+    body.innerHTML = '<tr><td colspan="8">記録がありません</td></tr>';
+    document.getElementById('mat-summary').textContent = '';
+    return;
+  }
+  body.innerHTML = ALL_MAT_RECORDS.map(r => `
+    <tr>
+      <td class="num date-col">${toWareki(r.purchase_date)}</td>
+      <td class="num">${r.vendor_name ?? ''}</td>
+      <td>${r.item_name ?? ''}</td>
+      <td class="num">${Number(r.quantity||0).toLocaleString()}${r.unit ?? ''}</td>
+      <td class="num">${Number(r.unit_price||0).toLocaleString()}</td>
+      <td class="num fee-cell">${Number(r.amount||0).toLocaleString()}</td>
+      <td>${r.note ?? ''}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editMatRecord(${r.id})">編集</button>
+        <button class="del-btn" onclick="deleteMatRecord(${r.id})">削除</button>
+      </td>
+    </tr>
+  `).join('');
+  const totalAmount = ALL_MAT_RECORDS.reduce((s,r)=> s + Number(r.amount||0), 0);
+  document.getElementById('mat-summary').textContent = `${ALL_MAT_RECORDS.length}件 ／ 金額合計 ${totalAmount.toLocaleString()} 円`;
+}
+
+function exportMatListToExcel(){
+  const header = ['購入日','業者','品名','数量','単位','単価(円)','金額(円)','備考'];
+  const rows = [header, ...ALL_MAT_RECORDS.map(r => [
+    toWareki(r.purchase_date), r.vendor_name ?? '', r.item_name ?? '', Number(r.quantity||0), r.unit ?? '',
+    Number(r.unit_price||0), Number(r.amount||0), r.note ?? ''
+  ])];
+  downloadWorkbook([{ name:'再生材購入', rows }], `material_purchases_${todayStr()}.xlsx`);
 }
 
 /* ---------- 集計共通：全記録を取得 ---------- */
@@ -2373,7 +2807,7 @@ function downloadWorkbook(sheets, filename){
 function exportListToExcel(){
   const header = ['日付','時刻','受付No.','カードNo.','持込部署','車番','品種','総重量(kg)','空車重量(kg)','正味重量(kg)','手数料(円)'];
   const rows = [header, ...LIST_RECORDS.map(r => [
-    r.record_date, r.record_time || '', r.receipt_no ?? '', r.card_no ?? '', r.department ?? '',
+    toWareki(r.record_date), r.record_time || '', r.receipt_no ?? '', r.card_no ?? '', r.department ?? '',
     r.vehicle_no ?? '', r.item_type ?? '', Number(r.total_weight||0), Number(r.empty_weight||0),
     Number(r.net_weight||0), Number(r.fee||0)
   ])];
@@ -2476,7 +2910,7 @@ async function renderInvoiceTab(){
         const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
         const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
         return `<tr>
-          <td class="num">${date}</td>
+          <td class="num date-col">${toWareki(date)}</td>
           <td class="num">${v}</td>
           <td class="num">${billed===null ? '-' : billed.toLocaleString()+'円'}</td>
           <td class="num">${sys.toLocaleString()}円</td>
@@ -2649,6 +3083,8 @@ async function refreshData(){
     await loadIWList();
     await loadMBPriceList();
     await loadMBRecords();
+    await loadMatPriceList();
+    await loadMatRecords();
     await loadVehicleSummary();
     await loadDepartmentSummary();
     await loadYearSummary();
@@ -2668,6 +3104,7 @@ async function refreshData(){
   document.getElementById('f-date').value = todayStr();
   document.getElementById('iw-date').value = todayStr();
   document.getElementById('mb-date').value = todayStr();
+  document.getElementById('mat-date').value = todayStr();
   document.getElementById('refresh-btn').style.display = 'flex';
   await loadCardMap();
   await loadDepartmentOptions();
@@ -2679,6 +3116,9 @@ async function refreshData(){
   await loadMBPriceList();
   await loadMBRecords();
   recalcMBPreview();
+  await loadMatPriceList();
+  await loadMatRecords();
+  recalcMatPreview();
 })();
 </script>
 </body>
