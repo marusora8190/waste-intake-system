@@ -245,6 +245,7 @@
         <div class="tab active" data-tab="input" onclick="switchTab('input')">入　力</div>
         <div class="tab" data-tab="list" onclick="switchTab('list')">一　覧</div>
         <div class="tab" data-tab="cards" onclick="switchTab('cards')">カード管理</div>
+        <div class="tab" data-tab="industrial" onclick="switchTab('industrial')">産廃カード管理</div>
         <div class="tab" data-tab="vehicle" onclick="switchTab('vehicle')">車番別集計</div>
         <div class="tab" data-tab="department" onclick="switchTab('department')">持込部署集計</div>
         <div class="tab" data-tab="summary" onclick="switchTab('summary')">月次サマリー</div>
@@ -424,6 +425,48 @@
     </div>
   </div>
 
+  <!-- 産廃カード管理タブ -->
+  <div class="panel" id="tab-industrial" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">産業廃棄物処理費 カードNo.管理</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn" id="icard-form-toggle-btn" onclick="toggleIndustrialCardFormSection()">入力欄を隠す</button>
+        <button class="btn btn-primary" id="icard-submit-btn" onclick="submitIndustrialCard()">新規登録</button>
+      </div>
+    </div>
+    <div id="icard-form-section">
+      <div class="edit-banner" id="icard-edit-banner" style="display:none;">
+        編集中のカードがあります。<a href="#" onclick="cancelIndustrialCardEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+      </div>
+      <div class="card-form">
+        <div class="field">
+          <label>カードNo. *</label>
+          <input type="text" id="ic-card" placeholder="例: 12">
+        </div>
+        <div class="field">
+          <label>処理業者</label>
+          <input type="text" id="ic-processor" placeholder="例: ○○産業">
+        </div>
+        <div class="field">
+          <label>単価（円/kg）</label>
+          <input type="number" id="ic-unit-price" class="num-field" step="0.1" inputmode="decimal" placeholder="例: 25">
+        </div>
+        <div class="field">
+          <label>備考</label>
+          <input type="text" id="ic-note" placeholder="任意">
+        </div>
+      </div>
+    </div>
+    <div class="table-wrap" id="icards-table-wrap">
+      <table>
+        <thead><tr><th class="num">カードNo.</th><th class="num">処理業者</th><th class="num">単価（円/kg）</th><th>備考</th><th></th></tr></thead>
+        <tbody id="icard-body">
+          <tr><td colspan="5">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- 車番別集計タブ -->
   <div class="panel" id="tab-vehicle" style="display:none;">
     <div class="inline-field" style="margin-bottom:14px;">
@@ -581,6 +624,7 @@ function switchTab(name){
   document.getElementById('refresh-btn').style.display = (name==='input') ? 'flex' : 'none';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
+  if(name==='industrial') loadIndustrialCards();
   if(name==='vehicle') loadVehicleSummary();
   if(name==='department') loadDepartmentSummary();
   if(name==='summary') loadYearSummary();
@@ -1145,6 +1189,127 @@ async function deleteCard(cardNo){
     showToast('削除しました');
     if(EDITING_CARD_NO === cardNo) cancelCardEdit();
     loadCards();
+  }catch(e){
+    showToast('削除に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+/* ---------- 産廃カード管理タブ ---------- */
+let INDUSTRIAL_CARD_MAP = {};
+let EDITING_ICARD_NO = null;
+
+async function loadIndustrialCards(){
+  const body = document.getElementById('icard-body');
+  body.innerHTML = '<tr><td colspan="5">読み込み中…</td></tr>';
+  try{
+    const rows = await sb('industrial_waste_card_map?select=*&order=card_no.asc');
+    INDUSTRIAL_CARD_MAP = {};
+    (rows||[]).forEach(r => INDUSTRIAL_CARD_MAP[String(r.card_no).trim()] = { processor: r.processor || '', unitPrice: r.unit_price, note: r.note || '' });
+    if(!rows || rows.length===0){
+      body.innerHTML = '<tr><td colspan="5">登録されているカードがありません</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td class="num card-no-cell">${r.card_no}</td>
+        <td class="card-dept-cell">${r.processor ?? ''}</td>
+        <td class="num">${r.unit_price===null||r.unit_price===undefined ? '' : Number(r.unit_price).toLocaleString()}</td>
+        <td class="card-dept-cell">${r.note ?? ''}</td>
+        <td class="action-cell">
+          <button class="del-btn" onclick="editIndustrialCard('${r.card_no.replace(/'/g,"\\'")}')">編集</button>
+          <button class="del-btn" onclick="deleteIndustrialCard('${r.card_no.replace(/'/g,"\\'")}')">削除</button>
+        </td>
+      </tr>
+    `).join('');
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="5">読み込みに失敗しました: ${e.message}</td></tr>`;
+    console.error(e);
+  }
+}
+
+function editIndustrialCard(cardNo){
+  const info = INDUSTRIAL_CARD_MAP[String(cardNo).trim()];
+  if(!info){
+    showToast('カードのデータが見つかりませんでした');
+    return;
+  }
+  EDITING_ICARD_NO = cardNo;
+  document.getElementById('ic-card').value = cardNo;
+  document.getElementById('ic-processor').value = info.processor || '';
+  document.getElementById('ic-unit-price').value = info.unitPrice ?? '';
+  document.getElementById('ic-note').value = info.note || '';
+  document.getElementById('icard-submit-btn').textContent = '更新する';
+  document.getElementById('icard-edit-banner').style.display = '';
+}
+
+function toggleIndustrialCardFormSection(){
+  const sec = document.getElementById('icard-form-section');
+  const btn = document.getElementById('icard-form-toggle-btn');
+  const wrap = document.getElementById('icards-table-wrap');
+  const isHidden = sec.style.display === 'none';
+  if(isHidden){
+    sec.style.display = '';
+    btn.textContent = '入力欄を隠す';
+    wrap.classList.remove('expanded');
+  }else{
+    sec.style.display = 'none';
+    btn.textContent = '入力欄を表示';
+    wrap.classList.add('expanded');
+  }
+}
+
+function cancelIndustrialCardEdit(){
+  EDITING_ICARD_NO = null;
+  document.getElementById('ic-card').value = '';
+  document.getElementById('ic-processor').value = '';
+  document.getElementById('ic-unit-price').value = '';
+  document.getElementById('ic-note').value = '';
+  document.getElementById('icard-submit-btn').textContent = '新規登録';
+  document.getElementById('icard-edit-banner').style.display = 'none';
+}
+
+async function submitIndustrialCard(){
+  const card = document.getElementById('ic-card').value.trim();
+  const processor = document.getElementById('ic-processor').value.trim();
+  const unitPriceRaw = document.getElementById('ic-unit-price').value;
+  const note = document.getElementById('ic-note').value.trim();
+  if(!card){
+    showToast('カードNo.を入力してください');
+    return;
+  }
+  const unitPrice = unitPriceRaw === '' ? null : Number(unitPriceRaw);
+  try{
+    if(EDITING_ICARD_NO){
+      await sb(`industrial_waste_card_map?card_no=eq.${encodeURIComponent(EDITING_ICARD_NO)}`, {
+        method:'PATCH',
+        headers:{ 'Prefer':'return=minimal' },
+        body: JSON.stringify({ card_no: card, processor: processor || null, unit_price: unitPrice, note: note || null, updated_at: new Date().toISOString() })
+      });
+      showToast('更新しました');
+    }else{
+      await sb('industrial_waste_card_map', {
+        method:'POST',
+        headers:{ 'Prefer':'return=minimal' },
+        body: JSON.stringify({ card_no: card, processor: processor || null, unit_price: unitPrice, note: note || null })
+      });
+      showToast('新しいカードを登録しました');
+    }
+    cancelIndustrialCardEdit();
+    loadIndustrialCards();
+  }catch(e){
+    showToast((EDITING_ICARD_NO ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
+async function deleteIndustrialCard(cardNo){
+  if(!confirm(`カードNo.「${cardNo}」の登録を削除しますか？`)) return;
+  try{
+    await sb(`industrial_waste_card_map?card_no=eq.${encodeURIComponent(cardNo)}`, { method:'DELETE' });
+    showToast('削除しました');
+    if(EDITING_ICARD_NO === cardNo) cancelIndustrialCardEdit();
+    loadIndustrialCards();
   }catch(e){
     showToast('削除に失敗しました: ' + e.message, 6000);
     console.error(e);
@@ -1774,6 +1939,7 @@ async function refreshData(){
     await loadVehicleOptions();
     await loadList();
     await loadCards();
+    await loadIndustrialCards();
     await loadVehicleSummary();
     await loadDepartmentSummary();
     await loadYearSummary();
