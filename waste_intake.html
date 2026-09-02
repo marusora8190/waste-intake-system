@@ -135,6 +135,7 @@
   .num{text-align:center;}
   #tab-iwlist td, #tab-iwlist th{padding-top:3px;padding-bottom:3px;}
   .date-col{min-width:76px;width:1%;padding-left:6px !important;padding-right:6px !important;white-space:nowrap;}
+  .period-date-input{padding:12px 14px;font-size:15.5px;border:1px solid #d8d1c2;border-radius:8px;font-family:inherit;background:#fffefb;}
   .fee-cell{text-align:right !important;padding-right:16px;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -252,7 +253,7 @@
   <div class="app-header">
     <div class="app-header-top">
       <div class="header-left">
-        <h1><span>天理市 廃棄物管理システム</span></h1>
+        <h1><span>ごみ・廃棄物管理システム</span></h1>
         <div class="system-tabs" id="system-tabs">
           <div class="system-tab active" data-system="waste" onclick="switchSystem('waste')">①天理市ごみ持込量記録システム</div>
           <div class="system-tab" data-system="industrial" onclick="switchSystem('industrial')">②産業廃棄物処理管理システム</div>
@@ -269,7 +270,7 @@
       <div class="tab" data-tab="cards" data-system="waste" onclick="switchTab('cards')">カード管理</div>
       <div class="tab" data-tab="vehicle" data-system="waste" onclick="switchTab('vehicle')">車番別集計</div>
       <div class="tab" data-tab="department" data-system="waste" onclick="switchTab('department')">持込部署集計</div>
-      <div class="tab" data-tab="summary" data-system="waste" onclick="switchTab('summary')">月次サマリー</div>
+      <div class="tab" data-tab="summary" data-system="waste" onclick="switchTab('summary')">月次集計</div>
       <div class="tab" data-tab="invoice" data-system="waste" onclick="switchTab('invoice')">請求書照合</div>
       <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">入　力</div>
       <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">一　覧</div>
@@ -390,13 +391,6 @@
       <button type="button" class="btn" onclick="clearListSearch()">検索解除</button>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
       <div class="list-summary" id="list-summary"></div>
-    </div>
-    <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
-      <input type="date" id="list-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <span style="color:var(--muted);">〜</span>
-      <input type="date" id="list-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromList()">請求書照合</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -552,13 +546,6 @@
       <button type="button" class="btn" onclick="exportIWListToExcel()">Excelダウンロード</button>
       <div class="list-summary" id="iwlist-summary"></div>
     </div>
-    <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
-      <input type="date" id="iwlist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <span style="color:var(--muted);">〜</span>
-      <input type="date" id="iwlist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromIWList()">請求書照合</button>
-    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -699,13 +686,6 @@
         <div class="list-summary" id="mb-summary"></div>
       </div>
     </div>
-    <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
-      <input type="date" id="mblist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <span style="color:var(--muted);">〜</span>
-      <input type="date" id="mblist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromMBList()">請求書照合</button>
-    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -784,13 +764,6 @@
         <div class="list-summary" id="mat-summary"></div>
       </div>
     </div>
-    <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
-      <input type="date" id="matlist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <span style="color:var(--muted);">〜</span>
-      <input type="date" id="matlist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromMatList()">請求書照合</button>
-    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -852,22 +825,12 @@
   <div class="panel" id="tab-miwinvoice" style="display:none;">
     <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">請求書照合（業者×月）</div>
-      <label>年</label>
-      <select id="miw-year"></select>
-      <label>月</label>
-      <select id="miw-month">
-        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
-        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
-        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
-        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-      </select>
-      <label style="margin-left:10px;">集計期間</label>
-      <input type="date" id="miw-date-from" onchange="renderMIWTable()">
+      <label>集計期間</label>
+      <input type="date" id="miw-date-from" class="period-date-input" onchange="renderMIWTable()">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="miw-date-to" onchange="renderMIWTable()">
-      <button type="button" class="btn" onclick="clearMIWDateRange()">期間クリア</button>
+      <input type="date" id="miw-date-to" class="period-date-input" onchange="renderMIWTable()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。集計期間を指定すると、その期間の記録で計算します（未指定の場合は選択した月で計算します）。</div>
+    <div class="field-hint" style="margin-bottom:14px;">指定した期間の産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -886,22 +849,12 @@
   <div class="panel" id="tab-mbinvoice" style="display:none;">
     <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理 請求書照合</div>
-      <label>年</label>
-      <select id="mbi-year"></select>
-      <label>月</label>
-      <select id="mbi-month">
-        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
-        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
-        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
-        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-      </select>
-      <label style="margin-left:10px;">集計期間</label>
-      <input type="date" id="mbi-date-from" onchange="renderMBInvoiceTab()">
+      <label>集計期間</label>
+      <input type="date" id="mbi-date-from" class="period-date-input" onchange="renderMBInvoiceTab()">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="mbi-date-to" onchange="renderMBInvoiceTab()">
-      <button type="button" class="btn" onclick="clearMBInvoiceDateRange()">期間クリア</button>
+      <input type="date" id="mbi-date-to" class="period-date-input" onchange="renderMBInvoiceTab()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">集計期間を指定すると、その期間の記録からシステム集計を計算します（未指定の場合は選択した月の集計になります）。</div>
+    <div class="field-hint" style="margin-bottom:14px;">指定した期間の記録からシステム集計を計算し、請求書の合計金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
     <div id="mbi-total-card"></div>
   </div>
 
@@ -951,10 +904,10 @@
     </div>
   </div>
 
-  <!-- 月次サマリータブ -->
+  <!-- 月次集計タブ -->
   <div class="panel" id="tab-summary" style="display:none;">
     <div class="inline-field" style="margin-bottom:14px;">
-      <div class="form-title" style="margin:0;">月次・年次サマリー</div>
+      <div class="form-title" style="margin:0;">月次・年次集計</div>
       <label>年</label>
       <select id="s-year"></select>
       <button class="btn" style="margin-left:auto;" onclick="exportSummaryToExcel()">Excelダウンロード</button>
@@ -970,22 +923,12 @@
   <div class="panel" id="tab-invoice" style="display:none;">
     <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">請求書照合</div>
-      <label>年</label>
-      <select id="i-year"></select>
-      <label>月</label>
-      <select id="i-month">
-        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
-        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
-        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
-        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-      </select>
-      <label style="margin-left:10px;">集計期間</label>
-      <input type="date" id="i-date-from" onchange="renderInvoiceTab()">
+      <label>集計期間</label>
+      <input type="date" id="i-date-from" class="period-date-input" onchange="renderInvoiceTab()">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="i-date-to" onchange="renderInvoiceTab()">
-      <button type="button" class="btn" onclick="clearInvoiceDateRange()">期間クリア</button>
+      <input type="date" id="i-date-to" class="period-date-input" onchange="renderInvoiceTab()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">集計期間を指定すると、その期間の記録からシステム集計を計算します（未指定の場合は選択した月の集計になります）。</div>
+    <div class="field-hint" style="margin-bottom:14px;">指定した期間の記録からシステム集計を計算し、請求書の合計金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
 
     <div id="invoice-total-card"></div>
   </div>
@@ -1326,7 +1269,7 @@ function populateListYearFilter(){
   if(!years.includes(curYear)) years.push(curYear);
   years.sort();
   sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = curYear;
+  sel.value = '';
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
@@ -1334,10 +1277,9 @@ function populateListYearFilter(){
 function populateListMonthFilter(){
   const sel = document.getElementById('list-month');
   if(sel.dataset.populated) return;
-  const curMonth = String(new Date().getMonth() + 1);
   const months = Array.from({length:12}, (_, i) => i+1);
   sel.innerHTML = months.map(m=>`<option value="${m}">${m}月</option>`).join('') + '<option value="">年間</option>';
-  sel.value = curMonth;
+  sel.value = '';
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
@@ -1940,7 +1882,7 @@ function populateIWListYearFilter(){
   if(!years.includes(curYear)) years.push(curYear);
   years.sort().reverse();
   sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = curYear;
+  sel.value = '';
   sel.dataset.populated = '1';
 }
 
@@ -1954,7 +1896,7 @@ function populateIWListMonthFilter(){
     return;
   }
   sel.innerHTML = Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}">${m}月</option>`).join('') + '<option value="">年間</option>';
-  sel.value = String(new Date().getMonth() + 1);
+  sel.value = '';
   sel.dataset.populated = '1';
 }
 
@@ -2519,86 +2461,37 @@ function exportMatListToExcel(){
 }
 
 /* ---------- 産廃：請求書照合タブ（業者×月） ---------- */
-async function goToInvoiceFromIWList(){
-  const from = document.getElementById('iwlist-inv-from').value;
-  const to = document.getElementById('iwlist-inv-to').value;
-  switchTab('miwinvoice');
-  document.getElementById('miw-date-from').value = from;
-  document.getElementById('miw-date-to').value = to;
-  await renderMIWTable();
-}
-
-async function goToInvoiceFromMatList(){
-  const from = document.getElementById('matlist-inv-from').value;
-  const to = document.getElementById('matlist-inv-to').value;
-  switchTab('miwinvoice');
-  document.getElementById('miw-date-from').value = from;
-  document.getElementById('miw-date-to').value = to;
-  await renderMIWTable();
-}
-
-async function goToInvoiceFromMBList(){
-  const from = document.getElementById('mblist-inv-from').value;
-  const to = document.getElementById('mblist-inv-to').value;
-  switchTab('mbinvoice');
-  document.getElementById('mbi-date-from').value = from;
-  document.getElementById('mbi-date-to').value = to;
-  await renderMBInvoiceTab();
-}
-
 /* ---------- 蛍光灯等：請求書照合タブ（月ベースの単純な照合） ---------- */
-function populateMBIYearFilter(){
-  const sel = document.getElementById('mbi-year');
-  if(sel.dataset.populated) return;
-  const curYear = String(new Date().getFullYear());
-  const years = new Set([curYear]);
-  ALL_MB_RECORDS.forEach(r=>{ if(r.record_date) years.add(String(r.record_date).slice(0,4)); });
-  const sorted = [...years].sort().reverse();
-  sel.innerHTML = sorted.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = curYear;
-  sel.addEventListener('change', renderMBInvoiceTab);
-  sel.dataset.populated = '1';
-}
-
-function populateMBIMonthFilter(){
-  const sel = document.getElementById('mbi-month');
-  if(sel.dataset.populated) return;
-  sel.value = String(new Date().getMonth()+1).padStart(2,'0');
-  sel.addEventListener('change', renderMBInvoiceTab);
-  sel.dataset.populated = '1';
-}
-
 async function loadMBInvoiceTab(){
-  populateMBIYearFilter();
-  populateMBIMonthFilter();
+  const fromEl = document.getElementById('mbi-date-from');
+  const toEl = document.getElementById('mbi-date-to');
+  if(!fromEl.dataset.populated){
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    fromEl.value = firstOfMonth.toISOString().slice(0,10);
+    toEl.value = todayStr();
+    fromEl.dataset.populated = '1';
+  }
   await renderMBInvoiceTab();
-}
-
-function clearMBInvoiceDateRange(){
-  document.getElementById('mbi-date-from').value = '';
-  document.getElementById('mbi-date-to').value = '';
-  renderMBInvoiceTab();
 }
 
 async function renderMBInvoiceTab(){
-  const year = document.getElementById('mbi-year').value;
-  const month = document.getElementById('mbi-month').value;
   const from = document.getElementById('mbi-date-from').value;
   const to = document.getElementById('mbi-date-to').value;
   const el = document.getElementById('mbi-total-card');
+  if(!from || !to){
+    el.innerHTML = '<div class="list-summary">集計期間（開始日・終了日）を選択してください</div>';
+    return;
+  }
   el.innerHTML = '<div class="list-summary">読み込み中…</div>';
   try{
+    const year = to.slice(0,4);
+    const month = to.slice(5,7);
     const rows = await sb(`mb_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
     const totalRow = (rows && rows.length>0) ? rows[0] : null;
 
-    let periodRecords, periodLabel;
-    if(from && to){
-      periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && r.record_date>=from && r.record_date<=to);
-      periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
-    }else{
-      periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && String(r.record_date).slice(0,4)===year && String(r.record_date).slice(5,7)===month);
-      periodLabel = `${year}年${Number(month)}月`;
-    }
+    const periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && r.record_date>=from && r.record_date<=to);
+    const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
     const sysTotal = periodRecords.reduce((s,r)=>s+Number(r.total_amount||0),0);
 
     const billedTotal = totalRow ? Number(totalRow.amount) : null;
@@ -2629,8 +2522,10 @@ async function renderMBInvoiceTab(){
 }
 
 async function saveMBInvoiceTotal(){
-  const year = document.getElementById('mbi-year').value;
-  const month = document.getElementById('mbi-month').value;
+  const to = document.getElementById('mbi-date-to').value;
+  if(!to){ showToast('集計期間を選択してください'); return; }
+  const year = to.slice(0,4);
+  const month = to.slice(5,7);
   const val = document.getElementById('mbi-total-input').value;
   if(val === ''){ showToast('金額を入力してください'); return; }
   try{
@@ -2654,47 +2549,30 @@ async function saveMBInvoiceTotal(){
   }
 }
 
-function populateMIWYearFilter(){
-  const sel = document.getElementById('miw-year');
-  if(sel.dataset.populated) return;
-  const curYear = String(new Date().getFullYear());
-  const years = new Set([curYear]);
-  ALL_IW_RECORDS.forEach(r=>{ if(r.record_date) years.add(String(r.record_date).slice(0,4)); });
-  ALL_MAT_RECORDS.forEach(r=>{ if(r.purchase_date) years.add(String(r.purchase_date).slice(0,4)); });
-  const sorted = [...years].sort().reverse();
-  sel.innerHTML = sorted.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = curYear;
-  sel.addEventListener('change', renderMIWTable);
-  sel.dataset.populated = '1';
-}
-
-function populateMIWMonthFilter(){
-  const sel = document.getElementById('miw-month');
-  if(sel.dataset.populated) return;
-  sel.value = String(new Date().getMonth()+1).padStart(2,'0');
-  sel.addEventListener('change', renderMIWTable);
-  sel.dataset.populated = '1';
-}
-
 async function loadMIWInvoiceTab(){
-  populateMIWYearFilter();
-  populateMIWMonthFilter();
+  const fromEl = document.getElementById('miw-date-from');
+  const toEl = document.getElementById('miw-date-to');
+  if(!fromEl.dataset.populated){
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    fromEl.value = firstOfMonth.toISOString().slice(0,10);
+    toEl.value = todayStr();
+    fromEl.dataset.populated = '1';
+  }
   await renderMIWTable();
 }
 
-function clearMIWDateRange(){
-  document.getElementById('miw-date-from').value = '';
-  document.getElementById('miw-date-to').value = '';
-  renderMIWTable();
-}
-
 async function renderMIWTable(){
-  const year = document.getElementById('miw-year').value;
-  const month = document.getElementById('miw-month').value;
   const from = document.getElementById('miw-date-from').value;
   const to = document.getElementById('miw-date-to').value;
-  const useRange = !!(from && to);
   const body = document.getElementById('miw-body');
+  if(!from || !to){
+    body.innerHTML = '<tr><td colspan="8">集計期間（開始日・終了日）を選択してください</td></tr>';
+    document.getElementById('miw-total-card').innerHTML = '';
+    return;
+  }
+  const year = to.slice(0,4);
+  const month = to.slice(5,7);
   body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
   try{
     const invRows = await sb(`material_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
@@ -2704,25 +2582,19 @@ async function renderMIWTable(){
     const iwByVendor = {};
     ALL_IW_RECORDS.forEach(r=>{
       if(!r.record_date || !r.vendor_name) return;
-      const inPeriod = useRange
-        ? (r.record_date>=from && r.record_date<=to)
-        : (String(r.record_date).slice(0,4)===year && String(r.record_date).slice(5,7)===month);
-      if(!inPeriod) return;
+      if(!(r.record_date>=from && r.record_date<=to)) return;
       iwByVendor[r.vendor_name] = (iwByVendor[r.vendor_name]||0) + Number(r.amount||0);
     });
     const matByVendor = {};
     ALL_MAT_RECORDS.forEach(r=>{
       if(!r.purchase_date || !r.vendor_name) return;
-      const inPeriod = useRange
-        ? (r.purchase_date>=from && r.purchase_date<=to)
-        : (String(r.purchase_date).slice(0,4)===year && String(r.purchase_date).slice(5,7)===month);
-      if(!inPeriod) return;
+      if(!(r.purchase_date>=from && r.purchase_date<=to)) return;
       matByVendor[r.vendor_name] = (matByVendor[r.vendor_name]||0) + Number(r.amount||0);
     });
 
     const vendors = new Set([...Object.keys(iwByVendor), ...Object.keys(matByVendor), ...Object.keys(invByVendor)]);
     const vendorList = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
-    const periodLabel = useRange ? `${toWareki(from)} 〜 ${toWareki(to)}` : `${year}年${Number(month)}月`;
+    const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
 
     if(vendorList.length===0){
       body.innerHTML = '<tr><td colspan="8">データがありません</td></tr>';
@@ -2781,8 +2653,10 @@ async function renderMIWTable(){
 async function saveMIWAmount(el){
   const vendor = el.dataset.vendor;
   const value = el.value;
-  const year = document.getElementById('miw-year').value;
-  const month = document.getElementById('miw-month').value;
+  const to = document.getElementById('miw-date-to').value;
+  if(!to){ showToast('集計期間を選択してください'); return; }
+  const year = to.slice(0,4);
+  const month = to.slice(5,7);
   el.disabled = true;
   try{
     const existing = await sb(`material_invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}&vendor_name=eq.${encodeURIComponent(vendor)}`);
@@ -3196,63 +3070,41 @@ function exportSummaryToExcel(){
     ['年間正味重量合計(kg)', d.totalNet],
     ['年間手数料合計(円)', d.totalFee]
   ];
-  downloadWorkbook([{ name:`${d.year}年サマリー`, rows }], `waste_intake_サマリー_${d.year}.xlsx`);
+  downloadWorkbook([{ name:`${d.year}年集計`, rows }], `waste_intake_集計_${d.year}.xlsx`);
 }
 
 /* ---------- 請求書照合 ---------- */
-async function goToInvoiceFromList(){
-  const from = document.getElementById('list-inv-from').value;
-  const to = document.getElementById('list-inv-to').value;
-  switchTab('invoice');
-  document.getElementById('i-date-from').value = from;
-  document.getElementById('i-date-to').value = to;
-  await loadAllRecords();
-  await renderInvoiceTab();
-}
-
 async function loadInvoiceTab(){
   await loadAllRecords();
-  const yearSel = document.getElementById('i-year');
-  if(!yearSel.dataset.populated){
-    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort().reverse();
-    const curYear = String(new Date().getFullYear());
-    if(!years.includes(curYear)) years.unshift(curYear);
-    yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-    yearSel.value = years[0];
-    yearSel.addEventListener('change', renderInvoiceTab);
-    yearSel.dataset.populated = '1';
-    const monthSel = document.getElementById('i-month');
-    monthSel.value = String(new Date().getMonth()+1).padStart(2,'0');
-    monthSel.addEventListener('change', renderInvoiceTab);
+  const fromEl = document.getElementById('i-date-from');
+  const toEl = document.getElementById('i-date-to');
+  if(!fromEl.dataset.populated){
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    fromEl.value = firstOfMonth.toISOString().slice(0,10);
+    toEl.value = todayStr();
+    fromEl.dataset.populated = '1';
   }
   await renderInvoiceTab();
 }
 
-function clearInvoiceDateRange(){
-  document.getElementById('i-date-from').value = '';
-  document.getElementById('i-date-to').value = '';
-  renderInvoiceTab();
-}
-
 async function renderInvoiceTab(){
-  const year = document.getElementById('i-year').value;
-  const month = document.getElementById('i-month').value;
   const from = document.getElementById('i-date-from').value;
   const to = document.getElementById('i-date-to').value;
   const el = document.getElementById('invoice-total-card');
+  if(!from || !to){
+    el.innerHTML = '<div class="list-summary">集計期間（開始日・終了日）を選択してください</div>';
+    return;
+  }
   el.innerHTML = '<div class="list-summary">読み込み中…</div>';
   try{
+    const year = to.slice(0,4);
+    const month = to.slice(5,7);
     const rows = await sb(`invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=is.null`);
     const totalRow = (rows && rows.length>0) ? rows[0] : null;
 
-    let periodRecords, periodLabel;
-    if(from && to){
-      periodRecords = ALL_RECORDS.filter(r=> r.record_date>=from && r.record_date<=to);
-      periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
-    }else{
-      periodRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===year && r.record_date.slice(5,7)===month);
-      periodLabel = `${year}年${Number(month)}月`;
-    }
+    const periodRecords = ALL_RECORDS.filter(r=> r.record_date>=from && r.record_date<=to);
+    const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
     const sysTotal = periodRecords.reduce((s,r)=>s+Number(r.fee||0),0);
     renderInvoiceTotalCard(totalRow, periodRecords.length, sysTotal, year, month, periodLabel);
   }catch(e){
@@ -3287,8 +3139,10 @@ function renderInvoiceTotalCard(totalRow, recordCount, sysTotal, year, month, pe
 }
 
 async function saveInvoiceTotal(){
-  const year = document.getElementById('i-year').value;
-  const month = document.getElementById('i-month').value;
+  const to = document.getElementById('i-date-to').value;
+  if(!to){ showToast('集計期間を選択してください'); return; }
+  const year = to.slice(0,4);
+  const month = to.slice(5,7);
   const val = document.getElementById('inv-total-input').value;
   if(val === ''){ showToast('金額を入力してください'); return; }
   try{
