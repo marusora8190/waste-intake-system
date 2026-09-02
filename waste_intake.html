@@ -279,6 +279,7 @@
       <div class="tab" data-tab="matlist" data-system="industrial" style="display:none;" onclick="switchTab('matlist')">再生材購入 一覧</div>
       <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生材 単価表</div>
       <div class="tab" data-tab="miwinvoice" data-system="industrial" style="display:none;" onclick="switchTab('miwinvoice')">請求書照合</div>
+      <div class="tab" data-tab="mbinvoice" data-system="industrial" style="display:none;" onclick="switchTab('mbinvoice')">蛍光灯等 請求書照合</div>
     </div>
   </div>
 
@@ -391,12 +392,11 @@
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">支払い確認期間</label>
-      <input type="date" id="list-pay-from" oninput="computeListPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
+      <input type="date" id="list-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="list-pay-to" oninput="computeListPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <div class="list-summary" id="list-pay-total">合計: -</div>
-      <button type="button" class="btn btn-primary" onclick="markListPaid()">完全一致（支払い済みにする）</button>
+      <input type="date" id="list-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromList()">請求書照合</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -404,11 +404,11 @@
           <tr>
             <th class="num date-col">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
-            <th class="num">正味重量</th><th class="num">手数料</th><th></th><th class="num">照合</th><th class="num">支払い</th>
+            <th class="num">正味重量</th><th class="num">手数料</th><th></th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="14">読み込み中…</td></tr>
+          <tr><td colspan="12">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -553,12 +553,11 @@
       <div class="list-summary" id="iwlist-summary"></div>
     </div>
     <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">支払い確認期間</label>
-      <input type="date" id="iwlist-pay-from" oninput="computeIWListPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
+      <input type="date" id="iwlist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="iwlist-pay-to" oninput="computeIWListPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <div class="list-summary" id="iwlist-pay-total">合計: -</div>
-      <button type="button" class="btn btn-primary" onclick="markIWListPaid()">完全一致（支払い済みにする）</button>
+      <input type="date" id="iwlist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromIWList()">請求書照合</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -566,11 +565,11 @@
           <tr>
             <th class="num date-col">日付</th><th>時間</th><th class="num">業者</th><th class="num">交付番号</th>
             <th class="num">事業場</th><th class="num">車番</th><th>品名</th><th class="num">数量</th>
-            <th class="num">単価</th><th class="num">小計</th><th class="num">運転手</th><th>備考</th><th></th><th class="num">支払い</th>
+            <th class="num">単価</th><th class="num">小計</th><th class="num">運転手</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="iwlist-body">
-          <tr><td colspan="14">読み込み中…</td></tr>
+          <tr><td colspan="13">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -701,23 +700,22 @@
       </div>
     </div>
     <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">支払い確認期間</label>
-      <input type="date" id="mb-pay-from" oninput="computeMBPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
+      <input type="date" id="mblist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="mb-pay-to" oninput="computeMBPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <div class="list-summary" id="mb-pay-total">合計: -</div>
-      <button type="button" class="btn btn-primary" onclick="markMBPaid()">完全一致（支払い済みにする）</button>
+      <input type="date" id="mblist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromMBList()">請求書照合</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th class="num date-col">搬入日</th><th class="num">蛍光灯</th><th class="num">水銀灯</th><th class="num">電池</th>
-            <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">金額合計</th><th>備考</th><th></th><th class="num">支払い</th>
+            <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">金額合計</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="mb-body">
-          <tr><td colspan="10">読み込み中…</td></tr>
+          <tr><td colspan="9">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -787,23 +785,22 @@
       </div>
     </div>
     <div class="list-toolbar" style="margin-top:-6px;">
-      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">支払い確認期間</label>
-      <input type="date" id="mat-pay-from" oninput="computeMatPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">期間指定</label>
+      <input type="date" id="matlist-inv-from" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <span style="color:var(--muted);">〜</span>
-      <input type="date" id="mat-pay-to" oninput="computeMatPayTotal()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
-      <div class="list-summary" id="mat-pay-total">合計: -</div>
-      <button type="button" class="btn btn-primary" onclick="markMatPaid()">完全一致（支払い済みにする）</button>
+      <input type="date" id="matlist-inv-to" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <button type="button" class="btn btn-primary" onclick="goToInvoiceFromMatList()">請求書照合</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
           <th class="num date-col">購入日</th><th class="num">業者</th><th>品名</th><th class="num">数量</th>
-            <th class="num">単価</th><th class="num">金額</th><th>備考</th><th></th><th class="num">支払い</th>
+            <th class="num">単価</th><th class="num">金額</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="mat-body">
-          <tr><td colspan="9">読み込み中…</td></tr>
+          <tr><td colspan="8">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -853,7 +850,7 @@
 
   <!-- 産廃：請求書照合タブ -->
   <div class="panel" id="tab-miwinvoice" style="display:none;">
-    <div class="inline-field" style="margin-bottom:16px;">
+    <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">請求書照合（業者×月）</div>
       <label>年</label>
       <select id="miw-year"></select>
@@ -864,8 +861,13 @@
         <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
         <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
       </select>
+      <label style="margin-left:10px;">集計期間</label>
+      <input type="date" id="miw-date-from" onchange="renderMIWTable()">
+      <span style="color:var(--muted);">〜</span>
+      <input type="date" id="miw-date-to" onchange="renderMIWTable()">
+      <button type="button" class="btn" onclick="clearMIWDateRange()">期間クリア</button>
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。</div>
+    <div class="field-hint" style="margin-bottom:14px;">産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。集計期間を指定すると、その期間の記録で計算します（未指定の場合は選択した月で計算します）。</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -878,6 +880,29 @@
       </table>
     </div>
     <div id="miw-total-card" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- 蛍光灯等：請求書照合タブ -->
+  <div class="panel" id="tab-mbinvoice" style="display:none;">
+    <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理 請求書照合</div>
+      <label>年</label>
+      <select id="mbi-year"></select>
+      <label>月</label>
+      <select id="mbi-month">
+        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
+        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
+        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+      <label style="margin-left:10px;">集計期間</label>
+      <input type="date" id="mbi-date-from" onchange="renderMBInvoiceTab()">
+      <span style="color:var(--muted);">〜</span>
+      <input type="date" id="mbi-date-to" onchange="renderMBInvoiceTab()">
+      <button type="button" class="btn" onclick="clearMBInvoiceDateRange()">期間クリア</button>
+    </div>
+    <div class="field-hint" style="margin-bottom:14px;">集計期間を指定すると、その期間の記録からシステム集計を計算します（未指定の場合は選択した月の集計になります）。</div>
+    <div id="mbi-total-card"></div>
   </div>
 
   <!-- 車番別集計タブ -->
@@ -943,7 +968,7 @@
 
   <!-- 請求書照合タブ -->
   <div class="panel" id="tab-invoice" style="display:none;">
-    <div class="inline-field" style="margin-bottom:16px;">
+    <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">請求書照合</div>
       <label>年</label>
       <select id="i-year"></select>
@@ -954,40 +979,15 @@
         <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
         <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
       </select>
+      <label style="margin-left:10px;">集計期間</label>
+      <input type="date" id="i-date-from" onchange="renderInvoiceTab()">
+      <span style="color:var(--muted);">〜</span>
+      <input type="date" id="i-date-to" onchange="renderInvoiceTab()">
+      <button type="button" class="btn" onclick="clearInvoiceDateRange()">期間クリア</button>
     </div>
+    <div class="field-hint" style="margin-bottom:14px;">集計期間を指定すると、その期間の記録からシステム集計を計算します（未指定の場合は選択した月の集計になります）。</div>
 
-    <div id="invoice-total-card" style="margin-bottom:24px;"></div>
-
-    <div class="form-title" style="font-size:14px;margin-bottom:10px;">日ごとの明細</div>
-    <div class="edit-banner" id="invoice-edit-banner" style="display:none;">
-      編集中の明細があります。<a href="#" onclick="cancelInvoiceEdit();return false;">編集をキャンセルして新規登録に戻る</a>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;margin-bottom:22px;">
-      <div class="field">
-        <label>日付</label>
-        <input type="date" id="inv-date">
-      </div>
-      <div class="field">
-        <label>車番</label>
-        <input type="text" id="inv-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="例: 奈良45つ4226">
-      </div>
-      <div class="field">
-        <label>請求金額(円)</label>
-        <input type="number" id="inv-amount" placeholder="例: 560">
-      </div>
-      <button class="btn btn-primary" id="invoice-submit-btn" onclick="submitInvoiceLine()">登録する</button>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th class="num date-col">日付</th><th class="num">車番</th><th class="num">請求金額</th><th class="num">システム集計(手数料)</th><th class="num">差額</th><th class="num">判定</th><th></th>
-        </tr></thead>
-        <tbody id="invoice-body">
-          <tr><td colspan="7">読み込み中…</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <div id="invoice-total-card"></div>
   </div>
 
   </div>
@@ -1029,8 +1029,8 @@ function showToast(msg, duration=2600){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), duration);
 }
 
-const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice'];
-const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial' };
+const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice','mbinvoice'];
+const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial', mbinvoice:'industrial' };
 let CURRENT_SYSTEM = 'waste';
 
 function switchTab(name){
@@ -1054,6 +1054,7 @@ function switchTab(name){
   if(name==='matlist') loadMatRecords();
   if(name==='matprice') loadMatPriceList();
   if(name==='miwinvoice') loadMIWInvoiceTab();
+  if(name==='mbinvoice') loadMBInvoiceTab();
 }
 
 function switchSystem(sys){
@@ -1364,46 +1365,18 @@ function setupListSearchFilters(){
   deptEl.dataset.bound = '1';
 }
 
-let INVOICE_MATCH_MAP = {};
-
-async function loadInvoiceMatchMap(){
-  try{
-    const rows = await sb('invoices?select=billing_date,vehicle_no,amount&vehicle_no=not.is.null&billing_date=not.is.null');
-    INVOICE_MATCH_MAP = {};
-    (rows||[]).forEach(r=>{
-      const key = r.billing_date + '|' + r.vehicle_no;
-      INVOICE_MATCH_MAP[key] = Number(r.amount);
-    });
-  }catch(e){
-    console.error(e);
-  }
-}
-
-function invoiceMatchBadge(r){
-  const key = r.record_date + '|' + (r.vehicle_no||'');
-  if(!(key in INVOICE_MATCH_MAP)) return '';
-  const invoiced = INVOICE_MATCH_MAP[key];
-  const sysTotal = ALL_LIST_RECORDS
-    .filter(x => x.record_date===r.record_date && x.vehicle_no===r.vehicle_no)
-    .reduce((s,x)=>s+Number(x.fee||0), 0);
-  return invoiced === sysTotal
-    ? '<span class="invoice-ok">✓一致</span>'
-    : '<span class="invoice-ng">✕不一致</span>';
-}
-
 async function loadList(){
   const body = document.getElementById('list-body');
-  body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
   try{
     const rows = await sb('waste_records?select=*&order=record_date.desc,record_time.desc,id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
-    await loadInvoiceMatchMap();
     populateListYearFilter();
     populateListMonthFilter();
     setupListSearchFilters();
     renderListFiltered();
   }catch(e){
-    body.innerHTML = `<tr><td colspan="13">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="12">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -1483,7 +1456,7 @@ function renderListFiltered(){
   LIST_RECORDS = rows;
 
   if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="14">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="12">記録がありません</td></tr>';
     document.getElementById('list-summary').textContent = '';
     return;
   }
@@ -1504,8 +1477,6 @@ function renderListFiltered(){
         <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
       </td>
-      <td class="num">${invoiceMatchBadge(r)}</td>
-      <td class="num">${r.paid ? '<span class="invoice-ok">済</span>' : ''}</td>
     </tr>
   `).join('');
 
@@ -1523,35 +1494,6 @@ async function deleteRecord(id){
     loadList();
   }catch(e){
     showToast('削除に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
-function computeListPayTotal(){
-  const from = document.getElementById('list-pay-from').value;
-  const to = document.getElementById('list-pay-to').value;
-  const el = document.getElementById('list-pay-total');
-  if(!from || !to){ el.textContent = '合計: -'; return; }
-  const rows = ALL_LIST_RECORDS.filter(r => r.record_date && r.record_date>=from && r.record_date<=to);
-  const total = rows.reduce((s,r)=> s + Number(r.fee||0), 0);
-  el.textContent = `${rows.length}件 ／ 合計 ${total.toLocaleString()}円`;
-}
-
-async function markListPaid(){
-  const from = document.getElementById('list-pay-from').value;
-  const to = document.getElementById('list-pay-to').value;
-  if(!from || !to){ showToast('開始日と終了日を選んでください'); return; }
-  if(from > to){ showToast('開始日は終了日より前にしてください'); return; }
-  if(!confirm(`${from} 〜 ${to} の記録をすべて「支払い済み」にします。よろしいですか？`)) return;
-  try{
-    await sb(`waste_records?record_date=gte.${from}&record_date=lte.${to}`, {
-      method:'PATCH', headers:{'Prefer':'return=minimal'},
-      body: JSON.stringify({ paid: true })
-    });
-    showToast('支払い済みにしました');
-    loadList();
-  }catch(e){
-    showToast('更新に失敗しました: ' + e.message, 6000);
     console.error(e);
   }
 }
@@ -1961,35 +1903,6 @@ async function deleteIWRecord(id){
   }
 }
 
-function computeIWListPayTotal(){
-  const from = document.getElementById('iwlist-pay-from').value;
-  const to = document.getElementById('iwlist-pay-to').value;
-  const el = document.getElementById('iwlist-pay-total');
-  if(!from || !to){ el.textContent = '合計: -'; return; }
-  const rows = ALL_IW_RECORDS.filter(r => r.record_date && r.record_date>=from && r.record_date<=to);
-  const total = rows.reduce((s,r)=> s + Number(r.amount||0), 0);
-  el.textContent = `${rows.length}件 ／ 合計 ${total.toLocaleString()}円`;
-}
-
-async function markIWListPaid(){
-  const from = document.getElementById('iwlist-pay-from').value;
-  const to = document.getElementById('iwlist-pay-to').value;
-  if(!from || !to){ showToast('開始日と終了日を選んでください'); return; }
-  if(from > to){ showToast('開始日は終了日より前にしてください'); return; }
-  if(!confirm(`${from} 〜 ${to} の記録をすべて「支払い済み」にします。よろしいですか？`)) return;
-  try{
-    await sb(`industrial_waste_records?record_date=gte.${from}&record_date=lte.${to}`, {
-      method:'PATCH', headers:{'Prefer':'return=minimal'},
-      body: JSON.stringify({ paid: true })
-    });
-    showToast('支払い済みにしました');
-    loadIWList();
-  }catch(e){
-    showToast('更新に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
 /* ---------- 産廃：一覧タブ ---------- */
 let ALL_IW_RECORDS = [];
 let IW_LIST_RECORDS = [];
@@ -2083,7 +1996,7 @@ function renderIWListFiltered(){
   IW_LIST_RECORDS = rows;
 
   if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="14">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="13">記録がありません</td></tr>';
     document.getElementById('iwlist-summary').textContent = '';
     return;
   }
@@ -2105,7 +2018,6 @@ function renderIWListFiltered(){
         <button class="del-btn" onclick="editIWRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteIWRecord(${r.id})">削除</button>
       </td>
-      <td class="num">${r.paid ? '<span class="invoice-ok">済</span>' : ''}</td>
     </tr>
   `).join('');
 
@@ -2252,35 +2164,6 @@ async function deleteMBRecord(id){
   }
 }
 
-function computeMBPayTotal(){
-  const from = document.getElementById('mb-pay-from').value;
-  const to = document.getElementById('mb-pay-to').value;
-  const el = document.getElementById('mb-pay-total');
-  if(!from || !to){ el.textContent = '合計: -'; return; }
-  const rows = ALL_MB_RECORDS.filter(r => r.record_date && r.record_date>=from && r.record_date<=to);
-  const total = rows.reduce((s,r)=> s + Number(r.total_amount||0), 0);
-  el.textContent = `${rows.length}件 ／ 合計 ${total.toLocaleString()}円`;
-}
-
-async function markMBPaid(){
-  const from = document.getElementById('mb-pay-from').value;
-  const to = document.getElementById('mb-pay-to').value;
-  if(!from || !to){ showToast('開始日と終了日を選んでください'); return; }
-  if(from > to){ showToast('開始日は終了日より前にしてください'); return; }
-  if(!confirm(`${from} 〜 ${to} の記録をすべて「支払い済み」にします。よろしいですか？`)) return;
-  try{
-    await sb(`mb_records?record_date=gte.${from}&record_date=lte.${to}`, {
-      method:'PATCH', headers:{'Prefer':'return=minimal'},
-      body: JSON.stringify({ paid: true })
-    });
-    showToast('支払い済みにしました');
-    loadMBRecords();
-  }catch(e){
-    showToast('更新に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
 async function loadMBRecords(){
   const body = document.getElementById('mb-body');
   if(body) body.innerHTML = '<tr><td colspan="9">読み込み中…</td></tr>';
@@ -2298,7 +2181,7 @@ function renderMBList(){
   const body = document.getElementById('mb-body');
   if(!body) return;
   if(ALL_MB_RECORDS.length===0){
-    body.innerHTML = '<tr><td colspan="10">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="9">記録がありません</td></tr>';
     document.getElementById('mb-summary').textContent = '';
     return;
   }
@@ -2316,7 +2199,6 @@ function renderMBList(){
         <button class="del-btn" onclick="editMBRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteMBRecord(${r.id})">削除</button>
       </td>
-      <td class="num">${r.paid ? '<span class="invoice-ok">済</span>' : ''}</td>
     </tr>
   `).join('');
   const totalAmount = ALL_MB_RECORDS.reduce((s,r)=> s + Number(r.total_amount||0), 0);
@@ -2586,35 +2468,6 @@ async function deleteMatRecord(id){
   }
 }
 
-function computeMatPayTotal(){
-  const from = document.getElementById('mat-pay-from').value;
-  const to = document.getElementById('mat-pay-to').value;
-  const el = document.getElementById('mat-pay-total');
-  if(!from || !to){ el.textContent = '合計: -'; return; }
-  const rows = ALL_MAT_RECORDS.filter(r => r.purchase_date && r.purchase_date>=from && r.purchase_date<=to);
-  const total = rows.reduce((s,r)=> s + Number(r.amount||0), 0);
-  el.textContent = `${rows.length}件 ／ 合計 ${total.toLocaleString()}円`;
-}
-
-async function markMatPaid(){
-  const from = document.getElementById('mat-pay-from').value;
-  const to = document.getElementById('mat-pay-to').value;
-  if(!from || !to){ showToast('開始日と終了日を選んでください'); return; }
-  if(from > to){ showToast('開始日は終了日より前にしてください'); return; }
-  if(!confirm(`${from} 〜 ${to} の記録をすべて「支払い済み」にします。よろしいですか？`)) return;
-  try{
-    await sb(`material_purchases?purchase_date=gte.${from}&purchase_date=lte.${to}`, {
-      method:'PATCH', headers:{'Prefer':'return=minimal'},
-      body: JSON.stringify({ paid: true })
-    });
-    showToast('支払い済みにしました');
-    loadMatRecords();
-  }catch(e){
-    showToast('更新に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
 async function loadMatRecords(){
   const body = document.getElementById('mat-body');
   if(body) body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
@@ -2633,7 +2486,7 @@ function renderMatList(){
   const body = document.getElementById('mat-body');
   if(!body) return;
   if(ALL_MAT_RECORDS.length===0){
-    body.innerHTML = '<tr><td colspan="9">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="8">記録がありません</td></tr>';
     document.getElementById('mat-summary').textContent = '';
     return;
   }
@@ -2650,7 +2503,6 @@ function renderMatList(){
         <button class="del-btn" onclick="editMatRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteMatRecord(${r.id})">削除</button>
       </td>
-      <td class="num">${r.paid ? '<span class="invoice-ok">済</span>' : ''}</td>
     </tr>
   `).join('');
   const totalAmount = ALL_MAT_RECORDS.reduce((s,r)=> s + Number(r.amount||0), 0);
@@ -2667,6 +2519,141 @@ function exportMatListToExcel(){
 }
 
 /* ---------- 産廃：請求書照合タブ（業者×月） ---------- */
+async function goToInvoiceFromIWList(){
+  const from = document.getElementById('iwlist-inv-from').value;
+  const to = document.getElementById('iwlist-inv-to').value;
+  switchTab('miwinvoice');
+  document.getElementById('miw-date-from').value = from;
+  document.getElementById('miw-date-to').value = to;
+  await renderMIWTable();
+}
+
+async function goToInvoiceFromMatList(){
+  const from = document.getElementById('matlist-inv-from').value;
+  const to = document.getElementById('matlist-inv-to').value;
+  switchTab('miwinvoice');
+  document.getElementById('miw-date-from').value = from;
+  document.getElementById('miw-date-to').value = to;
+  await renderMIWTable();
+}
+
+async function goToInvoiceFromMBList(){
+  const from = document.getElementById('mblist-inv-from').value;
+  const to = document.getElementById('mblist-inv-to').value;
+  switchTab('mbinvoice');
+  document.getElementById('mbi-date-from').value = from;
+  document.getElementById('mbi-date-to').value = to;
+  await renderMBInvoiceTab();
+}
+
+/* ---------- 蛍光灯等：請求書照合タブ（月ベースの単純な照合） ---------- */
+function populateMBIYearFilter(){
+  const sel = document.getElementById('mbi-year');
+  if(sel.dataset.populated) return;
+  const curYear = String(new Date().getFullYear());
+  const years = new Set([curYear]);
+  ALL_MB_RECORDS.forEach(r=>{ if(r.record_date) years.add(String(r.record_date).slice(0,4)); });
+  const sorted = [...years].sort().reverse();
+  sel.innerHTML = sorted.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  sel.value = curYear;
+  sel.addEventListener('change', renderMBInvoiceTab);
+  sel.dataset.populated = '1';
+}
+
+function populateMBIMonthFilter(){
+  const sel = document.getElementById('mbi-month');
+  if(sel.dataset.populated) return;
+  sel.value = String(new Date().getMonth()+1).padStart(2,'0');
+  sel.addEventListener('change', renderMBInvoiceTab);
+  sel.dataset.populated = '1';
+}
+
+async function loadMBInvoiceTab(){
+  populateMBIYearFilter();
+  populateMBIMonthFilter();
+  await renderMBInvoiceTab();
+}
+
+function clearMBInvoiceDateRange(){
+  document.getElementById('mbi-date-from').value = '';
+  document.getElementById('mbi-date-to').value = '';
+  renderMBInvoiceTab();
+}
+
+async function renderMBInvoiceTab(){
+  const year = document.getElementById('mbi-year').value;
+  const month = document.getElementById('mbi-month').value;
+  const from = document.getElementById('mbi-date-from').value;
+  const to = document.getElementById('mbi-date-to').value;
+  const el = document.getElementById('mbi-total-card');
+  el.innerHTML = '<div class="list-summary">読み込み中…</div>';
+  try{
+    const rows = await sb(`mb_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
+    const totalRow = (rows && rows.length>0) ? rows[0] : null;
+
+    let periodRecords, periodLabel;
+    if(from && to){
+      periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && r.record_date>=from && r.record_date<=to);
+      periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
+    }else{
+      periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && String(r.record_date).slice(0,4)===year && String(r.record_date).slice(5,7)===month);
+      periodLabel = `${year}年${Number(month)}月`;
+    }
+    const sysTotal = periodRecords.reduce((s,r)=>s+Number(r.total_amount||0),0);
+
+    const billedTotal = totalRow ? Number(totalRow.amount) : null;
+    const diff = billedTotal===null ? null : billedTotal - sysTotal;
+    el.innerHTML = `
+      <div class="invoice-total-row">
+        <div class="summary-total-card">
+          <div class="label">請求書の合計金額(${year}年${Number(month)}月分として保存)</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+            <input type="number" id="mbi-total-input" value="${billedTotal===null?'':billedTotal}" placeholder="例: 46200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;">
+            <button class="btn" onclick="saveMBInvoiceTotal()">保存</button>
+          </div>
+        </div>
+        <div class="summary-total-card">
+          <div class="label">システム集計（${periodLabel} ／ ${periodRecords.length}件）</div>
+          <div class="value" style="font-size:18px;">${sysTotal.toLocaleString()}円</div>
+        </div>
+        <div class="summary-total-card">
+          <div class="label">差額(請求書 − システム)</div>
+          <div class="value ${billedTotal===null?'':(diff===0?'invoice-ok':'invoice-ng')}" style="font-size:18px;">${billedTotal===null?'-':(diff>0?'+':'')+diff.toLocaleString()+'円'}</div>
+        </div>
+      </div>
+    `;
+  }catch(e){
+    el.innerHTML = `<div class="list-summary">読み込みに失敗しました: ${e.message}</div>`;
+    console.error(e);
+  }
+}
+
+async function saveMBInvoiceTotal(){
+  const year = document.getElementById('mbi-year').value;
+  const month = document.getElementById('mbi-month').value;
+  const val = document.getElementById('mbi-total-input').value;
+  if(val === ''){ showToast('金額を入力してください'); return; }
+  try{
+    const existing = await sb(`mb_invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}`);
+    if(existing && existing.length>0){
+      await sb(`mb_invoices?id=eq.${existing[0].id}`, {
+        method:'PATCH', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ amount: Number(val), updated_at: new Date().toISOString() })
+      });
+    }else{
+      await sb('mb_invoices', {
+        method:'POST', headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({ billing_year: year, billing_month: month, amount: Number(val) })
+      });
+    }
+    showToast('請求書合計金額を保存しました');
+    renderMBInvoiceTab();
+  }catch(e){
+    showToast('保存に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
 function populateMIWYearFilter(){
   const sel = document.getElementById('miw-year');
   if(sel.dataset.populated) return;
@@ -2695,9 +2682,18 @@ async function loadMIWInvoiceTab(){
   await renderMIWTable();
 }
 
+function clearMIWDateRange(){
+  document.getElementById('miw-date-from').value = '';
+  document.getElementById('miw-date-to').value = '';
+  renderMIWTable();
+}
+
 async function renderMIWTable(){
   const year = document.getElementById('miw-year').value;
   const month = document.getElementById('miw-month').value;
+  const from = document.getElementById('miw-date-from').value;
+  const to = document.getElementById('miw-date-to').value;
+  const useRange = !!(from && to);
   const body = document.getElementById('miw-body');
   body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
   try{
@@ -2708,18 +2704,25 @@ async function renderMIWTable(){
     const iwByVendor = {};
     ALL_IW_RECORDS.forEach(r=>{
       if(!r.record_date || !r.vendor_name) return;
-      if(String(r.record_date).slice(0,4)!==year || String(r.record_date).slice(5,7)!==month) return;
+      const inPeriod = useRange
+        ? (r.record_date>=from && r.record_date<=to)
+        : (String(r.record_date).slice(0,4)===year && String(r.record_date).slice(5,7)===month);
+      if(!inPeriod) return;
       iwByVendor[r.vendor_name] = (iwByVendor[r.vendor_name]||0) + Number(r.amount||0);
     });
     const matByVendor = {};
     ALL_MAT_RECORDS.forEach(r=>{
       if(!r.purchase_date || !r.vendor_name) return;
-      if(String(r.purchase_date).slice(0,4)!==year || String(r.purchase_date).slice(5,7)!==month) return;
+      const inPeriod = useRange
+        ? (r.purchase_date>=from && r.purchase_date<=to)
+        : (String(r.purchase_date).slice(0,4)===year && String(r.purchase_date).slice(5,7)===month);
+      if(!inPeriod) return;
       matByVendor[r.vendor_name] = (matByVendor[r.vendor_name]||0) + Number(r.amount||0);
     });
 
     const vendors = new Set([...Object.keys(iwByVendor), ...Object.keys(matByVendor), ...Object.keys(invByVendor)]);
     const vendorList = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
+    const periodLabel = useRange ? `${toWareki(from)} 〜 ${toWareki(to)}` : `${year}年${Number(month)}月`;
 
     if(vendorList.length===0){
       body.innerHTML = '<tr><td colspan="8">データがありません</td></tr>';
@@ -2756,11 +2759,11 @@ async function renderMIWTable(){
     document.getElementById('miw-total-card').innerHTML = `
       <div class="invoice-total-row">
         <div class="summary-total-card">
-          <div class="label">請求書合計（入力済み分, ${year}年${Number(month)}月）</div>
+          <div class="label">請求書合計（入力済み分, ${year}年${Number(month)}月分として保存）</div>
           <div class="value" style="font-size:18px;">${billedGrandTotal.toLocaleString()}円</div>
         </div>
         <div class="summary-total-card">
-          <div class="label">システム集計合計</div>
+          <div class="label">システム集計合計（${periodLabel}）</div>
           <div class="value" style="font-size:18px;">${sysGrandTotal.toLocaleString()}円</div>
         </div>
         <div class="summary-total-card">
@@ -3197,8 +3200,15 @@ function exportSummaryToExcel(){
 }
 
 /* ---------- 請求書照合 ---------- */
-let EDITING_INVOICE_ID = null;
-let INVOICE_LINES = [];
+async function goToInvoiceFromList(){
+  const from = document.getElementById('list-inv-from').value;
+  const to = document.getElementById('list-inv-to').value;
+  switchTab('invoice');
+  document.getElementById('i-date-from').value = from;
+  document.getElementById('i-date-to').value = to;
+  await loadAllRecords();
+  await renderInvoiceTab();
+}
 
 async function loadInvoiceTab(){
   await loadAllRecords();
@@ -3218,84 +3228,54 @@ async function loadInvoiceTab(){
   await renderInvoiceTab();
 }
 
+function clearInvoiceDateRange(){
+  document.getElementById('i-date-from').value = '';
+  document.getElementById('i-date-to').value = '';
+  renderInvoiceTab();
+}
+
 async function renderInvoiceTab(){
   const year = document.getElementById('i-year').value;
   const month = document.getElementById('i-month').value;
-  const body = document.getElementById('invoice-body');
-  body.innerHTML = '<tr><td colspan="7">読み込み中…</td></tr>';
+  const from = document.getElementById('i-date-from').value;
+  const to = document.getElementById('i-date-to').value;
+  const el = document.getElementById('invoice-total-card');
+  el.innerHTML = '<div class="list-summary">読み込み中…</div>';
   try{
-    const rows = await sb(`invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
-    INVOICE_LINES = (rows||[]).filter(r=>r.vehicle_no && r.billing_date);
-    const totalRow = (rows||[]).find(r=>!r.vehicle_no) || null;
+    const rows = await sb(`invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=is.null`);
+    const totalRow = (rows && rows.length>0) ? rows[0] : null;
 
-    const monthRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===year && r.record_date.slice(5,7)===month);
-    // システム側：日付+車番ごとの手数料合計（同日同車番が複数回ある場合は合算）
-    const sysByDateVehicle = {};
-    monthRecords.forEach(r=>{
-      const key = r.record_date + '|' + (r.vehicle_no||'');
-      sysByDateVehicle[key] = (sysByDateVehicle[key]||0) + Number(r.fee||0);
-    });
-    const sysTotal = monthRecords.reduce((s,r)=>s+Number(r.fee||0),0);
-
-    // 明細行（請求書）＋システム側にあって明細未入力のもの、両方を日付順で列挙
-    const keySet = new Set([
-      ...INVOICE_LINES.map(l => l.billing_date + '|' + l.vehicle_no),
-      ...Object.keys(sysByDateVehicle)
-    ]);
-    const keys = [...keySet].sort();
-
-    let lineSum = 0;
-    if(keys.length===0){
-      body.innerHTML = '<tr><td colspan="7">データがありません</td></tr>';
+    let periodRecords, periodLabel;
+    if(from && to){
+      periodRecords = ALL_RECORDS.filter(r=> r.record_date>=from && r.record_date<=to);
+      periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
     }else{
-      body.innerHTML = keys.map(key=>{
-        const [date, v] = key.split('|');
-        const line = INVOICE_LINES.find(l=> l.billing_date===date && l.vehicle_no===v);
-        const billed = line ? Number(line.amount) : null;
-        const sys = sysByDateVehicle[key] || 0;
-        if(billed!==null) lineSum += billed;
-        const diff = billed===null ? null : billed - sys;
-        const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
-        const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
-        return `<tr>
-          <td class="num date-col">${toWareki(date)}</td>
-          <td class="num">${v}</td>
-          <td class="num">${billed===null ? '-' : billed.toLocaleString()+'円'}</td>
-          <td class="num">${sys.toLocaleString()}円</td>
-          <td class="num">${billed===null ? '-' : (diff>0?'+':'')+diff.toLocaleString()+'円'}</td>
-          <td class="num ${okClass}">${okLabel}</td>
-          <td class="action-cell">
-            ${line ? `<button class="del-btn" onclick="editInvoiceLine(${line.id})">編集</button><button class="del-btn" onclick="deleteInvoiceLine(${line.id})">削除</button>` : ''}
-          </td>
-        </tr>`;
-      }).join('');
+      periodRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4)===year && r.record_date.slice(5,7)===month);
+      periodLabel = `${year}年${Number(month)}月`;
     }
-    renderInvoiceTotalCard(totalRow, lineSum, sysTotal, year, month);
+    const sysTotal = periodRecords.reduce((s,r)=>s+Number(r.fee||0),0);
+    renderInvoiceTotalCard(totalRow, periodRecords.length, sysTotal, year, month, periodLabel);
   }catch(e){
-    body.innerHTML = `<tr><td colspan="7">読み込みに失敗しました: ${e.message}</td></tr>`;
+    el.innerHTML = `<div class="list-summary">読み込みに失敗しました: ${e.message}</div>`;
     console.error(e);
   }
 }
 
-function renderInvoiceTotalCard(totalRow, lineSum, sysTotal, year, month){
+function renderInvoiceTotalCard(totalRow, recordCount, sysTotal, year, month, periodLabel){
   const el = document.getElementById('invoice-total-card');
   const billedTotal = totalRow ? Number(totalRow.amount) : null;
   const diffVsSys = billedTotal===null ? null : billedTotal - sysTotal;
   el.innerHTML = `
     <div class="invoice-total-row">
       <div class="summary-total-card">
-        <div class="label">請求書の合計金額(${year}年${Number(month)}月)</div>
+        <div class="label">請求書の合計金額(${year}年${Number(month)}月分として保存)</div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
           <input type="number" id="inv-total-input" value="${billedTotal===null?'':billedTotal}" placeholder="例: 46200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;">
           <button class="btn" onclick="saveInvoiceTotal()">保存</button>
         </div>
       </div>
       <div class="summary-total-card">
-        <div class="label">明細合計(入力分)</div>
-        <div class="value" style="font-size:18px;">${lineSum.toLocaleString()}円</div>
-      </div>
-      <div class="summary-total-card">
-        <div class="label">システム手数料合計</div>
+        <div class="label">システム集計（${periodLabel} ／ ${recordCount}件）</div>
         <div class="value" style="font-size:18px;">${sysTotal.toLocaleString()}円</div>
       </div>
       <div class="summary-total-card">
@@ -3328,89 +3308,6 @@ async function saveInvoiceTotal(){
     renderInvoiceTab();
   }catch(e){
     showToast('保存に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
-function editInvoiceLine(id){
-  const line = INVOICE_LINES.find(l=>l.id===id);
-  if(!line) return;
-  EDITING_INVOICE_ID = id;
-  document.getElementById('inv-date').value = line.billing_date;
-  document.getElementById('inv-vehicle').value = line.vehicle_no;
-  document.getElementById('inv-amount').value = line.amount;
-  document.getElementById('invoice-submit-btn').textContent = '更新する';
-  document.getElementById('invoice-edit-banner').style.display = '';
-}
-
-function cancelInvoiceEdit(){
-  EDITING_INVOICE_ID = null;
-  document.getElementById('inv-date').value = '';
-  document.getElementById('inv-vehicle').value = '';
-  document.getElementById('inv-amount').value = '';
-  document.getElementById('invoice-submit-btn').textContent = '登録する';
-  document.getElementById('invoice-edit-banner').style.display = 'none';
-}
-
-async function submitInvoiceLine(){
-  const date = document.getElementById('inv-date').value;
-  const vehicle = document.getElementById('inv-vehicle').value.trim();
-  const amount = document.getElementById('inv-amount').value;
-  if(!date || !vehicle || amount===''){
-    showToast('日付・車番・請求金額をすべて入力してください');
-    return;
-  }
-  const year = date.slice(0,4);
-  const month = date.slice(5,7);
-  try{
-    if(EDITING_INVOICE_ID){
-      await sb(`invoices?id=eq.${EDITING_INVOICE_ID}`, {
-        method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ billing_year: year, billing_month: month, billing_date: date, vehicle_no: vehicle, amount: Number(amount), updated_at: new Date().toISOString() })
-      });
-      showToast('明細を更新しました');
-    }else{
-      const existing = await sb(`invoices?select=id,amount&billing_date=eq.${date}&vehicle_no=eq.${encodeURIComponent(vehicle)}`);
-      if(existing && existing.length>0){
-        const oldAmount = Number(existing[0].amount).toLocaleString();
-        const newAmount = Number(amount).toLocaleString();
-        const ok = confirm(`${date} ${vehicle} はすでに ${oldAmount}円 で登録されています。\n${newAmount}円 に上書きしますか？`);
-        if(!ok){
-          showToast('登録をキャンセルしました');
-          return;
-        }
-        await sb(`invoices?id=eq.${existing[0].id}`, {
-          method:'PATCH', headers:{'Prefer':'return=minimal'},
-          body: JSON.stringify({ amount: Number(amount), updated_at: new Date().toISOString() })
-        });
-        showToast('既存の明細を更新しました');
-      }else{
-        await sb('invoices', {
-          method:'POST', headers:{'Prefer':'return=minimal'},
-          body: JSON.stringify({ billing_year: year, billing_month: month, billing_date: date, vehicle_no: vehicle, amount: Number(amount) })
-        });
-        showToast('明細を登録しました');
-      }
-    }
-    // 入力した日付の年月が現在表示中のタブと違う場合は、そちらに切り替える
-    document.getElementById('i-year').value = year;
-    document.getElementById('i-month').value = month;
-    cancelInvoiceEdit();
-    renderInvoiceTab();
-  }catch(e){
-    showToast('保存に失敗しました: ' + e.message, 6000);
-    console.error(e);
-  }
-}
-
-async function deleteInvoiceLine(id){
-  if(!confirm('この明細を削除しますか？')) return;
-  try{
-    await sb(`invoices?id=eq.${id}`, { method:'DELETE' });
-    showToast('削除しました');
-    renderInvoiceTab();
-  }catch(e){
-    showToast('削除に失敗しました: ' + e.message, 6000);
     console.error(e);
   }
 }
