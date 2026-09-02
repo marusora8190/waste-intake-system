@@ -274,12 +274,12 @@
       <div class="tab" data-tab="department" data-system="waste" onclick="switchTab('department')">持込部署集計</div>
       <div class="tab" data-tab="summary" data-system="waste" onclick="switchTab('summary')">月次集計</div>
       <div class="tab" data-tab="invoice" data-system="waste" onclick="switchTab('invoice')">請求書照合</div>
-      <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">入　力</div>
-      <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">一　覧</div>
+      <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">廃材入力</div>
+      <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">廃材一覧</div>
       <div class="tab" data-tab="iwprice" data-system="industrial" style="display:none;" onclick="switchTab('iwprice')">廃材単価表</div>
       <div class="tab" data-tab="iwmb" data-system="industrial" style="display:none;" onclick="switchTab('iwmb')">蛍光灯・水銀灯・電池処理</div>
-      <div class="tab" data-tab="matinput" data-system="industrial" style="display:none;" onclick="switchTab('matinput')">再生材購入 入力</div>
-      <div class="tab" data-tab="matlist" data-system="industrial" style="display:none;" onclick="switchTab('matlist')">再生材購入 一覧</div>
+      <div class="tab" data-tab="matinput" data-system="industrial" style="display:none;" onclick="switchTab('matinput')">再生資材・雑品購入入力</div>
+      <div class="tab" data-tab="matlist" data-system="industrial" style="display:none;" onclick="switchTab('matlist')">再生材・雑品購入 一覧</div>
       <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生資材・雑品単価表</div>
       <div class="tab" data-tab="miwinvoice" data-system="industrial" style="display:none;" onclick="switchTab('miwinvoice')">請求書照合</div>
       <div class="tab" data-tab="mbinvoice" data-system="industrial" style="display:none;" onclick="switchTab('mbinvoice')">蛍光灯等 請求書照合</div>
@@ -720,7 +720,7 @@
   <!-- 産廃：再生材購入タブ -->
   <!-- 再生材：入力タブ -->
   <div class="panel" id="tab-matinput" style="display:none;">
-    <div class="form-title">再生材購入 入力</div>
+    <div class="form-title">再生資材・雑品購入 入力</div>
     <div class="edit-banner" id="mat-edit-banner" style="display:none;">
       編集中の記録があります。<a href="#" onclick="cancelMatEdit();return false;">編集をキャンセルして新規入力に戻る</a>
     </div>
@@ -774,7 +774,7 @@
   <!-- 再生材：一覧タブ -->
   <div class="panel" id="tab-matlist" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">再生材購入 一覧</div>
+      <div class="form-title" style="margin:0;">再生材・雑品購入 一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button type="button" class="btn" onclick="exportMatListToExcel()">Excelダウンロード</button>
         <div class="list-summary" id="mat-summary"></div>
