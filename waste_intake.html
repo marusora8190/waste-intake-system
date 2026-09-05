@@ -2704,7 +2704,7 @@ async function saveMBInvoiceTotal(){
 
 function getMIWBillingGroup(vendorName){
   // ㈱ITO奈良が本店・㈱ITO天理が支店。請求書は本店（ITO奈良）が発行するため、照合上は1つのグループとして扱う
-  if(vendorName === '㈱ITO天理' || vendorName === '㈱ITO奈良') return '㈱ITO奈良（本店・天理支店 合算）';
+  if(vendorName === '㈱ITO天理' || vendorName === '㈱ITO奈良') return '㈱ITO奈良（奈良・天理 合算）';
   return vendorName;
 }
 
