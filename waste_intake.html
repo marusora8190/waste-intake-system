@@ -2702,16 +2702,23 @@ async function saveMBInvoiceTotal(){
   }
 }
 
+function getMIWBillingGroup(vendorName){
+  // ㈱ITO奈良が本店・㈱ITO天理が支店。請求書は本店（ITO奈良）が発行するため、照合上は1つのグループとして扱う
+  if(vendorName === '㈱ITO天理' || vendorName === '㈱ITO奈良') return '㈱ITO奈良（本店・天理支店 合算）';
+  return vendorName;
+}
+
 function populateMIWVendorFilter(){
   const sel = document.getElementById('miw-vendor-filter');
   if(sel.dataset.populated) return;
   const vendors = new Set();
-  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
-  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(r.vendor_name); });
+  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(getMIWBillingGroup(r.vendor_name)); });
+  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(getMIWBillingGroup(r.vendor_name)); });
   const sorted = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
   sel.innerHTML = '<option value="">すべての業者</option>' + sorted.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
   sel.dataset.populated = '1';
 }
+
 
 async function loadMIWInvoiceTab(){
   const fromEl = document.getElementById('miw-date-from');
@@ -2744,19 +2751,28 @@ async function renderMIWTable(){
 
     const invRows = await sb(`material_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
     const invByVendor = {};
-    (invRows||[]).forEach(r=> invByVendor[r.vendor_name] = r);
+    (invRows||[]).forEach(r=> {
+      const g = getMIWBillingGroup(r.vendor_name);
+      if(invByVendor[g]) invByVendor[g] = { ...invByVendor[g], amount: Number(invByVendor[g].amount) + Number(r.amount) };
+      else invByVendor[g] = r;
+    });
 
     const iwByVendor = {};
+    const iwBreakdown = {};
     ALL_IW_RECORDS.forEach(r=>{
       if(!r.record_date || !r.vendor_name) return;
       if(!(r.record_date>=from && r.record_date<=to)) return;
-      iwByVendor[r.vendor_name] = (iwByVendor[r.vendor_name]||0) + Number(r.amount||0);
+      const g = getMIWBillingGroup(r.vendor_name);
+      iwByVendor[g] = (iwByVendor[g]||0) + Number(r.amount||0);
+      if(!iwBreakdown[g]) iwBreakdown[g] = {};
+      iwBreakdown[g][r.vendor_name] = (iwBreakdown[g][r.vendor_name]||0) + Number(r.amount||0);
     });
     const matByVendor = {};
     ALL_MAT_RECORDS.forEach(r=>{
       if(!r.purchase_date || !r.vendor_name) return;
       if(!(r.purchase_date>=from && r.purchase_date<=to)) return;
-      matByVendor[r.vendor_name] = (matByVendor[r.vendor_name]||0) + Number(r.amount||0);
+      const g = getMIWBillingGroup(r.vendor_name);
+      matByVendor[g] = (matByVendor[g]||0) + Number(r.amount||0);
     });
 
     let vendorList;
@@ -2787,9 +2803,15 @@ async function renderMIWTable(){
       const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
       const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
       const escVendor = String(v).replace(/"/g,'&quot;');
+      const bd = iwBreakdown[v];
+      let iwCell = `${iwAmt.toLocaleString()}円`;
+      if(bd && Object.keys(bd).length>1){
+        const parts = Object.keys(bd).sort().map(k=>`${k.replace('㈱ITO','')}:${bd[k].toLocaleString()}円`).join(' + ');
+        iwCell = `${iwAmt.toLocaleString()}円<br><span style="font-size:11px;font-weight:400;color:var(--muted);">(${parts})</span>`;
+      }
       return `<tr>
         <td class="num">${v}</td>
-        <td class="num">${iwAmt.toLocaleString()}円</td>
+        <td class="num">${iwCell}</td>
         <td class="num">${matAmt.toLocaleString()}円</td>
         <td class="num">${sysTotal.toLocaleString()}円</td>
         <td class="num"><input type="number" class="miw-amt-input" data-vendor="${escVendor}" value="${billed===null?'':billed}" placeholder="未入力" style="width:110px;padding:4px 6px;border:1px solid #d8d1c2;border-radius:6px;font-size:13.5px;text-align:right;" onchange="saveMIWAmount(this)"></td>
