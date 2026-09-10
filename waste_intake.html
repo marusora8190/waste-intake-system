@@ -297,10 +297,13 @@
           <div class="system-tab" data-system="industrial" onclick="switchSystem('industrial')">②産業廃棄物</div>
         </div>
       </div>
+      <span id="refresh-btn-wrap" style="display:flex;align-items:center;">
       <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
         <span class="refresh-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
-        <span id="refresh-btn-label">最新の状態に更新</span>
+        <span id="refresh-btn-label">アップデート</span>
       </button>
+      <span id="refresh-done-msg" style="display:none;color:#2e7d32;font-weight:700;font-size:14px;">✓ 最新の状態に更新されました</span>
+      </span>
       <button class="btn" id="nav-toggle-btn" onclick="toggleNavArea()" style="flex-shrink:0;">メニューを隠す</button>
     </div>
   </div>
@@ -1042,7 +1045,9 @@ function switchTab(name){
     const btn = document.querySelector(`.tab[data-tab="${n}"]`);
     if(btn) btn.classList.toggle('active', n===name);
   });
-  document.getElementById('refresh-btn').style.display = (name==='input' || name==='iwinput') ? 'flex' : 'none';
+  const showRefresh = (name==='input' || name==='iwinput');
+  document.getElementById('refresh-btn').style.display = showRefresh ? 'flex' : 'none';
+  document.getElementById('refresh-done-msg').style.display = 'none';
   if(name==='list') loadList();
   if(name==='cards') loadCards();
   if(name==='vehicle') loadVehicleSummary();
@@ -3379,6 +3384,7 @@ async function saveInvoiceTotal(){
 async function refreshData(){
   const btn = document.getElementById('refresh-btn');
   const label = document.getElementById('refresh-btn-label');
+  const doneMsg = document.getElementById('refresh-done-msg');
   btn.disabled = true;
   label.textContent = '更新中…';
   try{
@@ -3397,13 +3403,20 @@ async function refreshData(){
     await loadDepartmentSummary();
     await loadYearSummary();
     await loadInvoiceTab();
-    label.textContent = '更新済';
     btn.disabled = false;
+    label.textContent = 'アップデート';
+    btn.style.display = 'none';
+    doneMsg.style.display = 'inline';
+    clearTimeout(doneMsg._hideTimer);
+    doneMsg._hideTimer = setTimeout(()=>{
+      doneMsg.style.display = 'none';
+      btn.style.display = 'flex';
+    }, 3000);
   }catch(e){
     showToast('更新に失敗しました: ' + e.message, 6000);
     console.error(e);
     btn.disabled = false;
-    label.textContent = '最新の状態に更新';
+    label.textContent = 'アップデート';
   }
 }
 
