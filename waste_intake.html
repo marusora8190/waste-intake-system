@@ -424,7 +424,8 @@
     <div class="list-toolbar">
       <div class="form-title" style="margin:0;">一覧</div>
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
-      <button type="button" class="btn" id="list-sort-toggle-btn" onclick="toggleListSortMode()">日付順に並びかえ</button>
+      <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
+      <button type="button" class="btn btn-primary" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
       <div class="list-summary" id="list-summary"></div>
     </div>
@@ -1409,16 +1410,11 @@ let ALL_LIST_RECORDS = [];
 let LIST_SORT_MODE = 'entry'; // 'entry' = 登録順(新しい入力が上), 'date' = 日付順(新しい日付が上)
 let NEWLY_ADDED_IDS = new Set(); // 「日付順に並びかえ」が押されるまで黄色くハイライトし続ける新規登録のid群
 
-function toggleListSortMode(){
-  const btn = document.getElementById('list-sort-toggle-btn');
+function setListSortMode(mode){
+  LIST_SORT_MODE = mode;
   NEWLY_ADDED_IDS.clear();
-  if(LIST_SORT_MODE === 'entry'){
-    LIST_SORT_MODE = 'date';
-    btn.textContent = '登録順に並びかえ';
-  }else{
-    LIST_SORT_MODE = 'entry';
-    btn.textContent = '日付順に並びかえ';
-  }
+  document.getElementById('list-sort-date-btn').classList.toggle('btn-primary', mode==='date');
+  document.getElementById('list-sort-entry-btn').classList.toggle('btn-primary', mode==='entry');
   renderListFiltered();
 }
 let LIST_RECORDS = [];
@@ -1575,10 +1571,10 @@ function renderListFiltered(){
   });
   if(LIST_SORT_MODE === 'date'){
     rows.sort((a,b)=>{
-      if(a.record_date !== b.record_date) return a.record_date < b.record_date ? 1 : -1;
+      if(a.record_date !== b.record_date) return a.record_date > b.record_date ? 1 : -1;
       const at = a.record_time || '', bt = b.record_time || '';
-      if(at !== bt) return at < bt ? 1 : -1;
-      return b.id - a.id;
+      if(at !== bt) return at > bt ? 1 : -1;
+      return a.id - b.id;
     });
   }else{
     rows.sort((a,b)=> b.id - a.id);
