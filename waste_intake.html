@@ -1044,6 +1044,27 @@ async function sb(path, opts={}){
   catch(e){ console.warn('JSON解析失敗:', text); return null; }
 }
 
+/* ---------- 金額入力欄：カンマ区切り表示 ---------- */
+function parseCommaNumber(str){
+  if(str === undefined || str === null) return NaN;
+  const cleaned = String(str).replace(/,/g,'').trim();
+  return cleaned === '' ? NaN : Number(cleaned);
+}
+
+function attachThousandsFormatting(el){
+  if(!el || el.dataset.commaBound) return;
+  el.dataset.commaBound = '1';
+  el.addEventListener('input', function(){
+    const cursorFromEnd = this.value.length - this.selectionStart;
+    const raw = this.value.replace(/[^\d]/g, '');
+    if(raw === ''){ this.value = ''; return; }
+    const formatted = Number(raw).toLocaleString();
+    this.value = formatted;
+    const newPos = Math.max(0, formatted.length - cursorFromEnd);
+    this.setSelectionRange(newPos, newPos);
+  });
+}
+
 function showToast(msg, duration=2600){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -2758,7 +2779,7 @@ async function renderMBInvoiceTab(){
         <div class="summary-total-card">
           <div class="label">請求書の合計金額(${year}年${Number(month)}月分として保存)</div>
           <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
-            <input type="number" id="mbi-total-input" value="${billedTotal===null?'':billedTotal}" placeholder="例: 46200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;">
+            <input type="text" inputmode="numeric" id="mbi-total-input" value="${billedTotal===null?'':billedTotal.toLocaleString()}" placeholder="例: 46,200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;text-align:right;">
             <button class="btn" onclick="saveMBInvoiceTotal()">保存</button>
           </div>
         </div>
@@ -2772,6 +2793,7 @@ async function renderMBInvoiceTab(){
         </div>
       </div>
     `;
+    attachThousandsFormatting(document.getElementById('mbi-total-input'));
   }catch(e){
     el.innerHTML = `<div class="list-summary">読み込みに失敗しました: ${e.message}</div>`;
     console.error(e);
@@ -2784,18 +2806,19 @@ async function saveMBInvoiceTotal(){
   const year = to.slice(0,4);
   const month = to.slice(5,7);
   const val = document.getElementById('mbi-total-input').value;
-  if(val === ''){ showToast('金額を入力してください'); return; }
+  const numVal = parseCommaNumber(val);
+  if(val === '' || isNaN(numVal)){ showToast('金額を入力してください'); return; }
   try{
     const existing = await sb(`mb_invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}`);
     if(existing && existing.length>0){
       await sb(`mb_invoices?id=eq.${existing[0].id}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ amount: Number(val), updated_at: new Date().toISOString() })
+        body: JSON.stringify({ amount: numVal, updated_at: new Date().toISOString() })
       });
     }else{
       await sb('mb_invoices', {
         method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ billing_year: year, billing_month: month, amount: Number(val) })
+        body: JSON.stringify({ billing_year: year, billing_month: month, amount: numVal })
       });
     }
     showToast('請求書合計金額を保存しました');
@@ -2918,12 +2941,13 @@ async function renderMIWTable(){
         <td class="num">${iwCell}</td>
         <td class="num">${matAmt.toLocaleString()}円</td>
         <td class="num">${sysTotal.toLocaleString()}円</td>
-        <td class="num"><input type="number" class="miw-amt-input" data-vendor="${escVendor}" value="${billed===null?'':billed}" placeholder="未入力" style="width:110px;padding:4px 6px;border:1px solid #d8d1c2;border-radius:6px;font-size:13.5px;text-align:right;" onchange="saveMIWAmount(this)"></td>
+        <td class="num"><input type="text" inputmode="numeric" class="miw-amt-input" data-vendor="${escVendor}" value="${billed===null?'':billed.toLocaleString()}" placeholder="未入力" style="width:110px;padding:4px 6px;border:1px solid #d8d1c2;border-radius:6px;font-size:13.5px;text-align:right;" onchange="saveMIWAmount(this)"></td>
         <td class="num ${okClass}">${billed===null?'-':(diff>0?'+':'')+diff.toLocaleString()+'円'}</td>
         <td class="num ${okClass}">${okLabel}</td>
         <td class="action-cell"></td>
       </tr>`;
     }).join('');
+    body.querySelectorAll('.miw-amt-input').forEach(attachThousandsFormatting);
 
     const diffGrand = billedGrandTotal - sysGrandTotal;
     document.getElementById('miw-total-card').innerHTML = `
@@ -2951,6 +2975,7 @@ async function renderMIWTable(){
 async function saveMIWAmount(el){
   const vendor = el.dataset.vendor;
   const value = el.value;
+  const numVal = value==='' ? 0 : parseCommaNumber(value);
   const to = document.getElementById('miw-date-to').value;
   if(!to){ showToast('集計期間を選択してください'); return; }
   const year = to.slice(0,4);
@@ -2961,12 +2986,12 @@ async function saveMIWAmount(el){
     if(existing && existing.length>0){
       await sb(`material_invoices?id=eq.${existing[0].id}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ amount: value===''?0:Number(value), updated_at: new Date().toISOString() })
+        body: JSON.stringify({ amount: numVal, updated_at: new Date().toISOString() })
       });
     }else{
       await sb('material_invoices', {
         method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ billing_year: year, billing_month: month, vendor_name: vendor, amount: value===''?0:Number(value) })
+        body: JSON.stringify({ billing_year: year, billing_month: month, vendor_name: vendor, amount: numVal })
       });
     }
     showToast('請求書金額を保存しました');
@@ -3435,7 +3460,7 @@ function renderInvoiceTotalCard(totalRow, recordCount, sysTotal, year, month, pe
       <div class="summary-total-card">
         <div class="label">請求書の合計金額(${year}年${Number(month)}月分として保存)</div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
-          <input type="number" id="inv-total-input" value="${billedTotal===null?'':billedTotal}" placeholder="例: 46200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;">
+          <input type="text" inputmode="numeric" id="inv-total-input" value="${billedTotal===null?'':billedTotal.toLocaleString()}" placeholder="例: 46,200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;text-align:right;">
           <button class="btn" onclick="saveInvoiceTotal()">保存</button>
         </div>
       </div>
@@ -3449,6 +3474,7 @@ function renderInvoiceTotalCard(totalRow, recordCount, sysTotal, year, month, pe
       </div>
     </div>
   `;
+  attachThousandsFormatting(document.getElementById('inv-total-input'));
 }
 
 async function saveInvoiceTotal(){
@@ -3457,18 +3483,19 @@ async function saveInvoiceTotal(){
   const year = to.slice(0,4);
   const month = to.slice(5,7);
   const val = document.getElementById('inv-total-input').value;
-  if(val === ''){ showToast('金額を入力してください'); return; }
+  const numVal = parseCommaNumber(val);
+  if(val === '' || isNaN(numVal)){ showToast('金額を入力してください'); return; }
   try{
     const existing = await sb(`invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}&vehicle_no=is.null`);
     if(existing && existing.length>0){
       await sb(`invoices?id=eq.${existing[0].id}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ amount: Number(val), updated_at: new Date().toISOString() })
+        body: JSON.stringify({ amount: numVal, updated_at: new Date().toISOString() })
       });
     }else{
       await sb('invoices', {
         method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ billing_year: year, billing_month: month, vehicle_no: null, amount: Number(val) })
+        body: JSON.stringify({ billing_year: year, billing_month: month, vehicle_no: null, amount: numVal })
       });
     }
     showToast('請求書合計金額を保存しました');
