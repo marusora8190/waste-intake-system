@@ -518,7 +518,11 @@
     <div class="field-grid">
       <div class="field">
         <label>日付 *</label>
-        <input type="date" id="iw-date">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="iw-date" inputmode="numeric" placeholder="例: 9/15 または 2026-09-15" style="flex:1;">
+          <button type="button" class="btn" onclick="openDatePicker('iw-date')" style="padding:6px 10px;flex-shrink:0;" title="カレンダーで選ぶ">📅</button>
+          <input type="date" id="iw-date-native" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" tabindex="-1">
+        </div>
       </div>
       <div class="field">
         <label>時間</label>
@@ -715,7 +719,11 @@
     <div class="field-grid">
       <div class="field">
         <label>搬入日 *</label>
-        <input type="date" id="mb-date">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="mb-date" inputmode="numeric" placeholder="例: 9/15 または 2026-09-15" style="flex:1;">
+          <button type="button" class="btn" onclick="openDatePicker('mb-date')" style="padding:6px 10px;flex-shrink:0;" title="カレンダーで選ぶ">📅</button>
+          <input type="date" id="mb-date-native" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" tabindex="-1">
+        </div>
       </div>
       <div class="field">
         <label>蛍光灯（㎏）</label>
@@ -786,7 +794,11 @@
     <div class="field-grid">
       <div class="field">
         <label>購入日 *</label>
-        <input type="date" id="mat-date">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="mat-date" inputmode="numeric" placeholder="例: 9/15 または 2026-09-15" style="flex:1;">
+          <button type="button" class="btn" onclick="openDatePicker('mat-date')" style="padding:6px 10px;flex-shrink:0;" title="カレンダーで選ぶ">📅</button>
+          <input type="date" id="mat-date-native" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" tabindex="-1">
+        </div>
       </div>
       <div class="field">
         <label>業者 *</label>
@@ -1093,11 +1105,20 @@ function switchTab(name){
   if(name==='department') loadDepartmentSummary();
   if(name==='summary') loadYearSummary();
   if(name==='invoice') loadInvoiceTab();
-  if(name==='iwinput') loadIWPriceList();
+  if(name==='iwinput'){
+    loadIWPriceList();
+    setTimeout(() => { document.getElementById('iw-date').focus(); }, 50);
+  }
   if(name==='iwlist') loadIWList();
   if(name==='iwprice') loadIWPriceList();
-  if(name==='iwmb'){ loadMBPriceList(); loadMBRecords(); }
-  if(name==='matinput') loadMatPriceList();
+  if(name==='iwmb'){
+    loadMBPriceList(); loadMBRecords();
+    setTimeout(() => { document.getElementById('mb-date').focus(); }, 50);
+  }
+  if(name==='matinput'){
+    loadMatPriceList();
+    setTimeout(() => { document.getElementById('mat-date').focus(); }, 50);
+  }
   if(name==='matlist') loadMatRecords();
   if(name==='matprice') loadMatPriceList();
   if(name==='miwinvoice') loadMIWInvoiceTab();
@@ -1288,6 +1309,9 @@ function normalizeDateField(el){
 }
 
 document.getElementById('f-date').addEventListener('blur', function(){ normalizeDateField(this); });
+document.getElementById('iw-date').addEventListener('blur', function(){ normalizeDateField(this); });
+document.getElementById('mb-date').addEventListener('blur', function(){ normalizeDateField(this); });
+document.getElementById('mat-date').addEventListener('blur', function(){ normalizeDateField(this); });
 
 function openDatePicker(textFieldId){
   const nativeInput = document.getElementById(textFieldId + '-native');
@@ -1977,7 +2001,9 @@ function clearIWForm(){
 function cancelIWEdit(){ clearIWForm(); }
 
 async function submitIWRecord(){
-  const date = document.getElementById('iw-date').value;
+  const dateEl = document.getElementById('iw-date');
+  normalizeDateField(dateEl);
+  const date = dateEl.value;
   const time = document.getElementById('iw-time').value;
   const vendor = document.getElementById('iw-vendor').value.trim();
   const manifest = document.getElementById('iw-manifest').value.trim();
@@ -1990,8 +2016,8 @@ async function submitIWRecord(){
   const driver = document.getElementById('iw-driver').value.trim();
   const note = document.getElementById('iw-note').value.trim();
 
-  if(!date || !vendor || !item || qty===''){
-    showToast('日付・運搬先（業者）・品名・総重量は必須です');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !vendor || !item || qty===''){
+    showToast('日付・運搬先（業者）・品名・総重量は必須です（日付は 9/15 のように入力できます）');
     return;
   }
 
@@ -2318,8 +2344,10 @@ function clearMBForm(){
 function cancelMBEdit(){ clearMBForm(); }
 
 async function submitMBRecord(){
-  const date = document.getElementById('mb-date').value;
-  if(!date){ showToast('搬入日は必須です'); return; }
+  const dateEl = document.getElementById('mb-date');
+  normalizeDateField(dateEl);
+  const date = dateEl.value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ showToast('搬入日は必須です（例: 9/15）'); return; }
   const f = Number(document.getElementById('mb-fluorescent').value) || 0;
   const m = Number(document.getElementById('mb-mercury').value) || 0;
   const b = Number(document.getElementById('mb-battery').value) || 0;
@@ -2614,7 +2642,9 @@ function clearMatForm(){
 function cancelMatEdit(){ clearMatForm(); }
 
 async function submitMatRecord(){
-  const date = document.getElementById('mat-date').value;
+  const dateEl = document.getElementById('mat-date');
+  normalizeDateField(dateEl);
+  const date = dateEl.value;
   const vendor = document.getElementById('mat-vendor').value.trim();
   const item = document.getElementById('mat-item').value.trim();
   const unit = document.getElementById('mat-unit').value;
@@ -2622,8 +2652,8 @@ async function submitMatRecord(){
   const price = document.getElementById('mat-price').value;
   const note = document.getElementById('mat-note').value.trim();
 
-  if(!date || !vendor || !item || qty===''){
-    showToast('購入日・業者・品名・数量は必須です');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !vendor || !item || qty===''){
+    showToast('購入日・業者・品名・数量は必須です（購入日は 9/15 のように入力できます）');
     return;
   }
 
