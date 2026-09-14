@@ -1198,13 +1198,15 @@ document.getElementById('f-empty').addEventListener('input', recalcPreview);
 
 /* ---------- Enterキーで次の入力項目へ移動（ロック項目は自動で飛ばす） ---------- */
 const FORM_ORDER = ['f-date','f-time','f-receipt','f-card','f-department','f-vehicle','f-item','f-total','f-empty'];
+const FORM_ORDER_OVERRIDE = { 'f-card': 'f-total' }; // カードNo.入力後は部署・車番・品種をスキップして総重量へ
+
 FORM_ORDER.forEach((id, idx) => {
   const el = document.getElementById(id);
   el.addEventListener('keydown', (e) => {
     if(e.key !== 'Enter') return;
     e.preventDefault();
     if(id === 'f-date') normalizeDateField(el);
-    const nextId = FORM_ORDER[idx+1];
+    const nextId = FORM_ORDER_OVERRIDE[id] || FORM_ORDER[idx+1];
     if(nextId){
       const nextEl = document.getElementById(nextId);
       nextEl.focus();
