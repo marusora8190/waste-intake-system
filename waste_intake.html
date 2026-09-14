@@ -1294,7 +1294,7 @@ function clearForm(){
   EDITING_ID = null;
   document.getElementById('edit-banner').style.display = 'none';
   document.getElementById('submit-btn').textContent = '登録する';
-  document.getElementById('f-date').value = todayStr();
+  document.getElementById('f-date').value = '';
   document.getElementById('f-time').value = '';
   document.getElementById('f-receipt').value = '';
   document.getElementById('f-card').value = '';
@@ -3481,7 +3481,7 @@ async function refreshData(){
 
 /* ---------- 起動時処理 ---------- */
 (async function init(){
-  document.getElementById('f-date').value = todayStr();
+  document.getElementById('f-date').value = '';
   document.getElementById('iw-date').value = todayStr();
   document.getElementById('mb-date').value = todayStr();
   document.getElementById('mat-date').value = todayStr();
