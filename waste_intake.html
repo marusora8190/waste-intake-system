@@ -436,6 +436,10 @@
       <select id="list-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">年間</option>
       </select>
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">集計期間</label>
+      <input type="date" id="list-period-from" onchange="renderListFiltered()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <span style="color:var(--muted);">〜</span>
+      <input type="date" id="list-period-to" onchange="renderListFiltered()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-card" autocomplete="off" placeholder="カードNo.で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-department" list="department-suggestions" autocomplete="off" placeholder="持込部署で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="list-search-vehicle" list="vehicle-suggestions" autocomplete="off" placeholder="車　番で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
@@ -599,6 +603,10 @@
       <select id="iwlist-month" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
         <option value="">年間</option>
       </select>
+      <label style="font-size:12.5px;color:var(--muted);font-weight:600;">集計期間</label>
+      <input type="date" id="iwlist-period-from" onchange="renderIWListFiltered()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
+      <span style="color:var(--muted);">〜</span>
+      <input type="date" id="iwlist-period-to" onchange="renderIWListFiltered()" style="width:auto;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="iwlist-search-vendor" list="iw-vendor-suggestions" autocomplete="off" placeholder="業者で検索" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="iwlist-search-item" list="iw-item-suggestions" autocomplete="off" placeholder="品名で検索" style="width:160px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <input type="text" id="iwlist-search-manifest" autocomplete="off" placeholder="交付番号で検索" style="width:150px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
@@ -1461,6 +1469,8 @@ function toggleListFilters(){
 function clearListSearch(){
   document.getElementById('list-year').value = '';
   document.getElementById('list-month').value = '';
+  document.getElementById('list-period-from').value = '';
+  document.getElementById('list-period-to').value = '';
   document.getElementById('list-search-card').value = '';
   document.getElementById('list-search-department').value = '';
   document.getElementById('list-search-vehicle').value = '';
@@ -1555,6 +1565,8 @@ function renderListFiltered(){
   const body = document.getElementById('list-body');
   const year = document.getElementById('list-year').value;
   const month = document.getElementById('list-month').value;
+  const periodFrom = document.getElementById('list-period-from').value;
+  const periodTo = document.getElementById('list-period-to').value;
   const cardKeyword = document.getElementById('list-search-card').value.trim();
   const deptKeyword = document.getElementById('list-search-department').value.trim();
   const vehicleKeyword = document.getElementById('list-search-vehicle').value.trim();
@@ -1563,6 +1575,8 @@ function renderListFiltered(){
   const rows = ALL_LIST_RECORDS.filter(r=>{
     if(year && r.record_date.slice(0,4) !== year) return false;
     if(month && r.record_date.slice(5,7) !== String(month).padStart(2,'0')) return false;
+    if(periodFrom && r.record_date < periodFrom) return false;
+    if(periodTo && r.record_date > periodTo) return false;
     if(cardKeyword && !String(r.card_no || '').includes(cardKeyword)) return false;
     if(deptKeyword && !(r.department || '').includes(deptKeyword)) return false;
     if(vehicleKeyword && !(r.vehicle_no || '').includes(vehicleKeyword)) return false;
@@ -2113,6 +2127,8 @@ function toggleIWListFilters(){
 function clearIWListSearch(){
   document.getElementById('iwlist-year').value = '';
   document.getElementById('iwlist-month').value = '';
+  document.getElementById('iwlist-period-from').value = '';
+  document.getElementById('iwlist-period-to').value = '';
   document.getElementById('iwlist-search-vendor').value = '';
   document.getElementById('iwlist-search-item').value = '';
   document.getElementById('iwlist-search-manifest').value = '';
@@ -2123,6 +2139,8 @@ function renderIWListFiltered(){
   const body = document.getElementById('iwlist-body');
   const year = document.getElementById('iwlist-year').value;
   const month = document.getElementById('iwlist-month').value;
+  const periodFrom = document.getElementById('iwlist-period-from').value;
+  const periodTo = document.getElementById('iwlist-period-to').value;
   const vendorKeyword = document.getElementById('iwlist-search-vendor').value.trim();
   const itemKeyword = document.getElementById('iwlist-search-item').value.trim();
   const manifestKeyword = document.getElementById('iwlist-search-manifest').value.trim();
@@ -2130,6 +2148,8 @@ function renderIWListFiltered(){
   const rows = ALL_IW_RECORDS.filter(r=>{
     if(year && String(r.record_date||'').slice(0,4) !== year) return false;
     if(month && String(r.record_date||'').slice(5,7) !== String(month).padStart(2,'0')) return false;
+    if(periodFrom && String(r.record_date||'') < periodFrom) return false;
+    if(periodTo && String(r.record_date||'') > periodTo) return false;
     if(vendorKeyword && !(r.vendor_name||'').includes(vendorKeyword)) return false;
     if(itemKeyword && !(r.item_name||'').includes(itemKeyword)) return false;
     if(manifestKeyword && !(r.manifest_no||'').includes(manifestKeyword)) return false;
