@@ -343,7 +343,11 @@
     <div class="field-grid">
       <div class="field">
         <label>日付 *</label>
-        <input type="date" id="f-date">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="f-date" inputmode="numeric" placeholder="例: 9/4 または 2026-09-04" style="flex:1;">
+          <button type="button" class="btn" onclick="openDatePicker('f-date')" style="padding:6px 10px;flex-shrink:0;" title="カレンダーで選ぶ">📅</button>
+          <input type="date" id="f-date-native" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" tabindex="-1">
+        </div>
       </div>
       <div class="field">
         <label>時刻</label>
@@ -1199,6 +1203,7 @@ FORM_ORDER.forEach((id, idx) => {
   el.addEventListener('keydown', (e) => {
     if(e.key !== 'Enter') return;
     e.preventDefault();
+    if(id === 'f-date') normalizeDateField(el);
     const nextId = FORM_ORDER[idx+1];
     if(nextId){
       const nextEl = document.getElementById(nextId);
@@ -1211,6 +1216,56 @@ FORM_ORDER.forEach((id, idx) => {
     }
   });
 });
+
+// 日付欄：「9/4」のような省略入力を受け付けて YYYY-MM-DD に正規化する
+function parseFlexibleDate(text){
+  if(!text) return null;
+  text = text.trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  const parts = text.split(/[\/\-\.年月]/).map(s=>s.trim()).filter(Boolean);
+  let y, m, d;
+  if(parts.length === 2){
+    m = parseInt(parts[0],10);
+    d = parseInt(parts[1],10);
+    y = new Date().getFullYear();
+  }else if(parts.length === 3){
+    if(parts[0].length === 4){
+      y = parseInt(parts[0],10); m = parseInt(parts[1],10); d = parseInt(parts[2],10);
+    }else{
+      m = parseInt(parts[0],10); d = parseInt(parts[1],10);
+      const yy = parseInt(parts[2],10);
+      y = yy < 100 ? 2000 + yy : yy;
+    }
+  }else{
+    return null;
+  }
+  if(!y || !m || !d || m<1 || m>12 || d<1 || d>31) return null;
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function normalizeDateField(el){
+  const parsed = parseFlexibleDate(el.value);
+  if(parsed){
+    el.value = parsed;
+  }else if(el.value.trim() !== ''){
+    showToast('日付を認識できませんでした（例: 9/4、2026-09-04）', 4000);
+  }
+}
+
+document.getElementById('f-date').addEventListener('blur', function(){ normalizeDateField(this); });
+
+function openDatePicker(textFieldId){
+  const nativeInput = document.getElementById(textFieldId + '-native');
+  const textInput = document.getElementById(textFieldId);
+  const current = parseFlexibleDate(textInput.value);
+  if(current) nativeInput.value = current;
+  nativeInput.onchange = () => {
+    textInput.value = nativeInput.value;
+    if(textFieldId === 'f-date') document.getElementById('f-time').focus();
+  };
+  try{ nativeInput.showPicker(); }
+  catch(e){ nativeInput.focus(); }
+}
 
 /* ---------- 登録・編集 ---------- */
 let EDITING_ID = null;
@@ -1285,7 +1340,9 @@ function editRecord(id){
 }
 
 async function submitRecord(){
-  const date = document.getElementById('f-date').value;
+  const dateEl = document.getElementById('f-date');
+  normalizeDateField(dateEl);
+  const date = dateEl.value;
   const time = document.getElementById('f-time').value;
   const receipt = document.getElementById('f-receipt').value.trim();
   const card = document.getElementById('f-card').value.trim();
@@ -1295,8 +1352,8 @@ async function submitRecord(){
   const total = parseFloat(document.getElementById('f-total').value);
   const empty = parseFloat(document.getElementById('f-empty').value);
 
-  if(!date || !receipt || !card || isNaN(total) || isNaN(empty)){
-    showToast('日付・受付No.・カードNo.・総重量・空車重量は必須です');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !receipt || !card || isNaN(total) || isNaN(empty)){
+    showToast('日付・受付No.・カードNo.・総重量・空車重量は必須です（日付は 9/4 のように入力できます）');
     return;
   }
   if(!vehicle){
