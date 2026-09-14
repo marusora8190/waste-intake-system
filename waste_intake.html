@@ -815,6 +815,7 @@
         <select id="mat-unit">
           <option value="ｔ" selected>ｔ</option>
           <option value="㎥">㎥</option>
+          <option value="缶">缶</option>
         </select>
       </div>
 
@@ -1310,6 +1311,12 @@ function normalizeDateField(el){
 
 document.getElementById('f-date').addEventListener('blur', function(){ normalizeDateField(this); });
 document.getElementById('iw-date').addEventListener('blur', function(){ normalizeDateField(this); });
+document.getElementById('iw-date').addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  normalizeDateField(this);
+  document.getElementById('iw-vendor').focus();
+});
 document.getElementById('mb-date').addEventListener('blur', function(){ normalizeDateField(this); });
 document.getElementById('mat-date').addEventListener('blur', function(){ normalizeDateField(this); });
 
