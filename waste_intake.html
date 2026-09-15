@@ -562,8 +562,16 @@
       </div>
 
       <div class="field">
-        <label>総重量（数量） *</label>
-        <input type="number" id="iw-qty" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+        <label id="iw-total-label">総重量 *</label>
+        <input type="number" id="iw-total" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+      </div>
+      <div class="field">
+        <label id="iw-tare-label">空車重量</label>
+        <input type="number" id="iw-tare" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+      </div>
+      <div class="field">
+        <label id="iw-net-label">正味数量</label>
+        <input type="text" id="iw-qty" class="calc-field" readonly value="0">
       </div>
       <div class="field">
         <label>単価（円）</label>
@@ -1857,8 +1865,22 @@ function populateIWVendorOptions(){
   if(dl) dl.innerHTML = [...vendors].sort((a,b)=>a.localeCompare(b,'ja')).map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
 }
 
+function updateIWWeightLabels(vendor){
+  const tareLabel = document.getElementById('iw-tare-label');
+  const netLabel = document.getElementById('iw-net-label');
+  if(vendor.includes('ガイアート')){
+    tareLabel.textContent = '空車重量';
+    netLabel.textContent = '正味数量';
+  }else{
+    // ㈱ITO（奈良・天理）およびその他の業者はこちらの表記
+    tareLabel.textContent = '風袋重量';
+    netLabel.textContent = '正味重量';
+  }
+}
+
 function onIWVendorChange(){
   const vendor = document.getElementById('iw-vendor').value.trim();
+  updateIWWeightLabels(vendor);
   const dl = document.getElementById('iw-item-suggestions');
   const items = IW_PRICE_LIST.filter(r => !vendor || r.vendor_name === vendor).map(r=>r.item_name);
   if(dl) dl.innerHTML = [...new Set(items)].map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
@@ -1884,9 +1906,12 @@ function onIWItemChange(){
 }
 
 function recalcIWPreview(){
-  const qty = Number(document.getElementById('iw-qty').value) || 0;
+  const total = Number(document.getElementById('iw-total').value) || 0;
+  const tare = Number(document.getElementById('iw-tare').value) || 0;
+  const net = total - tare;
+  document.getElementById('iw-qty').value = net.toLocaleString();
   const price = Number(document.getElementById('iw-price').value) || 0;
-  document.getElementById('iw-amount').value = Math.round(qty * price).toLocaleString();
+  document.getElementById('iw-amount').value = Math.round(net * price).toLocaleString();
 }
 
 function toggleIWPriceFormSection(){
@@ -1996,13 +2021,15 @@ function clearIWForm(){
   document.getElementById('iw-vehicle').value = '';
   document.getElementById('iw-item').value = '';
   document.getElementById('iw-unit').value = 'ｔ';
-  document.getElementById('iw-qty').value = '';
+  document.getElementById('iw-total').value = '';
+  document.getElementById('iw-tare').value = '';
   document.getElementById('iw-price').value = '';
   document.getElementById('iw-driver').value = '';
   document.getElementById('iw-note').value = '';
   document.getElementById('iw-price-hint').textContent = '';
   document.getElementById('iw-submit-btn').textContent = '登録する';
   document.getElementById('iw-edit-banner').style.display = 'none';
+  updateIWWeightLabels('');
   recalcIWPreview();
 }
 
@@ -2019,15 +2046,20 @@ async function submitIWRecord(){
   const vehicle = document.getElementById('iw-vehicle').value.trim();
   const item = document.getElementById('iw-item').value.trim();
   const unit = document.getElementById('iw-unit').value;
-  const qty = document.getElementById('iw-qty').value;
+  const totalRaw = document.getElementById('iw-total').value;
+  const tareRaw = document.getElementById('iw-tare').value;
   const price = document.getElementById('iw-price').value;
   const driver = document.getElementById('iw-driver').value.trim();
   const note = document.getElementById('iw-note').value.trim();
 
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !vendor || !item || qty===''){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !vendor || !item || totalRaw===''){
     showToast('日付・運搬先（業者）・品名・総重量は必須です（日付は 9/15 のように入力できます）');
     return;
   }
+
+  const total = Number(totalRaw);
+  const tare = tareRaw==='' ? 0 : Number(tareRaw);
+  const net = total - tare;
 
   const payload = {
     record_date: date,
@@ -2038,7 +2070,9 @@ async function submitIWRecord(){
     vehicle_no: vehicle || null,
     item_name: item,
     unit: unit || null,
-    quantity: Number(qty),
+    total_weight: total,
+    tare_weight: tare,
+    quantity: net,
     unit_price: price==='' ? null : Number(price),
     driver: driver || null,
     note: note || null
@@ -2078,12 +2112,15 @@ function editIWRecord(id){
   document.getElementById('iw-vehicle').value = r.vehicle_no || '';
   document.getElementById('iw-item').value = r.item_name || '';
   document.getElementById('iw-unit').value = r.unit || 'ｔ';
-  document.getElementById('iw-qty').value = r.quantity ?? '';
+  // total_weight/tare_weight が無い古い記録は、既存のquantity(正味)をそのまま総重量欄に入れ、風袋/空車は0にする
+  document.getElementById('iw-total').value = r.total_weight ?? r.quantity ?? '';
+  document.getElementById('iw-tare').value = r.tare_weight ?? 0;
   document.getElementById('iw-price').value = r.unit_price ?? '';
   document.getElementById('iw-driver').value = r.driver || '';
   document.getElementById('iw-note').value = r.note || '';
   document.getElementById('iw-submit-btn').textContent = '更新する';
   document.getElementById('iw-edit-banner').style.display = '';
+  updateIWWeightLabels(r.vendor_name || '');
   recalcIWPreview();
   switchTab('iwinput');
 }
