@@ -426,7 +426,7 @@
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
-      <button type="button" class="btn" onclick="exportListToExcel()">Excelダウンロード</button>
+      <button type="button" class="btn" onclick="exportListToExcel()">Excelで書き出し</button>
       <div class="list-summary" id="list-summary"></div>
     </div>
     <div class="list-toolbar" id="list-filter-row">
@@ -607,7 +607,7 @@
       <button type="button" class="btn" id="iwlist-filter-toggle-btn" onclick="toggleIWListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="iwlist-sort-date-btn" onclick="setIWListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="iwlist-sort-entry-btn" onclick="setIWListSortMode('entry')">登録順に並びかえ</button>
-      <button type="button" class="btn" onclick="exportIWListToExcel()">Excelダウンロード</button>
+      <button type="button" class="btn" onclick="exportIWListToExcel()">Excelで書き出し</button>
       <div class="list-summary" id="iwlist-summary"></div>
     </div>
     <div class="list-toolbar" id="iwlist-filter-row">
@@ -773,7 +773,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin:26px 0 12px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">記録一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
-        <button type="button" class="btn" onclick="exportMBListToExcel()">Excelダウンロード</button>
+        <button type="button" class="btn" onclick="exportMBListToExcel()">Excelで書き出し</button>
         <div class="list-summary" id="mb-summary"></div>
       </div>
     </div>
@@ -857,7 +857,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">再生材・雑品購入 一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
-        <button type="button" class="btn" onclick="exportMatListToExcel()">Excelダウンロード</button>
+        <button type="button" class="btn" onclick="exportMatListToExcel()">Excelで書き出し</button>
         <div class="list-summary" id="mat-summary"></div>
       </div>
     </div>
@@ -2310,11 +2310,11 @@ function renderIWListFiltered(){
   }
   body.innerHTML = rows.map(r => `
     <tr>
-      <td class="num date-col">${toWareki(r.record_date)}</td>
+      <td class="date-col">${toWareki(r.record_date)}</td>
       <td>${r.record_time ?? ''}</td>
-      <td class="num">${r.vendor_name ?? ''}</td>
-      <td class="num">${r.manifest_no ?? ''}</td>
-      <td class="num">${r.business_site ?? ''}</td>
+      <td>${r.vendor_name ?? ''}</td>
+      <td>${r.manifest_no ?? ''}</td>
+      <td>${r.business_site ?? ''}</td>
       <td class="num">${r.vehicle_no ?? ''}</td>
       <td>${r.item_name ?? ''}</td>
       <td class="num">${Number(r.quantity||0).toLocaleString()}${r.unit ?? ''}</td>
