@@ -1320,16 +1320,30 @@ function normalizeDateField(el){
 
 document.getElementById('f-date').addEventListener('blur', function(){ normalizeDateField(this); });
 document.getElementById('iw-date').addEventListener('blur', function(){ normalizeDateField(this); });
-document.getElementById('iw-date').addEventListener('keydown', function(e){
-  if(e.key !== 'Enter') return;
-  e.preventDefault();
-  normalizeDateField(this);
-  document.getElementById('iw-vendor').focus();
-});
 ['iw-total','iw-tare'].forEach(id=>{
   const el = document.getElementById(id);
   attachThousandsFormatting(el);
   el.addEventListener('input', recalcIWPreview);
+});
+
+const IW_FORM_ORDER = ['iw-date','iw-vendor','iw-manifest','iw-site','iw-vehicle','iw-item','iw-unit','iw-total','iw-tare','iw-price','iw-driver','iw-note'];
+IW_FORM_ORDER.forEach((id, idx) => {
+  const el = document.getElementById(id);
+  el.addEventListener('keydown', (e) => {
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    if(id === 'iw-date') normalizeDateField(el);
+    const nextId = IW_FORM_ORDER[idx+1];
+    if(nextId){
+      const nextEl = document.getElementById(nextId);
+      nextEl.focus();
+      if(typeof nextEl.select === 'function' && nextEl.tagName !== 'SELECT'){
+        nextEl.select();
+      }
+    }else{
+      submitIWRecord();
+    }
+  });
 });
 document.getElementById('mb-date').addEventListener('blur', function(){ normalizeDateField(this); });
 document.getElementById('mat-date').addEventListener('blur', function(){ normalizeDateField(this); });
