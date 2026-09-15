@@ -563,11 +563,11 @@
 
       <div class="field">
         <label id="iw-total-label">総重量 *</label>
-        <input type="number" id="iw-total" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+        <input type="text" id="iw-total" class="num-field" inputmode="numeric">
       </div>
       <div class="field">
         <label id="iw-tare-label">空車重量</label>
-        <input type="number" id="iw-tare" class="num-field" step="0.01" inputmode="decimal" oninput="recalcIWPreview()">
+        <input type="text" id="iw-tare" class="num-field" inputmode="numeric">
       </div>
       <div class="field">
         <label id="iw-net-label">正味数量</label>
@@ -1326,6 +1326,11 @@ document.getElementById('iw-date').addEventListener('keydown', function(e){
   normalizeDateField(this);
   document.getElementById('iw-vendor').focus();
 });
+['iw-total','iw-tare'].forEach(id=>{
+  const el = document.getElementById(id);
+  attachThousandsFormatting(el);
+  el.addEventListener('input', recalcIWPreview);
+});
 document.getElementById('mb-date').addEventListener('blur', function(){ normalizeDateField(this); });
 document.getElementById('mat-date').addEventListener('blur', function(){ normalizeDateField(this); });
 
@@ -1905,11 +1910,18 @@ function onIWItemChange(){
   recalcIWPreview();
 }
 
+function computeIWNetQuantity(){
+  const total = parseCommaNumber(document.getElementById('iw-total').value) || 0;
+  const tare = parseCommaNumber(document.getElementById('iw-tare').value) || 0;
+  const unit = document.getElementById('iw-unit').value;
+  const netKgOrRaw = total - tare;
+  // 総重量・空車重量はトラックスケールでkg計測するため、単位が「ｔ」の場合はトン数に換算してから単価をかける
+  return unit === 'ｔ' ? netKgOrRaw / 1000 : netKgOrRaw;
+}
+
 function recalcIWPreview(){
-  const total = Number(document.getElementById('iw-total').value) || 0;
-  const tare = Number(document.getElementById('iw-tare').value) || 0;
-  const net = total - tare;
-  document.getElementById('iw-qty').value = net.toLocaleString();
+  const net = computeIWNetQuantity();
+  document.getElementById('iw-qty').value = net.toLocaleString(undefined, {maximumFractionDigits: 3});
   const price = Number(document.getElementById('iw-price').value) || 0;
   document.getElementById('iw-amount').value = Math.round(net * price).toLocaleString();
 }
@@ -2013,7 +2025,7 @@ function populateIWDriverVehicleOptions(){
 
 function clearIWForm(){
   EDITING_IW_ID = null;
-  document.getElementById('iw-date').value = todayStr();
+  document.getElementById('iw-date').value = '';
   document.getElementById('iw-time').value = '';
   document.getElementById('iw-vendor').value = '';
   document.getElementById('iw-manifest').value = '';
@@ -2057,9 +2069,9 @@ async function submitIWRecord(){
     return;
   }
 
-  const total = Number(totalRaw);
-  const tare = tareRaw==='' ? 0 : Number(tareRaw);
-  const net = total - tare;
+  const total = parseCommaNumber(totalRaw);
+  const tare = tareRaw==='' ? 0 : parseCommaNumber(tareRaw);
+  const net = computeIWNetQuantity();
 
   const payload = {
     record_date: date,
@@ -2112,9 +2124,16 @@ function editIWRecord(id){
   document.getElementById('iw-vehicle').value = r.vehicle_no || '';
   document.getElementById('iw-item').value = r.item_name || '';
   document.getElementById('iw-unit').value = r.unit || 'ｔ';
-  // total_weight/tare_weight が無い古い記録は、既存のquantity(正味)をそのまま総重量欄に入れ、風袋/空車は0にする
-  document.getElementById('iw-total').value = r.total_weight ?? r.quantity ?? '';
-  document.getElementById('iw-tare').value = r.tare_weight ?? 0;
+  // total_weight/tare_weight が無い古い記録は、既存のquantity(正味)をそのまま使う。
+  // 単位が「ｔ」の場合、quantityは既にトン単位で保存されているため、
+  // 総重量欄（kg換算で扱う）に戻すにはkg換算（×1000）してから入れる。
+  if(r.total_weight == null && r.quantity != null){
+    const fallbackTotal = r.unit === 'ｔ' ? Number(r.quantity) * 1000 : r.quantity;
+    document.getElementById('iw-total').value = fallbackTotal===null||fallbackTotal===undefined||fallbackTotal==='' ? '' : Number(fallbackTotal).toLocaleString();
+  }else{
+    document.getElementById('iw-total').value = r.total_weight==null ? '' : Number(r.total_weight).toLocaleString();
+  }
+  document.getElementById('iw-tare').value = r.tare_weight==null ? 0 : Number(r.tare_weight).toLocaleString();
   document.getElementById('iw-price').value = r.unit_price ?? '';
   document.getElementById('iw-driver').value = r.driver || '';
   document.getElementById('iw-note').value = r.note || '';
@@ -3641,7 +3660,7 @@ async function refreshData(){
 (async function init(){
   document.getElementById('f-date').value = '';
   setTimeout(() => { document.getElementById('f-date').focus(); }, 50);
-  document.getElementById('iw-date').value = todayStr();
+  document.getElementById('iw-date').value = '';
   document.getElementById('mb-date').value = todayStr();
   document.getElementById('mat-date').value = todayStr();
   document.getElementById('refresh-btn').style.display = 'flex';
