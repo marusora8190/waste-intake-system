@@ -821,7 +821,7 @@
 
       <div class="field">
         <label>数量 *</label>
-        <input type="number" id="mat-qty" class="num-field" step="0.01" inputmode="decimal" oninput="recalcMatPreview()">
+        <input type="number" id="mat-qty" class="num-field" step="0.01" inputmode="decimal" value="1" oninput="recalcMatPreview()">
       </div>
       <div class="field">
         <label>単価（円）</label>
@@ -834,7 +834,8 @@
       </div>
       <div class="field">
         <label>備考</label>
-        <input type="text" id="mat-note" placeholder="任意">
+        <input type="text" id="mat-note" list="mat-note-suggestions" autocomplete="off" placeholder="任意">
+        <datalist id="mat-note-suggestions"></datalist>
       </div>
     </div>
     <div class="btn-row">
@@ -2516,6 +2517,21 @@ function populateMatVendorOptions(){
   if(dl) dl.innerHTML = [...vendors].sort((a,b)=>a.localeCompare(b,'ja')).map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
 }
 
+function populateMatNoteOptions(){
+  // ALL_MAT_RECORDS は purchase_date.desc, id.desc で取得済み → 先に出てきた順が「最近入力した」順
+  const seen = new Set();
+  const recent = [];
+  ALL_MAT_RECORDS.forEach(r=>{
+    const note = (r.note || '').trim();
+    if(note && !seen.has(note)){
+      seen.add(note);
+      recent.push(note);
+    }
+  });
+  const dl = document.getElementById('mat-note-suggestions');
+  if(dl) dl.innerHTML = recent.slice(0, 20).map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
 function onMatVendorChange(){
   const vendor = document.getElementById('mat-vendor').value.trim();
   const dl = document.getElementById('material-item-suggestions');
@@ -2637,7 +2653,7 @@ function clearMatForm(){
   document.getElementById('mat-vendor').value = '';
   document.getElementById('mat-item').value = '';
   document.getElementById('mat-unit').value = 'ｔ';
-  document.getElementById('mat-qty').value = '';
+  document.getElementById('mat-qty').value = '1';
   document.getElementById('mat-price').value = '';
   document.getElementById('mat-note').value = '';
   document.getElementById('mat-price-hint').textContent = '';
@@ -2732,6 +2748,7 @@ async function loadMatRecords(){
     const rows = await sb('material_purchases?select=*&order=purchase_date.desc,id.desc&limit=2000');
     ALL_MAT_RECORDS = rows || [];
     populateMatVendorOptions();
+    populateMatNoteOptions();
     renderMatList();
   }catch(e){
     if(body) body.innerHTML = `<tr><td colspan="8">読み込みに失敗しました: ${e.message}</td></tr>`;
