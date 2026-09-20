@@ -1327,7 +1327,7 @@ document.getElementById('iw-date').addEventListener('blur', function(){ normaliz
   el.addEventListener('input', recalcIWPreview);
 });
 
-const IW_FORM_ORDER = ['iw-date','iw-vendor','iw-manifest','iw-site','iw-vehicle','iw-item','iw-unit','iw-total','iw-tare','iw-price','iw-driver','iw-note'];
+const IW_FORM_ORDER = ['iw-date','iw-time','iw-vendor','iw-manifest','iw-site','iw-vehicle','iw-item','iw-unit','iw-total','iw-tare','iw-price','iw-driver','iw-note'];
 IW_FORM_ORDER.forEach((id, idx) => {
   const el = document.getElementById(id);
   el.addEventListener('keydown', (e) => {
