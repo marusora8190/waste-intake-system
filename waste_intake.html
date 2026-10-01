@@ -1067,6 +1067,23 @@ async function sb(path, opts={}){
   catch(e){ console.warn('JSON解析失敗:', text); return null; }
 }
 
+/* ---------- 1000件対策：全件を1000件ずつ区切って読み込む ---------- */
+// Supabaseは1回に最大1000件しか返さないため、limit/offset で最後まで繰り返し読む。
+// ページ送りの順番が毎回同じになるよう、並び順の最後に id を加える。
+async function sbAll(path, pageSize = 1000){
+  let p = path.replace(/&limit=\d+/, '');
+  const m = p.match(/[?&]order=([^&]*)/);
+  if(!m) p += (p.includes('?') ? '&' : '?') + 'order=id.asc';
+  else if(!/(^|,)id\./.test(m[1])) p = p.replace(m[0], m[0] + ',id.asc');
+  const all = [];
+  for(let offset = 0; ; offset += pageSize){
+    const page = await sb(`${p}&limit=${pageSize}&offset=${offset}`);
+    all.push(...(page || []));
+    if(!page || page.length < pageSize) break;
+  }
+  return all;
+}
+
 /* ---------- 金額入力欄：カンマ区切り表示 ---------- */
 function parseCommaNumber(str){
   if(str === undefined || str === null) return NaN;
@@ -1223,7 +1240,7 @@ async function fetchDepartmentSuggestions(card){
 
 async function loadDepartmentOptions(){
   try{
-    const wr = await sb('waste_records?select=department&department=not.is.null&limit=5000');
+    const wr = await sbAll('waste_records?select=department&department=not.is.null&limit=5000');
     const set = new Set();
     (wr||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
     const values = [...set].sort((a,b)=>a.localeCompare(b,'ja'));
@@ -1236,7 +1253,7 @@ async function loadDepartmentOptions(){
 async function loadVehicleOptions(){
   try{
     const [wr, cm] = await Promise.all([
-      sb('waste_records?select=vehicle_no&vehicle_no=not.is.null&limit=5000'),
+      sbAll('waste_records?select=vehicle_no&vehicle_no=not.is.null&limit=5000'),
       sb('card_vehicle_map?select=vehicle_no&vehicle_no=not.is.null&limit=1000')
     ]);
     const set = new Set();
@@ -1582,7 +1599,7 @@ async function loadList(){
   const body = document.getElementById('list-body');
   body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
   try{
-    const rows = await sb('waste_records?select=*&order=id.desc&limit=5000');
+    const rows = await sbAll('waste_records?select=*&order=id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
     populateListYearFilter();
     populateListMonthFilter();
@@ -2199,7 +2216,7 @@ async function loadIWList(){
   const body = document.getElementById('iwlist-body');
   if(body) body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
   try{
-    const rows = await sb('industrial_waste_records?select=*&order=id.desc&limit=5000');
+    const rows = await sbAll('industrial_waste_records?select=*&order=id.desc&limit=5000');
     ALL_IW_RECORDS = rows || [];
     populateIWDriverVehicleOptions();
     populateIWVendorOptions();
@@ -2515,7 +2532,7 @@ async function loadMBRecords(){
   const body = document.getElementById('mb-body');
   if(body) body.innerHTML = '<tr><td colspan="9">読み込み中…</td></tr>';
   try{
-    const rows = await sb('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
+    const rows = await sbAll('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
     ALL_MB_RECORDS = rows || [];
     renderMBList();
   }catch(e){
@@ -2836,7 +2853,7 @@ async function loadMatRecords(){
   const body = document.getElementById('mat-body');
   if(body) body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
   try{
-    const rows = await sb('material_purchases?select=*&order=purchase_date.desc,id.desc&limit=2000');
+    const rows = await sbAll('material_purchases?select=*&order=purchase_date.desc,id.desc&limit=2000');
     ALL_MAT_RECORDS = rows || [];
     populateMatVendorOptions();
     populateMatNoteOptions();
@@ -3160,7 +3177,7 @@ function last4(vehicleNo){
 }
 
 async function loadAllRecords(){
-  const rows = await sb('waste_records?select=vehicle_no,department,item_type,record_date,net_weight,fee&order=record_date.asc&limit=5000');
+  const rows = await sbAll('waste_records?select=vehicle_no,department,item_type,record_date,net_weight,fee&order=record_date.asc&limit=5000');
   ALL_RECORDS = rows || [];
 }
 
