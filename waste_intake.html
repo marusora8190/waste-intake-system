@@ -423,6 +423,7 @@
       <div class="form-title" style="margin:0;">一覧</div>
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
+      <button type="button" class="btn" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelで書き出し</button>
       <div class="list-summary" id="list-summary"></div>
@@ -604,6 +605,7 @@
       <div class="form-title" style="margin:0;">産業廃棄物処理 一覧</div>
       <button type="button" class="btn" id="iwlist-filter-toggle-btn" onclick="toggleIWListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="iwlist-sort-date-btn" onclick="setIWListSortMode('date')">日付順に並びかえ</button>
+      <button type="button" class="btn" id="iwlist-sort-date-desc-btn" onclick="setIWListSortMode('date-desc')">日付逆順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="iwlist-sort-entry-btn" onclick="setIWListSortMode('entry')">登録順に並びかえ</button>
       <button type="button" class="btn" onclick="exportIWListToExcel()">Excelで書き出し</button>
       <div class="list-summary" id="iwlist-summary"></div>
@@ -1506,6 +1508,7 @@ function setListSortMode(mode){
   LIST_SORT_MODE = mode;
   NEWLY_ADDED_IDS.clear();
   document.getElementById('list-sort-date-btn').classList.toggle('btn-primary', mode==='date');
+  document.getElementById('list-sort-date-desc-btn').classList.toggle('btn-primary', mode==='date-desc');
   document.getElementById('list-sort-entry-btn').classList.toggle('btn-primary', mode==='entry');
   renderListFiltered();
 }
@@ -1673,6 +1676,13 @@ function renderListFiltered(){
       const at = a.record_time || '', bt = b.record_time || '';
       if(at !== bt) return at > bt ? 1 : -1;
       return a.id - b.id;
+    });
+  }else if(LIST_SORT_MODE === 'date-desc'){
+    rows.sort((a,b)=>{
+      if(a.record_date !== b.record_date) return a.record_date < b.record_date ? 1 : -1;
+      const at = a.record_time || '', bt = b.record_time || '';
+      if(at !== bt) return at < bt ? 1 : -1;
+      return b.id - a.id;
     });
   }else{
     rows.sort((a,b)=> b.id - a.id);
@@ -2179,6 +2189,7 @@ let IW_LIST_SORT_MODE = 'entry'; // 'entry' = 登録順(新しい入力が上), 
 function setIWListSortMode(mode){
   IW_LIST_SORT_MODE = mode;
   document.getElementById('iwlist-sort-date-btn').classList.toggle('btn-primary', mode==='date');
+  document.getElementById('iwlist-sort-date-desc-btn').classList.toggle('btn-primary', mode==='date-desc');
   document.getElementById('iwlist-sort-entry-btn').classList.toggle('btn-primary', mode==='entry');
   renderIWListFiltered();
 }
@@ -2299,6 +2310,14 @@ function renderIWListFiltered(){
       const at = a.record_time || '', bt = b.record_time || '';
       if(at !== bt) return at > bt ? 1 : -1;
       return a.id - b.id;
+    });
+  }else if(IW_LIST_SORT_MODE === 'date-desc'){
+    rows.sort((a,b)=>{
+      const ad = a.record_date || '', bd = b.record_date || '';
+      if(ad !== bd) return ad < bd ? 1 : -1;
+      const at = a.record_time || '', bt = b.record_time || '';
+      if(at !== bt) return at < bt ? 1 : -1;
+      return b.id - a.id;
     });
   }else{
     rows.sort((a,b)=> b.id - a.id);
