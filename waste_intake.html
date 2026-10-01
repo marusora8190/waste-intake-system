@@ -1045,89 +1045,12 @@
 const SUPABASE_URL = "https://zhxuntrhxnrssqpvcmvl.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoeHVudHJoeG5yc3NxcHZjbXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNDcyNjYsImV4cCI6MjA5NzgyMzI2Nn0.l3pwvKZVVJqDA4HORqt-Op-cTvVF3bkX1ovWgAuSO58";
 
-// ===== 管理者パスワード（削除のときだけ必要） =====
-// 普段の入力・編集・閲覧はパスワード無しで使える。削除だけは、データベース側で
-// 「管理者アカウント（admin@marusora-apps.example.com）でログインしている場合のみ可」に
-// なっているため、削除の直前に管理者パスワードを聞いて、一時的に管理者としてログインする。
-// 一度入力すると、このタブを閉じるまで（最長1時間）は再入力不要。
-const ADMIN_EMAIL = 'admin@marusora-apps.example.com';
-const ADMIN_SESSION_KEY = 'marusoraAdminSession';
-function adminCachedToken(){
-  try{
-    const s = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || 'null');
-    if(s && s.access_token && s.expires_at * 1000 > Date.now() + 60000) return s.access_token;
-  }catch(e){}
-  return null;
-}
-function askAdminPassword(message){
-  return new Promise(function(resolve){
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;';
-    const box = document.createElement('div');
-    box.style.cssText = 'background:#fff;color:#222;border-radius:10px;padding:20px;max-width:360px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);font-size:15px;line-height:1.5;';
-    const title = document.createElement('div');
-    title.textContent = '管理者パスワード';
-    title.style.cssText = 'font-weight:bold;margin-bottom:6px;';
-    const msg = document.createElement('div');
-    msg.textContent = message;
-    msg.style.cssText = 'font-size:13px;margin-bottom:10px;';
-    const input = document.createElement('input');
-    input.type = 'password';
-    input.autocomplete = 'current-password';
-    input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;font-size:16px;border:1px solid #999;border-radius:6px;';
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-top:14px;';
-    const cancel = document.createElement('button');
-    cancel.type = 'button'; cancel.textContent = 'やめる';
-    cancel.style.cssText = 'padding:8px 16px;font-size:14px;border:1px solid #999;background:#f3f3f3;color:#222;border-radius:6px;cursor:pointer;';
-    const ok = document.createElement('button');
-    ok.type = 'button'; ok.textContent = 'OK';
-    ok.style.cssText = 'padding:8px 20px;font-size:14px;border:none;background:#2563eb;color:#fff;border-radius:6px;cursor:pointer;';
-    row.appendChild(cancel); row.appendChild(ok);
-    box.appendChild(title); box.appendChild(msg); box.appendChild(input); box.appendChild(row);
-    wrap.appendChild(box);
-    document.body.appendChild(wrap);
-    function done(v){ wrap.remove(); resolve(v); }
-    cancel.onclick = function(){ done(null); };
-    ok.onclick = function(){ done(input.value); };
-    input.onkeydown = function(e){
-      if(e.key === 'Enter'){ e.preventDefault(); done(input.value); }
-      if(e.key === 'Escape'){ e.preventDefault(); done(null); }
-    };
-    setTimeout(function(){ input.focus(); }, 0);
-  });
-}
-async function getAdminToken(){
-  const cached = adminCachedToken();
-  if(cached) return cached;
-  let message = '削除するには管理者パスワードを入力してください。';
-  for(;;){
-    const pw = await askAdminPassword(message);
-    if(pw === null || pw === '') throw new Error('管理者パスワードが入力されなかったため、削除しませんでした。');
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: ADMIN_EMAIL, password: pw })
-    });
-    if(res.ok){
-      const j = await res.json();
-      try{ sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ access_token: j.access_token, expires_at: j.expires_at })); }catch(e){}
-      return j.access_token;
-    }
-    if(res.status === 400){ message = 'パスワードが違います。もう一度入力してください。'; continue; }
-    throw new Error('接続に失敗しました。しばらくしてからもう一度お試しください。');
-  }
-}
-// ===== ここまで：管理者パスワード =====
-
 async function sb(path, opts={}){
-  // 削除（DELETE）のときだけ管理者としてログインした鍵を使う
-  const bearer = String(opts.method || '').toUpperCase() === 'DELETE' ? await getAdminToken() : SUPABASE_KEY;
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...opts,
     headers:{
       "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${bearer}`,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
       "Content-Type":"application/json",
       ...(opts.headers||{})
     }
@@ -1140,23 +1063,6 @@ async function sb(path, opts={}){
   if(!text) return null;
   try{ return JSON.parse(text); }
   catch(e){ console.warn('JSON解析失敗:', text); return null; }
-}
-
-// Supabase は1回の読み込みで最大1000件までしか返さないため、
-// 全件が必要な読み込みは、1000件ずつ区切って最後まで読み込む。
-// 区切りの順番が毎回同じになるよう、並び順に id を加えてから取得する。
-async function sbAll(path, pageSize = 1000){
-  let p = path.replace(/&limit=\d+/, '');
-  const m = p.match(/[?&]order=([^&]*)/);
-  if(!m) p += (p.includes('?') ? '&' : '?') + 'order=id.asc';
-  else if(!/(^|,)id\./.test(m[1])) p = p.replace(m[0], m[0] + ',id.asc');
-  const all = [];
-  for(let offset = 0; ; offset += pageSize){
-    const page = await sb(`${p}&limit=${pageSize}&offset=${offset}`);
-    all.push(...(page || []));
-    if(!page || page.length < pageSize) break;
-  }
-  return all;
 }
 
 /* ---------- 金額入力欄：カンマ区切り表示 ---------- */
@@ -1315,7 +1221,7 @@ async function fetchDepartmentSuggestions(card){
 
 async function loadDepartmentOptions(){
   try{
-    const wr = await sbAll('waste_records?select=department&department=not.is.null&limit=5000');
+    const wr = await sb('waste_records?select=department&department=not.is.null&limit=5000');
     const set = new Set();
     (wr||[]).forEach(r=>{ const v=(r.department||'').trim(); if(v) set.add(v); });
     const values = [...set].sort((a,b)=>a.localeCompare(b,'ja'));
@@ -1328,7 +1234,7 @@ async function loadDepartmentOptions(){
 async function loadVehicleOptions(){
   try{
     const [wr, cm] = await Promise.all([
-      sbAll('waste_records?select=vehicle_no&vehicle_no=not.is.null&limit=5000'),
+      sb('waste_records?select=vehicle_no&vehicle_no=not.is.null&limit=5000'),
       sb('card_vehicle_map?select=vehicle_no&vehicle_no=not.is.null&limit=1000')
     ]);
     const set = new Set();
@@ -1447,7 +1353,7 @@ function openDatePicker(textFieldId){
   const nativeInput = document.getElementById(textFieldId + '-native');
   const textInput = document.getElementById(textFieldId);
   const current = parseFlexibleDate(textInput.value);
-  if(current) nativeInput.value = current;
+  nativeInput.value = current || '';
   nativeInput.onchange = () => {
     textInput.value = nativeInput.value;
     const timeFieldId = DATE_TO_TIME_FIELD[textFieldId];
@@ -1673,7 +1579,7 @@ async function loadList(){
   const body = document.getElementById('list-body');
   body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
   try{
-    const rows = await sbAll('waste_records?select=*&order=id.desc&limit=5000');
+    const rows = await sb('waste_records?select=*&order=id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
     populateListYearFilter();
     populateListMonthFilter();
@@ -2282,7 +2188,7 @@ async function loadIWList(){
   const body = document.getElementById('iwlist-body');
   if(body) body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
   try{
-    const rows = await sbAll('industrial_waste_records?select=*&order=id.desc&limit=5000');
+    const rows = await sb('industrial_waste_records?select=*&order=id.desc&limit=5000');
     ALL_IW_RECORDS = rows || [];
     populateIWDriverVehicleOptions();
     populateIWVendorOptions();
@@ -2590,7 +2496,7 @@ async function loadMBRecords(){
   const body = document.getElementById('mb-body');
   if(body) body.innerHTML = '<tr><td colspan="9">読み込み中…</td></tr>';
   try{
-    const rows = await sbAll('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
+    const rows = await sb('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
     ALL_MB_RECORDS = rows || [];
     renderMBList();
   }catch(e){
