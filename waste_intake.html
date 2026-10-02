@@ -316,8 +316,6 @@
       <div class="tab" data-tab="list" data-system="waste" onclick="switchTab('list')">一　覧</div>
       <div class="tab" data-tab="cards" data-system="waste" onclick="switchTab('cards')">カード管理</div>
       <div class="tab" data-tab="vehicle" data-system="waste" onclick="switchTab('vehicle')">車番別集計</div>
-      <div class="tab" data-tab="department" data-system="waste" onclick="switchTab('department')">持込部署集計</div>
-      <div class="tab" data-tab="summary" data-system="waste" onclick="switchTab('summary')">月次集計</div>
       <div class="tab" data-tab="invoice" data-system="waste" onclick="switchTab('invoice')">請求書照合</div>
       <div class="tab" data-tab="iwinput" data-system="industrial" style="display:none;" onclick="switchTab('iwinput')">廃材入力</div>
       <div class="tab" data-tab="iwlist" data-system="industrial" style="display:none;" onclick="switchTab('iwlist')">廃材一覧</div>
@@ -984,44 +982,6 @@
     </div>
   </div>
 
-  <!-- 持込部署集計タブ -->
-  <div class="panel" id="tab-department" style="display:none;">
-    <div class="inline-field" style="margin-bottom:14px;">
-      <div class="form-title" style="margin:0;">持込部署集計（月別 運搬回数）</div>
-      <label>年</label>
-      <select id="d-year"></select>
-      <button type="button" class="btn" onclick="exportDepartmentSummaryToExcel()">Excelダウンロード</button>
-      <div class="scroll-btn-row" style="margin-left:auto;margin-bottom:0;">
-        <button class="scroll-btn" onclick="scrollDepartmentTable(-240)" aria-label="左にスクロール">◀</button>
-        <button class="scroll-btn" onclick="scrollDepartmentTable(240)" aria-label="右にスクロール">▶</button>
-      </div>
-    </div>
-    <div class="table-wrap" id="department-table-wrap">
-      <table class="compact-cols department-table">
-        <thead id="department-thead"></thead>
-        <tbody id="department-body">
-          <tr><td>読み込み中…</td></tr>
-        </tbody>
-        <tfoot><tr id="department-fee-row"></tr></tfoot>
-      </table>
-    </div>
-  </div>
-
-  <!-- 月次集計タブ -->
-  <div class="panel" id="tab-summary" style="display:none;">
-    <div class="inline-field" style="margin-bottom:14px;">
-      <div class="form-title" style="margin:0;">月次・年次集計</div>
-      <label>年</label>
-      <select id="s-year"></select>
-      <button class="btn" style="margin-left:auto;" onclick="exportSummaryToExcel()">Excelダウンロード</button>
-    </div>
-    <div id="summary-totals" style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:22px;"></div>
-    <div style="margin-bottom:10px;font-weight:700;color:var(--ink-dark);">月別 正味重量合計(kg)</div>
-    <div id="summary-chart-weight" style="margin-bottom:30px;"></div>
-    <div style="margin-bottom:10px;font-weight:700;color:var(--ink-dark);">月別 手数料合計(円)</div>
-    <div id="summary-chart-fee"></div>
-  </div>
-
   <!-- 請求書照合タブ -->
   <div class="panel" id="tab-invoice" style="display:none;">
     <div class="inline-field" style="margin-bottom:16px;flex-wrap:wrap;">
@@ -1190,8 +1150,8 @@ function showToast(msg, duration=2600){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), duration);
 }
 
-const ALL_TAB_NAMES = ['input','list','cards','vehicle','department','summary','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice','mbinvoice'];
-const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', department:'waste', summary:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial', mbinvoice:'industrial' };
+const ALL_TAB_NAMES = ['input','list','cards','vehicle','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice','mbinvoice'];
+const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial', mbinvoice:'industrial' };
 let CURRENT_SYSTEM = 'waste';
 
 function switchTab(name){
@@ -1207,8 +1167,6 @@ function switchTab(name){
   if(name==='list') loadList();
   if(name==='cards') loadCards();
   if(name==='vehicle') loadVehicleSummary();
-  if(name==='department') loadDepartmentSummary();
-  if(name==='summary') loadYearSummary();
   if(name==='invoice') loadInvoiceTab();
   if(name==='iwinput'){
     loadIWPriceList();
@@ -3419,179 +3377,6 @@ function renderVehicleSummary(){
   alignStickyHeaderRows('vehicle-thead');
 }
 
-/* ---------- 持込部署集計タブ（月別 運搬回数） ---------- */
-async function loadDepartmentSummary(){
-  const body = document.getElementById('department-body');
-  body.innerHTML = '<tr><td>読み込み中…</td></tr>';
-  try{
-    await loadAllRecords();
-    populateDepartmentYearFilter();
-    renderDepartmentSummary();
-  }catch(e){
-    body.innerHTML = `<tr><td>読み込みに失敗しました: ${e.message}</td></tr>`;
-    console.error(e);
-  }
-}
-
-function populateDepartmentYearFilter(){
-  const yearSel = document.getElementById('d-year');
-  if(yearSel.dataset.populated) return;
-
-  const now = new Date();
-  const curYear = String(now.getFullYear());
-  const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))];
-  if(!years.includes(curYear)) years.push(curYear);
-  years.sort();
-
-  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  yearSel.value = curYear;
-  yearSel.addEventListener('change', renderDepartmentSummary);
-  yearSel.dataset.populated = '1';
-}
-
-function scrollDepartmentTable(delta){
-  const el = document.getElementById('department-table-wrap');
-  if(el) el.scrollBy({left: delta, behavior:'smooth'});
-}
-
-function renderDepartmentSummary(){
-  const thead = document.getElementById('department-thead');
-  const body = document.getElementById('department-body');
-  const feeRow = document.getElementById('department-fee-row');
-  const year = document.getElementById('d-year').value;
-
-  const yearRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4) === year);
-  const months = [...new Set(yearRecords.map(r=>r.record_date.slice(0,7)))].sort();
-
-  const pairKey = r => `${r.department}|||${r.vehicle_no || ''}`;
-  const pairs = [...new Set(
-    ALL_RECORDS.filter(r=>r.department).map(pairKey)
-  )].sort().map(k=>{
-    const [department, vehicle_no] = k.split('|||');
-    return { department, vehicle_no };
-  });
-
-  const row1 = '<th class="sticky-col">持込部署</th><th class="veh-no">車番</th>' + months.map(m=>{
-    const mo = Number(m.split('-')[1]);
-    return `<th class="num">${mo}月(kg)</th>`;
-  }).join('') + '<th class="num">年間運搬<br>回数合計</th><th class="num sticky-right2 total-num-cell">正味重量<br>合　計</th><th class="num sticky-right total-num-cell">手数料<br>合　計</th>';
-  thead.innerHTML = `<tr>${row1}</tr>`;
-
-  if(pairs.length===0 || months.length===0){
-    body.innerHTML = '<tr><td>データがありません</td></tr>';
-    feeRow.innerHTML = '';
-    return;
-  }
-  let grandCount = 0, grandNet = 0, grandFeeAll = 0;
-  body.innerHTML = pairs.map(p=>{
-    let totalCount = 0;
-    let totalNet = 0;
-    let totalFee = 0;
-    const cells = months.map(m=>{
-      const matched = yearRecords.filter(r=> r.department===p.department && (r.vehicle_no || '')===p.vehicle_no && r.record_date.slice(0,7)===m);
-      const cnt = matched.length;
-      const net = matched.reduce((s,r)=> s + Number(r.net_weight||0), 0);
-      const fee = matched.reduce((s,r)=> s + Number(r.fee||0), 0);
-      totalCount += cnt;
-      totalNet += net;
-      totalFee += fee;
-      if(cnt===0) return `<td class="num">-</td>`;
-      return `<td class="num">${net.toLocaleString()}</td>`;
-    }).join('');
-    grandCount += totalCount;
-    grandNet += totalNet;
-    grandFeeAll += totalFee;
-    const netCell = totalCount===0 ? '-' : `${totalNet.toLocaleString()}kg`;
-    const feeCell = totalCount===0 ? '-' : `${totalFee.toLocaleString()}円`;
-    const carType = getCarTypeByVehicle(p.vehicle_no);
-    const carTypeAttr = carType ? ` data-cartype="${carType.replace(/"/g,'&quot;')}" onclick="toggleDeptTooltip(this)"` : '';
-    return `<tr><td class="sticky-col">${p.department}</td><td class="veh-no"${carTypeAttr}>${p.vehicle_no}</td>${cells}<td class="num">${totalCount.toLocaleString()}</td><td class="num sticky-right2 total-num-cell">${netCell}</td><td class="num sticky-right total-num-cell">${feeCell}</td></tr>`;
-  }).join('');
-
-  const yearRecordsWithDept = yearRecords.filter(r=> r.department);
-
-  const feeCells = months.map(m=>{
-    const fee = yearRecordsWithDept.filter(r=> r.record_date.slice(0,7)===m)
-      .reduce((s,r)=> s + Number(r.fee||0), 0);
-    return `<td class="num">${fee.toLocaleString()}円</td>`;
-  }).join('');
-  const grandNetCell = grandCount===0 ? '-' : `${grandNet.toLocaleString()}kg`;
-  const grandFeeCell = grandCount===0 ? '-' : `${grandFeeAll.toLocaleString()}円`;
-  feeRow.className = 'fee-total-row';
-  feeRow.innerHTML = `<td colspan="2" class="sticky-col">手数料合計</td>${feeCells}<td class="num">${grandCount.toLocaleString()}</td><td class="num sticky-right2 total-num-cell">${grandNetCell}</td><td class="num sticky-right total-num-cell">${grandFeeCell}</td>`;
-  alignDeptRightStickyColumns();
-  alignStickyHeaderRows('department-thead');
-}
-
-/* ---------- 月次・年次サマリー ---------- */
-async function loadYearSummary(){
-  await loadAllRecords();
-  const yearSel = document.getElementById('s-year');
-  if(!yearSel.dataset.populated){
-    const years = [...new Set(ALL_RECORDS.map(r=>r.record_date.slice(0,4)))].sort().reverse();
-    const curYear = String(new Date().getFullYear());
-    if(!years.includes(curYear)) years.unshift(curYear);
-    yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-    yearSel.value = years[0];
-    yearSel.addEventListener('change', renderYearSummary);
-    yearSel.dataset.populated = '1';
-  }
-  renderYearSummary();
-}
-
-function buildBarChartSVG(labels, values, opts){
-  opts = opts || {};
-  const valueFormatter = opts.valueFormatter || (v => v.toLocaleString());
-  const barColor = opts.color || '#e2604a';
-  const width = 900, height = 220;
-  const padLeft = 10, padRight = 10, padTop = 24, padBottom = 30;
-  const chartW = width - padLeft - padRight;
-  const chartH = height - padTop - padBottom;
-  const maxVal = Math.max(1, ...values);
-  const n = labels.length;
-  const gap = 10;
-  const barW = (chartW - gap * (n - 1)) / n;
-  let bars = '';
-  for(let i=0;i<n;i++){
-    const v = values[i];
-    const barH = maxVal === 0 ? 0 : (v / maxVal) * chartH;
-    const x = padLeft + i * (barW + gap);
-    const y = padTop + chartH - barH;
-    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${barColor}" rx="3"></rect>`;
-    if(v > 0){
-      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-6).toFixed(1)}" class="bar-chart-value-label">${valueFormatter(v)}</text>`;
-    }
-    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${height-8}" class="bar-chart-bar-label">${labels[i]}</text>`;
-  }
-  return `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;">${bars}</svg>`;
-}
-
-function renderYearSummary(){
-  const year = document.getElementById('s-year').value;
-  const yearRecords = ALL_RECORDS.filter(r=> r.record_date.slice(0,4) === year);
-
-  const months = [];
-  for(let m=1;m<=12;m++) months.push(String(m).padStart(2,'0'));
-  const netByMonth = months.map(m => yearRecords.filter(r=>r.record_date.slice(5,7)===m).reduce((s,r)=>s+Number(r.net_weight||0),0));
-  const feeByMonth = months.map(m => yearRecords.filter(r=>r.record_date.slice(5,7)===m).reduce((s,r)=>s+Number(r.fee||0),0));
-  const labels = months.map(m => `${Number(m)}月`);
-
-  const totalCount = yearRecords.length;
-  const totalNet = yearRecords.reduce((s,r)=>s+Number(r.net_weight||0),0);
-  const totalFee = yearRecords.reduce((s,r)=>s+Number(r.fee||0),0);
-
-  document.getElementById('summary-totals').innerHTML = `
-    <div class="summary-total-card"><div class="label">${year}年 搬入件数</div><div class="value">${totalCount.toLocaleString()}件</div></div>
-    <div class="summary-total-card"><div class="label">${year}年 正味重量合計</div><div class="value">${totalNet.toLocaleString()}kg</div></div>
-    <div class="summary-total-card"><div class="label">${year}年 手数料合計</div><div class="value">${totalFee.toLocaleString()}円</div></div>
-  `;
-
-  document.getElementById('summary-chart-weight').innerHTML = buildBarChartSVG(labels, netByMonth, { color:'#e2604a', valueFormatter: v => v.toLocaleString() });
-  document.getElementById('summary-chart-fee').innerHTML = buildBarChartSVG(labels, feeByMonth, { color:'#b8412c', valueFormatter: v => v.toLocaleString() });
-
-  window._summaryExportData = { year, months: labels, netByMonth, feeByMonth, totalCount, totalNet, totalFee };
-}
-
 /* ---------- Excelダウンロード ---------- */
 function downloadWorkbook(sheets, filename){
   if(typeof XLSX === 'undefined'){
@@ -3624,30 +3409,6 @@ function exportVehicleSummaryToExcel(){
     wb_rows.push(Array.from(tr.cells).map(td => td.textContent.trim()));
   });
   downloadWorkbook([{ name:'車番別集計', rows: wb_rows }], `waste_intake_車番別集計_${todayStr()}.xlsx`);
-}
-
-function exportDepartmentSummaryToExcel(){
-  const table = document.querySelector('#department-table-wrap table');
-  if(!table){ showToast('表が見つかりませんでした'); return; }
-  const wb_rows = [];
-  Array.from(table.rows).forEach(tr => {
-    wb_rows.push(Array.from(tr.cells).map(td => td.textContent.trim()));
-  });
-  downloadWorkbook([{ name:'持込部署集計', rows: wb_rows }], `waste_intake_持込部署集計_${todayStr()}.xlsx`);
-}
-
-function exportSummaryToExcel(){
-  const d = window._summaryExportData;
-  if(!d){ showToast('データがありません'); return; }
-  const rows = [
-    ['月','正味重量合計(kg)','手数料合計(円)'],
-    ...d.months.map((m,i)=>[m, d.netByMonth[i], d.feeByMonth[i]]),
-    [],
-    ['年間合計件数', d.totalCount],
-    ['年間正味重量合計(kg)', d.totalNet],
-    ['年間手数料合計(円)', d.totalFee]
-  ];
-  downloadWorkbook([{ name:`${d.year}年集計`, rows }], `waste_intake_集計_${d.year}.xlsx`);
 }
 
 /* ---------- 請求書照合 ---------- */
@@ -3765,8 +3526,6 @@ async function refreshData(){
     await loadMatPriceList();
     await loadMatRecords();
     await loadVehicleSummary();
-    await loadDepartmentSummary();
-    await loadYearSummary();
     await loadInvoiceTab();
     btn.disabled = false;
     label.textContent = 'Update';
