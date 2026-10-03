@@ -132,8 +132,10 @@
   .btn-danger{color:#c94f3c;}
   .btn:disabled{opacity:.5;cursor:not-allowed;}
 
-  /* 古いデータの整理（①ごみの「一覧」タブのいちばん下） */
-  .cleanup-section{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:var(--panel);}
+  /* 古いデータの整理（①ごみの「一覧」タブと、②産業廃棄物の「廃材一覧」タブのいちばん上。
+     欄は1つだけで、タブを切り替えたときに、開いている方の一覧の上へ移す） */
+  .cleanup-section{margin:0 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);}
+  .cleanup-section:not([open]){width:fit-content;max-width:100%;}
   .cleanup-section summary{padding:10px 14px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;}
   .cleanup-body{padding:0 14px 14px;font-size:13px;color:var(--text);line-height:1.7;}
   .cleanup-body p{margin:0 0 8px;}
@@ -428,6 +430,19 @@
 
   <!-- 一覧タブ -->
   <div class="panel" id="tab-list" style="display:none;">
+    <details class="cleanup-section" id="cleanup-section" ontoggle="if(this.open) refreshCleanupOldest()">
+      <summary>古いデータの整理</summary>
+      <div class="cleanup-body">
+        <p>入力した日付より前の記録を、次の4種類まとめて削除します：①ごみ（可燃物・不燃物）、②産業廃棄物（廃材）、蛍光灯・水銀灯・電池処理、再生資材・雑品購入。判断に使うのは、それぞれの一覧の日付欄の日付です。カード車番対応表と単価表は消しません。削除したデータは元に戻せません。</p>
+        <div id="cleanup-oldest" class="cleanup-oldest">読み込み中…</div>
+        <div class="cleanup-row" style="margin-top:8px;">
+          <input type="date" id="cleanup-date" oninput="resetCleanupResult()">
+          <span>より前のデータ</span>
+          <button type="button" class="btn" onclick="checkCleanupTargets()">対象を確認する</button>
+        </div>
+        <div id="cleanup-result" class="cleanup-result" style="display:none;"></div>
+      </div>
+    </details>
     <div class="list-toolbar">
       <div class="form-title" style="margin:0;">一覧</div>
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
@@ -472,19 +487,6 @@
         </tbody>
       </table>
     </div>
-    <details class="cleanup-section" id="cleanup-section" ontoggle="if(this.open) refreshCleanupOldest()">
-      <summary>古いデータの整理</summary>
-      <div class="cleanup-body">
-        <p>入力した日付より前の記録を、次の4種類まとめて削除します：①ごみ（可燃物・不燃物）、②産業廃棄物（廃材）、蛍光灯・水銀灯・電池処理、再生資材・雑品購入。判断に使うのは、それぞれの一覧の日付欄の日付です。カード車番対応表と単価表は消しません。削除したデータは元に戻せません。</p>
-        <div id="cleanup-oldest" class="cleanup-oldest">読み込み中…</div>
-        <div class="cleanup-row" style="margin-top:8px;">
-          <input type="date" id="cleanup-date" oninput="resetCleanupResult()">
-          <span>より前のデータ</span>
-          <button type="button" class="btn" onclick="checkCleanupTargets()">対象を確認する</button>
-        </div>
-        <div id="cleanup-result" class="cleanup-result" style="display:none;"></div>
-      </div>
-    </details>
   </div>
 
   <!-- カード管理タブ -->
@@ -1188,6 +1190,7 @@ function switchTab(name){
   document.getElementById('refresh-btn').style.display = showRefresh ? 'flex' : 'none';
   document.getElementById('refresh-done-msg').style.display = 'none';
   if(name==='input') setTimeout(() => { document.getElementById('f-date').focus(); }, 50);
+  if(name==='list' || name==='iwlist') moveCleanupSection(name);
   if(name==='list') loadList();
   if(name==='cards') loadCards();
   if(name==='vehicle') loadVehicleSummary();
@@ -1670,7 +1673,14 @@ async function loadList(){
   }
 }
 
-// ===== 古いデータの整理（①ごみの「一覧」タブのいちばん下） =====
+// ===== 古いデータの整理（①ごみの「一覧」タブと、②産業廃棄物の「廃材一覧」タブのいちばん上） =====
+// 欄は1つだけ。タブを切り替えたときに、開いている方の一覧のいちばん上へ移す（中身・動きはどちらでも同じ）。
+function moveCleanupSection(tabName){
+  const sec = document.getElementById('cleanup-section');
+  const panel = document.getElementById('tab-' + tabName);
+  if(!sec || !panel) return;
+  if(panel.firstElementChild !== sec) panel.insertBefore(sec, panel.firstElementChild);
+}
 // 入力した日付より前の記録を、4種類まとめて削除する。
 // ・判断に使う日付は、それぞれの一覧の日付欄と同じもの（ごみ・廃材・蛍光灯等は record_date、資材購入は purchase_date）。
 // ・カード車番対応表・単価表・請求書の表は消さない。
@@ -1808,6 +1818,7 @@ async function runCleanup(){
   box.textContent = msg;
   showToast(deletedTotal ? '古いデータを削除しました' : '削除できませんでした', 3000);
   loadList();
+  if(document.getElementById('tab-iwlist').style.display !== 'none') loadIWList();
   refreshCleanupOldest();
 }
 // ===== ここまで：古いデータの整理 =====
