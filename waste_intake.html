@@ -203,6 +203,18 @@
   #tab-list table th:nth-child(6), #tab-list table td:nth-child(6){min-width:200px;}
   .num{text-align:center;}
   #tab-iwlist td, #tab-iwlist th{padding-top:3px;padding-bottom:3px;}
+  /* 廃材一覧の「備考」列：もとの約4分の1の幅（53px）にし、入りきらない文字は「…」にする */
+  #tab-iwlist table th:nth-child(12), #tab-iwlist table td:nth-child(12){width:53px;min-width:53px;max-width:53px;box-sizing:border-box;padding-left:6px;padding-right:6px;}
+  .iw-note-text{display:block;max-width:41px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .iw-note-text.is-cut{cursor:pointer;}
+  /* 「…」にマウスを載せたとき（スマホは指で押したとき）に、備考の全文を浮かび上がらせる欄 */
+  #iw-note-pop{
+    position:fixed;display:none;max-width:320px;
+    background:#fff;color:var(--text);font-size:13.5px;font-weight:700;line-height:1.6;
+    white-space:pre-wrap;word-break:break-all;
+    padding:6px 12px;border:1px solid var(--line);border-radius:8px;
+    box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:200;pointer-events:none;
+  }
   .date-col{min-width:76px;width:1%;padding-left:6px !important;padding-right:6px !important;white-space:nowrap;}
   .period-date-input{padding:12px 14px;font-size:15.5px;border:1px solid #d8d1c2;border-radius:8px;font-family:inherit;background:#fffefb;}
   .fee-cell{text-align:right !important;padding-right:16px;}
@@ -2845,7 +2857,7 @@ function renderIWListFiltered(){
       <td class="num">${Number(r.unit_price||0).toLocaleString()}</td>
       <td class="num fee-cell">${Number(r.amount||0).toLocaleString()}</td>
       <td class="num">${r.driver ?? ''}</td>
-      <td>${r.note ?? ''}</td>
+      <td><span class="iw-note-text">${r.note ?? ''}</span></td>
       <td class="action-cell">
         <button class="del-btn" onclick="editIWRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteIWRecord(${r.id})">削除</button>
@@ -2855,7 +2867,82 @@ function renderIWListFiltered(){
 
   const totalAmount = rows.reduce((s,r)=> s + Number(r.amount||0), 0);
   document.getElementById('iwlist-summary').textContent = `${rows.length}件 ／ 小計合計 ${totalAmount.toLocaleString()} 円`;
+  markIWNoteCut();
 }
+
+// ===== 廃材一覧の「備考」：入りきらない文字は「…」、そこにマウスを載せると全文を浮かび上がらせる =====
+// 文字が「…」になっている備考にだけ印（is-cut）を付ける
+function markIWNoteCut(){
+  document.querySelectorAll('#iwlist-body .iw-note-text').forEach(el=>{
+    el.classList.toggle('is-cut', el.scrollWidth > el.clientWidth + 1);
+  });
+}
+
+function getIWNotePop(){
+  let pop = document.getElementById('iw-note-pop');
+  if(!pop){
+    pop = document.createElement('div');
+    pop.id = 'iw-note-pop';
+    document.body.appendChild(pop);
+  }
+  return pop;
+}
+
+function showIWNotePop(el){
+  const pop = getIWNotePop();
+  pop.textContent = el.textContent;
+  pop.style.display = 'block';
+  const rect = el.getBoundingClientRect();
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = rect.left;
+  if(left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - 8 - pw);
+  let top = rect.bottom + 6;
+  if(top + ph > window.innerHeight - 8) top = Math.max(8, rect.top - 6 - ph);
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop._target = el;
+}
+
+function hideIWNotePop(){
+  const pop = document.getElementById('iw-note-pop');
+  if(pop){ pop.style.display = 'none'; pop._target = null; }
+}
+
+(function setupIWNotePop(){
+  const body = document.getElementById('iwlist-body');
+  if(!body) return;
+  // その場で「…」になっているかを確かめる（タブが隠れている間に表を作ったときも正しく動くように）
+  const cutEl = t => {
+    const el = t.closest('.iw-note-text');
+    if(!el) return null;
+    const cut = el.scrollWidth > el.clientWidth + 1;
+    el.classList.toggle('is-cut', cut);
+    return cut ? el : null;
+  };
+  body.addEventListener('mouseover', e=>{
+    const el = cutEl(e.target);
+    if(el) showIWNotePop(el);
+  });
+  body.addEventListener('mouseout', e=>{
+    const el = e.target.closest('.iw-note-text');
+    if(el && !el.contains(e.relatedTarget)) hideIWNotePop();
+  });
+  // スマホなど（マウスが無い画面）は、指で押すと出し、もう一度押すと消す
+  body.addEventListener('click', e=>{
+    const el = cutEl(e.target);
+    if(!el) return;
+    const pop = document.getElementById('iw-note-pop');
+    if(pop && pop.style.display === 'block' && pop._target === el) hideIWNotePop();
+    else showIWNotePop(el);
+  });
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('#iwlist-body .iw-note-text')) hideIWNotePop();
+  });
+  const wrap = document.getElementById('iwlist-table-wrap');
+  if(wrap) wrap.addEventListener('scroll', hideIWNotePop);
+  window.addEventListener('scroll', hideIWNotePop, true);
+  window.addEventListener('resize', ()=>{ hideIWNotePop(); markIWNoteCut(); });
+})();
 
 function exportIWListToExcel(){
   const header = ['日付','時間','業者','交付番号','事業場','車番','品名','数量','単位','単価(円)','小計(円)','運転手','備考'];
