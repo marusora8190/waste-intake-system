@@ -692,6 +692,10 @@
       <input type="text" id="iwlist-search-manifest" autocomplete="off" placeholder="交付番号で検索" style="width:150px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:13.5px;font-family:inherit;background:#fffefb;">
       <button type="button" class="btn" onclick="clearIWListSearch()">検索解除</button>
     </div>
+    <div class="scroll-btn-row">
+      <button type="button" class="scroll-btn" onclick="scrollIWListTable(-240)" aria-label="左にスクロール">◀</button>
+      <button type="button" class="scroll-btn" onclick="scrollIWListTable(240)" aria-label="右にスクロール">▶</button>
+    </div>
     <div class="table-wrap" id="iwlist-table-wrap">
       <table>
         <thead>
@@ -3691,6 +3695,12 @@ function populateVehicleYearFilter(){
 
 function scrollVehicleTable(delta){
   const el = document.getElementById('vehicle-table-wrap');
+  if(el) el.scrollBy({left: delta, behavior:'smooth'});
+}
+
+// 廃材一覧の表を左右にずらす（表の上の「◀」「▶」ボタン）
+function scrollIWListTable(delta){
+  const el = document.getElementById('iwlist-table-wrap');
   if(el) el.scrollBy({left: delta, behavior:'smooth'});
 }
 
