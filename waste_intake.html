@@ -475,6 +475,11 @@
         <label>手数料(円)（16円/kg）</label>
         <input type="text" id="f-fee" class="calc-field" readonly value="0">
       </div>
+
+      <div class="field full">
+        <label>備考</label>
+        <input type="text" id="f-note" placeholder="任意">
+      </div>
     </div>
     <p id="f-weight-warn" role="alert" style="display:none;margin:8px 0 0;padding:8px 12px;border:1px solid #c94f3c;border-radius:7px;background:#fdf1ee;color:#a33a29;font-size:13.5px;font-weight:600;line-height:1.6;"></p>
 
@@ -536,11 +541,11 @@
           <tr>
             <th class="num date-col">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
-            <th class="num">正味重量</th><th class="num">手数料</th><th></th>
+            <th class="num">正味重量</th><th class="num">手数料</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="12">読み込み中…</td></tr>
+          <tr><td colspan="13">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1596,6 +1601,12 @@ FORM_ORDER.forEach((id, idx) => {
     }
   });
 });
+// 備考欄：Enterで登録する（空車重量でEnterを押したときは、今までどおりそのまま登録）
+document.getElementById('f-note').addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter' || e.isComposing) return;
+  e.preventDefault();
+  submitRecord();
+});
 
 // 日付欄：「9/4」のような省略入力を受け付けて YYYY-MM-DD に正規化する
 function parseFlexibleDate(text){
@@ -1721,6 +1732,7 @@ function clearForm(){
   document.getElementById('f-item').value = '可燃';
   document.getElementById('f-total').value = '';
   document.getElementById('f-empty').value = '';
+  document.getElementById('f-note').value = '';
   document.getElementById('card-hint').textContent = '';
   recalcPreview();
   document.getElementById('f-date').focus();
@@ -1745,6 +1757,7 @@ function editRecord(id){
   document.getElementById('f-item').value = rec.item_type || '可燃';
   document.getElementById('f-total').value = rec.total_weight ?? '';
   document.getElementById('f-empty').value = rec.empty_weight ?? '';
+  document.getElementById('f-note').value = rec.note || '';
 
   const cardInfo = CARD_MAP[String(rec.card_no || '').trim()];
   document.getElementById('f-vehicle').value = rec.vehicle_no || (cardInfo ? cardInfo.vehicle : '') || '';
@@ -1769,6 +1782,7 @@ async function submitRecord(){
   const item = document.getElementById('f-item').value;
   const total = parseFloat(document.getElementById('f-total').value);
   const empty = parseFloat(document.getElementById('f-empty').value);
+  const note = document.getElementById('f-note').value.trim();
 
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !receipt || !card || isNaN(total) || isNaN(empty)){
     showToast('日付・受付No.・カードNo.・総重量・空車重量は必須です（日付は 9/4 のように入力できます）');
@@ -1797,7 +1811,8 @@ async function submitRecord(){
       vehicle_no: vehicle || null,
       item_type: item,
       total_weight: total,
-      empty_weight: empty
+      empty_weight: empty,
+      note: note || null
     };
     if(EDITING_ID){
       await sb(`waste_records?id=eq.${EDITING_ID}`, {
@@ -1907,7 +1922,7 @@ function setupListSearchFilters(){
 
 async function loadList(){
   const body = document.getElementById('list-body');
-  body.innerHTML = '<tr><td colspan="12">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
   try{
     const rows = await sbAll('waste_records?select=*&order=id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
@@ -1916,7 +1931,7 @@ async function loadList(){
     setupListSearchFilters();
     renderListFiltered();
   }catch(e){
-    body.innerHTML = `<tr><td colspan="12">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="13">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -2187,7 +2202,7 @@ function renderListFiltered(){
   LIST_RECORDS = rows;
 
   if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="12">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="13">記録がありません</td></tr>';
     document.getElementById('list-summary').textContent = '';
     return;
   }
@@ -2204,6 +2219,7 @@ function renderListFiltered(){
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
       <td class="num">${Number(r.net_weight).toLocaleString()}</td>
       <td class="num fee-cell">${Number(r.fee).toLocaleString()}</td>
+      <td>${String(r.note ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
       <td class="action-cell">
         <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
