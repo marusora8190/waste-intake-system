@@ -640,7 +640,7 @@
       </div>
       <div class="field">
         <label>単価（円）</label>
-        <input type="number" id="iw-price" class="num-field" step="1" inputmode="decimal" oninput="recalcIWPreview()">
+        <input type="text" id="iw-price" class="num-field" inputmode="numeric" autocomplete="off" oninput="recalcIWPreview()">
         <div class="field-hint" id="iw-price-hint"></div>
       </div>
       <div class="field">
@@ -733,7 +733,7 @@
         </div>
         <div class="field">
           <label>単価（円） *</label>
-          <input type="number" id="iwp-price" class="num-field" step="1" inputmode="decimal" placeholder="例: 1800">
+          <input type="text" id="iwp-price" class="num-field" inputmode="numeric" autocomplete="off" placeholder="例: 1,800">
         </div>
         <div class="field">
           <label>備考</label>
@@ -1620,6 +1620,8 @@ document.getElementById('iw-date').addEventListener('blur', function(){ normaliz
   attachThousandsFormatting(el);
   el.addEventListener('input', recalcIWPreview);
 });
+// 廃材の単価欄（廃材入力・廃材単価表）も 15,000 のように3けたごとに区切って表示する
+['iw-price','iwp-price'].forEach(id=> attachThousandsFormatting(document.getElementById(id)));
 
 const IW_FORM_ORDER = ['iw-date','iw-time','iw-vendor','iw-manifest','iw-site','iw-vehicle','iw-item','iw-unit','iw-total','iw-tare','iw-price','iw-driver','iw-note'];
 IW_FORM_ORDER.forEach((id, idx) => {
@@ -2336,6 +2338,7 @@ async function loadIWPriceList(){
     const rows = await sb('industrial_waste_price_list?select=*&order=vendor_name.asc,item_name.asc');
     IW_PRICE_LIST = rows || [];
     populateIWVendorOptions();
+    refreshIWItemSuggestions();
     renderIWPriceTable();
   }catch(e){
     console.error(e);
@@ -2388,10 +2391,28 @@ function updateIWWeightLabels(vendor){
 function onIWVendorChange(){
   const vendor = document.getElementById('iw-vendor').value.trim();
   updateIWWeightLabels(vendor);
-  const dl = document.getElementById('iw-item-suggestions');
-  const items = IW_PRICE_LIST.filter(r => !vendor || r.vendor_name === vendor).map(r=>r.item_name);
-  if(dl) dl.innerHTML = [...new Set(items)].map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+  refreshIWItemSuggestions();
   onIWItemChange();
+}
+
+// 単価の表示用（15000 → 15,000）。空のときは空欄
+function formatIWPrice(v){
+  if(v === null || v === undefined || v === '') return '';
+  const n = Number(v);
+  return isNaN(n) ? String(v) : n.toLocaleString();
+}
+
+// 「品名」の候補を、単価表の最新の内容から作り直す。
+// 業者が単価表にある名前なら、その業者の品名だけ。業者が空・単価表に無い名前なら、すべての品名を出す。
+// 単価表を読み込み直したときにも呼ぶ（単価表に追加した品名が、すぐ候補に出るようにするため）
+function refreshIWItemSuggestions(){
+  const dl = document.getElementById('iw-item-suggestions');
+  if(!dl) return;
+  const vendorEl = document.getElementById('iw-vendor');
+  const vendor = vendorEl ? vendorEl.value.trim() : '';
+  const hasVendor = vendor && IW_PRICE_LIST.some(r => r.vendor_name === vendor);
+  const items = IW_PRICE_LIST.filter(r => !hasVendor || r.vendor_name === vendor).map(r=>r.item_name).filter(Boolean);
+  dl.innerHTML = [...new Set(items)].map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}"></option>`).join('');
 }
 
 function onIWItemChange(){
@@ -2400,7 +2421,7 @@ function onIWItemChange(){
   const hint = document.getElementById('iw-price-hint');
   const match = IW_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
   if(match){
-    document.getElementById('iw-price').value = match.unit_price;
+    document.getElementById('iw-price').value = formatIWPrice(match.unit_price);
     hint.textContent = '単価表から自動入力しました（変更可）';
     hint.style.color = 'var(--muted)';
   }else if(vendor && item){
@@ -2424,7 +2445,7 @@ function computeIWNetQuantity(){
 function recalcIWPreview(){
   const net = computeIWNetQuantity();
   document.getElementById('iw-qty').value = net.toLocaleString(undefined, {maximumFractionDigits: 3});
-  const price = Number(document.getElementById('iw-price').value) || 0;
+  const price = parseCommaNumber(document.getElementById('iw-price').value) || 0;
   document.getElementById('iw-amount').value = Math.round(net * price).toLocaleString();
 }
 
@@ -2450,7 +2471,7 @@ function editIWPrice(id){
   EDITING_IWPRICE_ID = id;
   document.getElementById('iwp-item').value = info.item_name || '';
   document.getElementById('iwp-vendor').value = info.vendor_name || '';
-  document.getElementById('iwp-price').value = info.unit_price ?? '';
+  document.getElementById('iwp-price').value = formatIWPrice(info.unit_price);
   document.getElementById('iwp-note').value = info.note || '';
   document.getElementById('iwprice-submit-btn').textContent = '更新する';
   document.getElementById('iwprice-edit-banner').style.display = '';
@@ -2469,7 +2490,7 @@ function cancelIWPriceEdit(){
 async function submitIWPrice(){
   const item = document.getElementById('iwp-item').value.trim();
   const vendor = document.getElementById('iwp-vendor').value.trim();
-  const priceRaw = document.getElementById('iwp-price').value;
+  const priceRaw = document.getElementById('iwp-price').value.replace(/,/g,'').trim();
   const note = document.getElementById('iwp-note').value.trim();
   if(!item || !vendor || priceRaw===''){
     showToast('品名・業者・単価をすべて入力してください');
@@ -2544,6 +2565,7 @@ function clearIWForm(){
   document.getElementById('iw-submit-btn').textContent = '登録する';
   document.getElementById('iw-edit-banner').style.display = 'none';
   updateIWWeightLabels('');
+  refreshIWItemSuggestions();
   recalcIWPreview();
 }
 
@@ -2562,7 +2584,7 @@ async function submitIWRecord(){
   const unit = document.getElementById('iw-unit').value;
   const totalRaw = document.getElementById('iw-total').value;
   const tareRaw = document.getElementById('iw-tare').value;
-  const price = document.getElementById('iw-price').value;
+  const price = document.getElementById('iw-price').value.replace(/,/g,'').trim();
   const driver = document.getElementById('iw-driver').value.trim();
   const note = document.getElementById('iw-note').value.trim();
 
@@ -2636,12 +2658,13 @@ function editIWRecord(id){
     document.getElementById('iw-total').value = r.total_weight==null ? '' : Number(r.total_weight).toLocaleString();
   }
   document.getElementById('iw-tare').value = r.tare_weight==null ? 0 : Number(r.tare_weight).toLocaleString();
-  document.getElementById('iw-price').value = r.unit_price ?? '';
+  document.getElementById('iw-price').value = formatIWPrice(r.unit_price);
   document.getElementById('iw-driver').value = r.driver || '';
   document.getElementById('iw-note').value = r.note || '';
   document.getElementById('iw-submit-btn').textContent = '更新する';
   document.getElementById('iw-edit-banner').style.display = '';
   updateIWWeightLabels(r.vendor_name || '');
+  refreshIWItemSuggestions();
   recalcIWPreview();
   switchTab('iwinput');
 }
