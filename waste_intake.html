@@ -1133,10 +1133,12 @@
         <div class="settings-body">
           <div id="settings-lock-box">
             <p>この項目を見るには、パスワードを入れてください。</p>
-            <div class="settings-lock-row">
+            <!-- パスワード欄だけを form で囲む。こうしないと、ブラウザ（Chromeなど）が画面中の文字の欄（業者・品名など）を
+                 「ユーザー名の欄」と思いこみ、保存したパスワードの候補を出してしまう -->
+            <form class="settings-lock-row" style="margin:0;" autocomplete="off" onsubmit="event.preventDefault();unlockSettingsSection();return false;">
               <input type="password" id="settings-lock-pw" class="settings-lock-input" placeholder="パスワード" autocomplete="off" aria-label="パスワード" onkeydown="if(event.key==='Enter'){event.preventDefault();unlockSettingsSection();}">
               <button type="button" class="settings-lock-btn" id="settings-lock-btn" onclick="unlockSettingsSection()">開く</button>
-            </div>
+            </form>
             <p class="settings-lock-msg" id="settings-lock-msg" role="status"></p>
           </div>
           <div id="settings-locked-content" hidden></div>
