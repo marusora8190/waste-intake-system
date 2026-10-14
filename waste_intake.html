@@ -332,6 +332,22 @@
   }
   .compact-cols .fee-total-row td:first-child{background:var(--accent-bg) !important;}
   .del-btn{background:none;border:none;color:#c94f3c;cursor:pointer;font-size:13px;text-decoration:underline;}
+  /* 廃棄物処理委託契約書 */
+  .wc-form{display:grid;grid-template-columns:2fr 2fr 2fr 1fr;gap:14px;align-items:end;margin-bottom:14px;}
+  @media (max-width: 860px){ .wc-form{grid-template-columns:1fr;} }
+  .wc-period{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .wc-period input{flex:1;min-width:9em;}
+  .wc-items-title{font-size:13px;font-weight:700;color:var(--muted);margin:4px 0 6px;}
+  .wc-items{width:100%;max-width:640px;border-collapse:collapse;margin-bottom:6px;}
+  .wc-items th{font-size:12.5px;color:var(--muted);font-weight:600;text-align:center;padding:4px 6px;border-bottom:1px solid var(--line);}
+  .wc-items td{padding:4px 6px;}
+  .wc-items input,.wc-items select{width:100%;box-sizing:border-box;}
+  .wc-items .wc-qty{text-align:right;}
+  .wc-items .wc-x{width:36px;text-align:center;}
+  .wc-total{font-size:14px;font-weight:700;color:var(--ink-dark);margin:8px 0 22px;}
+  .wc-total-label{font-size:12.5px;color:var(--muted);font-weight:600;margin-right:8px;}
+  .wc-cell-items{white-space:normal;min-width:14em;line-height:1.6;}
+  .wc-cell-nowrap{white-space:nowrap;}
 
   .list-toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .list-summary{color:var(--ink-dark);font-size:15px;font-weight:700;margin-left:auto;}
@@ -393,6 +409,7 @@
       <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生資材・雑品単価表</div>
       <div class="tab tab-invoice-special" data-tab="miwinvoice" data-system="industrial" style="display:none;" onclick="switchTab('miwinvoice')">請求書照合<br>㈱ITO、㈱ガイアート</div>
       <div class="tab tab-invoice-special" data-tab="mbinvoice" data-system="industrial" style="display:none;" onclick="switchTab('mbinvoice')">請求書照合<br>野村興産㈱</div>
+      <div class="tab" data-tab="contract" data-system="industrial" style="display:none;" onclick="switchTab('contract')">廃棄物処理委託契約書</div>
       <div class="tab tab-settings" data-tab="settings" data-system="all" role="button" tabindex="0" onclick="switchTab('settings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('settings');}">設　定</div>
   </div>
 
@@ -1088,6 +1105,64 @@
     <div id="invoice-total-card"></div>
   </div>
 
+  <!-- 産廃：廃棄物処理委託契約書タブ（2026年10月14日〜。表：waste_contracts） -->
+  <div class="panel" id="tab-contract" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="form-title" style="margin:0;">廃棄物処理委託契約書</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn" id="wc-form-toggle-btn" onclick="toggleWCFormSection()">入力欄を隠す</button>
+        <button class="btn" onclick="cancelWCEdit()">クリア</button>
+        <button class="btn btn-primary" id="wc-submit-btn" onclick="submitWC()">新規登録</button>
+      </div>
+    </div>
+    <div id="wc-form-section">
+      <div class="edit-banner" id="wc-edit-banner" style="display:none;">
+        編集中の契約書があります。<a href="#" onclick="cancelWCEdit();return false;">編集をキャンセルして新規登録に戻る</a>
+      </div>
+      <div class="wc-form">
+        <div class="field">
+          <label for="wc-project">工事名 *</label>
+          <input type="text" id="wc-project" autocomplete="off" placeholder="例: ○○棟 改修工事">
+        </div>
+        <div class="field">
+          <label for="wc-place">排出場所</label>
+          <input type="text" id="wc-place" autocomplete="off" placeholder="例: ○○棟">
+        </div>
+        <div class="field">
+          <label for="wc-start">委託期間</label>
+          <div class="wc-period">
+            <input type="date" id="wc-start" aria-label="委託期間（から）">
+            <span>〜</span>
+            <input type="date" id="wc-end" aria-label="委託期間（まで）">
+          </div>
+        </div>
+        <div class="field">
+          <label for="wc-facility">積替・保管施設の有無</label>
+          <select id="wc-facility">
+            <option value="無">無</option>
+            <option value="有">有</option>
+          </select>
+        </div>
+      </div>
+      <div class="wc-items-title">廃棄物の種類と予定数量</div>
+      <table class="wc-items">
+        <thead><tr><th>廃棄物種類</th><th style="width:9em;">予定数量</th><th style="width:6em;">単位</th><th class="wc-x"></th></tr></thead>
+        <tbody id="wc-items-body"></tbody>
+      </table>
+      <button class="btn" type="button" onclick="addWCItemRow()">＋ 行を追加</button>
+      <div class="wc-total"><span class="wc-total-label">合計予定数量</span><span id="wc-total">—</span></div>
+    </div>
+    <div class="field-hint" id="wc-count" style="margin-bottom:8px;"></div>
+    <div class="table-wrap" id="wc-table-wrap">
+      <table>
+        <thead><tr><th>工事名</th><th>排出場所</th><th>委託期間</th><th>積替・保管施設</th><th>廃棄物種類・予定数量</th><th>合計予定数量</th><th></th></tr></thead>
+        <tbody id="wc-body">
+          <tr><td colspan="7">読み込み中…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- 設定（左のメニューのいちばん下） -->
   <!-- マスターファイルと修正依頼メモのうち、⑤に関係することをまとめた画面。
        このファイルは公開されているため、個人のメールアドレス・パスワード・
@@ -1095,7 +1170,7 @@
   <div class="panel" id="tab-settings" style="display:none;">
     <div class="settings-content">
       <h2 class="settings-title">設定・管理メモ</h2>
-      <p class="settings-lead">このアプリ（⑤ごみ持込量記録システム）の管理に必要なことをまとめています。内容は 2026年10月8日 時点のマスターファイル・修正依頼メモにもとづきます。くわしくは共有サーバーのマスターファイルを見てください。</p>
+      <p class="settings-lead">このアプリ（⑤ごみ持込量記録システム）の管理に必要なことをまとめています。内容は 2026年10月14日 時点のマスターファイル・修正依頼メモにもとづきます。くわしくは共有サーバーのマスターファイルを見てください。</p>
 
       <details class="settings-section" open>
         <summary>🔗 このアプリのURL<span class="settings-hint"><span class="hint-open">ここを押すと開きます</span><span class="hint-close">ここを押すと閉じます</span></span></summary>
@@ -1153,7 +1228,7 @@
           <p><span class="settings-code">ADMIN_EMAIL</span> ／ <span class="settings-code">getAdminToken</span></p>
           <p class="settings-sub">データベースは、削除を管理者アカウントだけに限っています。これが消えると、記録・単価表・カード番号を消しても、実際には消えません（再読み込みすると戻ってきます）。2026年10月1日に、古いファイルでの上書きで一度消えたことがあります。</p>
           <h3 class="settings-h3">1000件対策の部品</h3>
-          <p><span class="settings-code">sbAll</span>（入力の候補2か所・記録の一覧4か所・集計1か所・古いデータの整理1か所の、合わせて8か所の読み込みで使用）</p>
+          <p><span class="settings-code">sbAll</span>（入力の候補2か所・記録の一覧4か所・集計1か所・古いデータの整理1か所の、廃棄物処理委託契約書の一覧1か所の、合わせて9か所の読み込みで使用）</p>
           <p class="settings-sub">データベースは1回に1000件までしか返さないため、1000件ずつ区切ってすべて読み込みます。これが消えると、件数が1000件を超えたときに一覧や合計の一部が欠けてしまいます。新しく読み込みを追加するときも、この部品を使います。</p>
         </div>
       </details>
@@ -1177,7 +1252,7 @@
             <li>場所：「①ごみ」の「一覧」と、「②産業廃棄物」の「廃材一覧」の、「Excelで書き出し」の右横にある「古いデータの整理」ボタン。押すと、すぐ下に欄が開きます（どちらから操作しても同じ動きです）。</li>
             <li>入力した日付より前の記録を、①ごみ・②産業廃棄物（廃材）・蛍光灯・水銀灯・電池処理・再生資材・雑品購入の4種類まとめて削除します。入力した日の当日分は残ります。入力できる日付は今日までです（今日より後の日付を入れると「今日より後の日付は選べません」と出て、数えません）。</li>
             <li>「対象を確認する」で種類ごとの件数を確かめ → 管理者パスワード → 最終確認 → 削除、の順です。削除したものは元に戻せません。</li>
-            <li>カード車番対応表・単価表・請求書の表は消しません。</li>
+            <li>カード車番対応表・単価表・請求書の表・廃棄物処理委託契約書は消しません。</li>
             <li>入力画面の「持込部署」「車番」の候補は過去の記録から作られるため、古い記録を消すと、最近使っていない部署名・車番が候補から消えることがあります（カード車番対応表の車番は引き続き出ます）。</li>
           </ul>
         </div>
@@ -1233,7 +1308,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・排出場所・委託期間・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行。合計予定数量は単位ごとに画面で足して出し、保存はしない）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
           </ul>
         </div>
@@ -1405,8 +1480,8 @@ function showToast(msg, duration=2600){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), duration);
 }
 
-const ALL_TAB_NAMES = ['input','list','cards','vehicle','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice','mbinvoice','settings'];
-const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial', mbinvoice:'industrial' };
+const ALL_TAB_NAMES = ['input','list','cards','vehicle','invoice','iwinput','iwlist','iwprice','iwmb','matinput','matlist','matprice','miwinvoice','mbinvoice','contract','settings'];
+const TAB_SYSTEM = { input:'waste', list:'waste', cards:'waste', vehicle:'waste', invoice:'waste', iwinput:'industrial', iwlist:'industrial', iwprice:'industrial', iwmb:'industrial', matinput:'industrial', matlist:'industrial', matprice:'industrial', miwinvoice:'industrial', mbinvoice:'industrial', contract:'industrial' };
 let CURRENT_SYSTEM = 'waste';
 
 function switchTab(name){
@@ -1442,6 +1517,7 @@ function switchTab(name){
   if(name==='matprice') loadMatPriceList();
   if(name==='miwinvoice') loadMIWInvoiceTab();
   if(name==='mbinvoice') loadMBInvoiceTab();
+  if(name==='contract') loadWCList();
   if(name==='settings') renderSettingsUrls();
 }
 
@@ -1474,6 +1550,215 @@ function switchSystem(sys){
   document.getElementById('header-tabs').style.width = (sys==='waste') ? '130px' : '200px';
   const defaultTab = ALL_TAB_NAMES.find(n=>TAB_SYSTEM[n]===sys);
   switchTab(defaultTab);
+}
+
+
+/* ---------- 産廃：廃棄物処理委託契約書（表：waste_contracts） ---------- */
+// 1件の契約書に、廃棄物の種類・予定数量・単位（ｔ・㎥・台）を何行でも入れられる（items に一覧で保存）。
+// 合計予定数量は、単位ごとに足して表示する（保存はしない）。削除は管理者パスワードが必要。
+const WC_UNITS = ['ｔ','㎥','台'];
+let WC_LIST = [];
+let EDITING_WC_ID = null;
+
+function wcEsc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function wcFmtQty(n){
+  return Number(n).toLocaleString(undefined, {maximumFractionDigits: 3});
+}
+function wcFmtDate(d){
+  if(!d) return '';
+  const p = String(d).split('-');
+  return p.length === 3 ? `${p[0]}/${Number(p[1])}/${Number(p[2])}` : String(d);
+}
+// 単位ごとの合計（例：12.5ｔ ／ 30㎥ ／ 2台）
+function wcTotalText(items){
+  const sums = {};
+  (items || []).forEach(it => {
+    const q = Number(it.qty);
+    if(!it.unit || !isFinite(q)) return;
+    sums[it.unit] = Math.round(((sums[it.unit] || 0) + q) * 1000) / 1000;
+  });
+  const order = WC_UNITS.concat(Object.keys(sums).filter(u => !WC_UNITS.includes(u)));
+  const parts = order.filter(u => u in sums).map(u => wcFmtQty(sums[u]) + u);
+  return parts.length ? parts.join(' ／ ') : '';
+}
+
+function addWCItemRow(item){
+  const body = document.getElementById('wc-items-body');
+  const tr = document.createElement('tr');
+  const unit = item && item.unit ? item.unit : 'ｔ';
+  const units = WC_UNITS.includes(unit) ? WC_UNITS : WC_UNITS.concat([unit]);
+  tr.innerHTML = `
+    <td><input type="text" class="wc-kind" autocomplete="off" placeholder="例: がれき類" aria-label="廃棄物種類" value="${wcEsc(item ? item.kind : '')}"></td>
+    <td><input type="text" class="wc-qty" inputmode="decimal" autocomplete="off" placeholder="例: 12.5" aria-label="予定数量" value="${item && item.qty !== null && item.qty !== undefined ? wcEsc(item.qty) : ''}"></td>
+    <td><select class="wc-unit" aria-label="単位">${units.map(u => `<option value="${wcEsc(u)}"${u===unit?' selected':''}>${wcEsc(u)}</option>`).join('')}</select></td>
+    <td class="wc-x"><button type="button" class="del-btn" aria-label="この行を消す" onclick="removeWCItemRow(this)">×</button></td>`;
+  body.appendChild(tr);
+  tr.querySelectorAll('input,select').forEach(el => el.addEventListener('input', updateWCTotal));
+  tr.querySelector('select').addEventListener('change', updateWCTotal);
+  updateWCTotal();
+}
+function removeWCItemRow(btn){
+  btn.closest('tr').remove();
+  if(!document.querySelector('#wc-items-body tr')) addWCItemRow();
+  updateWCTotal();
+}
+// 入力欄の行を読む。数量が数字でない行は qty を NaN にする（保存の前に確かめる）
+function readWCItemRows(){
+  return [...document.querySelectorAll('#wc-items-body tr')].map(tr => {
+    const kind = tr.querySelector('.wc-kind').value.trim();
+    const qtyRaw = tr.querySelector('.wc-qty').value.replace(/[,，]/g,'').trim()
+      .replace(/[０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+    const unit = tr.querySelector('.wc-unit').value;
+    return { kind, qtyRaw, qty: qtyRaw === '' ? null : Number(qtyRaw), unit };
+  });
+}
+function updateWCTotal(){
+  const rows = readWCItemRows().filter(r => r.qty !== null && isFinite(r.qty));
+  document.getElementById('wc-total').textContent = wcTotalText(rows) || '—';
+}
+
+async function loadWCList(){
+  const body = document.getElementById('wc-body');
+  if(!document.querySelector('#wc-items-body tr')) resetWCItemRows();
+  try{
+    WC_LIST = await sbAll('waste_contracts?select=*&order=period_start.desc.nullslast,created_at.desc');
+    renderWCTable();
+  }catch(e){
+    console.error(e);
+    if(body) body.innerHTML = `<tr><td colspan="7">読み込みに失敗しました: ${wcEsc(e.message)}</td></tr>`;
+  }
+}
+
+function renderWCTable(){
+  const body = document.getElementById('wc-body');
+  const count = document.getElementById('wc-count');
+  if(count) count.textContent = WC_LIST.length ? `${WC_LIST.length}件` : '';
+  if(!body) return;
+  if(WC_LIST.length === 0){
+    body.innerHTML = '<tr><td colspan="7">登録されている契約書がありません</td></tr>';
+    return;
+  }
+  body.innerHTML = WC_LIST.map(r => {
+    const items = Array.isArray(r.items) ? r.items : [];
+    const period = (r.period_start || r.period_end) ? `${wcFmtDate(r.period_start)} 〜 ${wcFmtDate(r.period_end)}` : '';
+    const itemText = items.map(it => `${wcEsc(it.kind)}${it.qty !== null && it.qty !== undefined && it.qty !== '' ? '：' + wcEsc(wcFmtQty(it.qty)) + wcEsc(it.unit) : ''}`).join('<br>');
+    return `
+    <tr>
+      <td class="card-dept-cell">${wcEsc(r.project_name)}</td>
+      <td class="card-dept-cell">${wcEsc(r.discharge_place)}</td>
+      <td class="wc-cell-nowrap">${wcEsc(period)}</td>
+      <td style="text-align:center;">${r.has_transfer_facility ? '有' : '無'}</td>
+      <td class="wc-cell-items">${itemText}</td>
+      <td class="wc-cell-nowrap">${wcEsc(wcTotalText(items))}</td>
+      <td class="action-cell">
+        <button class="del-btn" onclick="editWC(${Number(r.id)})">編集</button>
+        <button class="del-btn" onclick="deleteWC(${Number(r.id)})">削除</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function resetWCItemRows(items){
+  document.getElementById('wc-items-body').innerHTML = '';
+  const list = (items && items.length) ? items : [null, null, null];
+  list.forEach(it => addWCItemRow(it));
+  updateWCTotal();
+}
+
+function toggleWCFormSection(){
+  const sec = document.getElementById('wc-form-section');
+  const btn = document.getElementById('wc-form-toggle-btn');
+  const wrap = document.getElementById('wc-table-wrap');
+  const isHidden = sec.style.display === 'none';
+  sec.style.display = isHidden ? '' : 'none';
+  btn.textContent = isHidden ? '入力欄を隠す' : '入力欄を表示';
+  wrap.classList.toggle('expanded', !isHidden);
+}
+
+function editWC(id){
+  const r = WC_LIST.find(x => x.id === id);
+  if(!r){ showToast('契約書が見つかりませんでした'); return; }
+  EDITING_WC_ID = id;
+  document.getElementById('wc-project').value = r.project_name || '';
+  document.getElementById('wc-place').value = r.discharge_place || '';
+  document.getElementById('wc-start').value = r.period_start || '';
+  document.getElementById('wc-end').value = r.period_end || '';
+  document.getElementById('wc-facility').value = r.has_transfer_facility ? '有' : '無';
+  resetWCItemRows(Array.isArray(r.items) ? r.items : []);
+  document.getElementById('wc-submit-btn').textContent = '更新する';
+  document.getElementById('wc-edit-banner').style.display = '';
+  const sec = document.getElementById('wc-form-section');
+  if(sec.style.display === 'none') toggleWCFormSection();
+  sec.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function cancelWCEdit(){
+  EDITING_WC_ID = null;
+  ['wc-project','wc-place','wc-start','wc-end'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('wc-facility').value = '無';
+  resetWCItemRows();
+  document.getElementById('wc-submit-btn').textContent = '新規登録';
+  document.getElementById('wc-edit-banner').style.display = 'none';
+}
+
+let WC_SAVING = false;
+async function submitWC(){
+  if(WC_SAVING) return;
+  const project = document.getElementById('wc-project').value.trim();
+  const place = document.getElementById('wc-place').value.trim();
+  const start = document.getElementById('wc-start').value || null;
+  const end = document.getElementById('wc-end').value || null;
+  const facility = document.getElementById('wc-facility').value === '有';
+  if(!project){ showToast('工事名を入力してください'); document.getElementById('wc-project').focus(); return; }
+  if(start && end && end < start){ showToast('委託期間の終わりが、始まりより前になっています'); return; }
+  const rows = readWCItemRows().filter(r => r.kind || r.qtyRaw);
+  for(const r of rows){
+    if(!r.kind){ showToast('予定数量が入っている行に、廃棄物種類を入れてください'); return; }
+    if(r.qty !== null && (!isFinite(r.qty) || r.qty < 0)){ showToast(`「${r.kind}」の予定数量は数字で入れてください`); return; }
+  }
+  const payload = {
+    project_name: project,
+    discharge_place: place || null,
+    period_start: start,
+    period_end: end,
+    has_transfer_facility: facility,
+    items: rows.map(r => ({ kind: r.kind, qty: r.qty, unit: r.unit })),
+    updated_at: new Date().toISOString()
+  };
+  WC_SAVING = true;
+  try{
+    if(EDITING_WC_ID){
+      await sb(`waste_contracts?id=eq.${EDITING_WC_ID}`, { method:'PATCH', body: JSON.stringify(payload) });
+      showToast('契約書を更新しました');
+    }else{
+      await sb('waste_contracts', { method:'POST', body: JSON.stringify(payload) });
+      showToast('契約書を登録しました');
+    }
+    cancelWCEdit();
+    await loadWCList();
+  }catch(e){
+    console.error(e);
+    showToast('保存に失敗しました: ' + e.message, 5000);
+  }finally{
+    WC_SAVING = false;
+  }
+}
+
+async function deleteWC(id){
+  const r = WC_LIST.find(x => x.id === id);
+  if(!r) return;
+  if(!confirm(`「${r.project_name}」の契約書を削除しますか？\n削除すると元に戻せません。`)) return;
+  try{
+    await sb(`waste_contracts?id=eq.${id}`, { method:'DELETE' });
+    if(EDITING_WC_ID === id) cancelWCEdit();
+    showToast('削除しました');
+    await loadWCList();
+  }catch(e){
+    console.error(e);
+    showToast(e.message, 5000);
+  }
 }
 
 /* ---------- カード⇔車番 対応表（メモリキャッシュ） ---------- */
