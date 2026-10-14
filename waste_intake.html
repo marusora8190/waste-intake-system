@@ -350,6 +350,11 @@
   .wc-total-label{font-size:12.5px;color:var(--muted);font-weight:600;margin-right:8px;}
   .wc-cell-items{white-space:normal;min-width:14em;line-height:1.6;}
   .wc-cell-nowrap{white-space:nowrap;}
+  .wc-list-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
+  .wc-list-bar label{font-size:12.5px;color:var(--muted);font-weight:600;}
+  .wc-sort-th{cursor:pointer;user-select:none;white-space:nowrap;}
+  .wc-sort-th:hover{text-decoration:underline;}
+  .wc-sort-th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;}
 
   .list-toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .list-summary{color:var(--ink-dark);font-size:15px;font-weight:700;margin-left:auto;}
@@ -1160,10 +1165,17 @@
       <button class="btn" type="button" onclick="addWCItemRow()">＋ 行を追加</button>
       <div class="wc-total"><span class="wc-total-label">合計予定数量</span><span id="wc-total">—</span></div>
     </div>
-    <div class="field-hint" id="wc-count" style="margin-bottom:8px;"></div>
+    <div class="wc-list-bar">
+      <label for="wc-sort">並び順</label>
+      <select id="wc-sort" onchange="setWCSort(this.value)">
+        <option value="asc">委託期間（まで）の日付が早い順</option>
+        <option value="desc">委託期間（まで）の日付が遅い順</option>
+      </select>
+      <span class="field-hint" id="wc-count" style="margin:0;"></span>
+    </div>
     <div class="table-wrap" id="wc-table-wrap">
       <table>
-        <thead><tr><th>工事名</th><th>排出場所</th><th>委託期間</th><th>積替・保管施設</th><th>廃棄物種類・予定数量</th><th>合計予定数量</th><th></th></tr></thead>
+        <thead><tr><th>工事名</th><th>排出場所</th><th class="wc-sort-th" id="wc-sort-th" role="button" tabindex="0" title="押すと、早い順・遅い順が入れ替わります" onclick="setWCSort(WC_SORT==='asc'?'desc':'asc')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setWCSort(WC_SORT==='asc'?'desc':'asc');}">委託期間 <span id="wc-sort-mark">▲</span></th><th>積替・保管施設</th><th>廃棄物種類・予定数量</th><th>合計予定数量</th><th></th></tr></thead>
         <tbody id="wc-body">
           <tr><td colspan="7">読み込み中…</td></tr>
         </tbody>
@@ -1316,7 +1328,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・排出場所・委託期間（和暦で入力・表示。保存は日付）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行。合計予定数量は単位ごとに画面で足して出し、保存はしない）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・排出場所・委託期間（和暦で入力・表示。保存は日付。一覧は「まで」の日付の早い順・遅い順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行。合計予定数量は単位ごとに画面で足して出し、保存はしない）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
           </ul>
         </div>
@@ -1567,6 +1579,26 @@ function switchSystem(sys){
 const WC_UNITS = ['ｔ','㎥','台'];
 let WC_LIST = [];
 let EDITING_WC_ID = null;
+// 一覧の並び順：委託期間の「まで」の日付で、asc＝早い順／desc＝遅い順。
+// 「まで」が空の契約書は、どちらの順でもいちばん下。同じ日付どうしは、登録が新しいものを上にする。
+let WC_SORT = 'asc';
+function setWCSort(v){
+  WC_SORT = (v === 'desc') ? 'desc' : 'asc';
+  const sel = document.getElementById('wc-sort');
+  if(sel) sel.value = WC_SORT;
+  renderWCTable();
+}
+function sortWCList(list){
+  return list.slice().sort((a, b) => {
+    const ea = a.period_end || '', eb = b.period_end || '';
+    if(ea !== eb){
+      if(!ea) return 1;
+      if(!eb) return -1;
+      return WC_SORT === 'asc' ? (ea < eb ? -1 : 1) : (ea < eb ? 1 : -1);
+    }
+    return String(b.created_at || '').localeCompare(String(a.created_at || '')) || (Number(b.id) - Number(a.id));
+  });
+}
 
 function wcEsc(v){
   return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1674,12 +1706,14 @@ function renderWCTable(){
   const body = document.getElementById('wc-body');
   const count = document.getElementById('wc-count');
   if(count) count.textContent = WC_LIST.length ? `${WC_LIST.length}件` : '';
+  const mark = document.getElementById('wc-sort-mark');
+  if(mark) mark.textContent = WC_SORT === 'asc' ? '▲' : '▼';
   if(!body) return;
   if(WC_LIST.length === 0){
     body.innerHTML = '<tr><td colspan="7">登録されている契約書がありません</td></tr>';
     return;
   }
-  body.innerHTML = WC_LIST.map(r => {
+  body.innerHTML = sortWCList(WC_LIST).map(r => {
     const items = Array.isArray(r.items) ? r.items : [];
     const period = (r.period_start || r.period_end) ? `${wcFmtDate(r.period_start)} 〜 ${wcFmtDate(r.period_end)}` : '';
     const itemText = items.map(it => `${wcEsc(it.kind)}${it.qty !== null && it.qty !== undefined && it.qty !== '' ? '：' + wcEsc(wcFmtQty(it.qty)) + wcEsc(it.unit) : ''}`).join('<br>');
