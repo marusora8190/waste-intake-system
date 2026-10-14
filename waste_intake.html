@@ -333,10 +333,12 @@
   .compact-cols .fee-total-row td:first-child{background:var(--accent-bg) !important;}
   .del-btn{background:none;border:none;color:#c94f3c;cursor:pointer;font-size:13px;text-decoration:underline;}
   /* 廃棄物処理委託契約書 */
-  .wc-form{display:grid;grid-template-columns:2fr 2fr 2fr 1fr;gap:14px;align-items:end;margin-bottom:14px;}
+  .wc-form{display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;align-items:end;margin-bottom:14px;}
+  .wc-form .wc-period-field{grid-column:1 / -1;}
   @media (max-width: 860px){ .wc-form{grid-template-columns:1fr;} }
   .wc-period{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .wc-period input{flex:1;min-width:9em;}
+  .wc-period .wc-era{font-weight:600;}
+  .wc-period input{width:3.6em;text-align:center;}
   .wc-items-title{font-size:13px;font-weight:700;color:var(--muted);margin:4px 0 6px;}
   .wc-items{width:100%;max-width:640px;border-collapse:collapse;margin-bottom:6px;}
   .wc-items th{font-size:12.5px;color:var(--muted);font-weight:600;text-align:center;padding:4px 6px;border-bottom:1px solid var(--line);}
@@ -1129,19 +1131,25 @@
           <input type="text" id="wc-place" autocomplete="off" placeholder="例: ○○棟">
         </div>
         <div class="field">
-          <label for="wc-start">委託期間</label>
-          <div class="wc-period">
-            <input type="date" id="wc-start" aria-label="委託期間（から）">
-            <span>〜</span>
-            <input type="date" id="wc-end" aria-label="委託期間（まで）">
-          </div>
-        </div>
-        <div class="field">
           <label for="wc-facility">積替・保管施設の有無</label>
           <select id="wc-facility">
             <option value="無">無</option>
             <option value="有">有</option>
           </select>
+        </div>
+        <div class="field wc-period-field">
+          <label for="wc-start-y">委託期間（和暦）</label>
+          <div class="wc-period">
+            <span class="wc-era">令和</span>
+            <input type="text" id="wc-start-y" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="8" aria-label="委託期間（から）の年">年
+            <input type="text" id="wc-start-m" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="9" aria-label="委託期間（から）の月">月
+            <input type="text" id="wc-start-d" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="30" aria-label="委託期間（から）の日">日
+            <span>〜</span>
+            <span class="wc-era">令和</span>
+            <input type="text" id="wc-end-y" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="9" aria-label="委託期間（まで）の年">年
+            <input type="text" id="wc-end-m" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="3" aria-label="委託期間（まで）の月">月
+            <input type="text" id="wc-end-d" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="31" aria-label="委託期間（まで）の日">日
+          </div>
         </div>
       </div>
       <div class="wc-items-title">廃棄物の種類と予定数量</div>
@@ -1308,7 +1316,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・排出場所・委託期間・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行。合計予定数量は単位ごとに画面で足して出し、保存はしない）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・排出場所・委託期間（和暦で入力・表示。保存は日付）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行。合計予定数量は単位ごとに画面で足して出し、保存はしない）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
           </ul>
         </div>
@@ -1566,10 +1574,41 @@ function wcEsc(v){
 function wcFmtQty(n){
   return Number(n).toLocaleString(undefined, {maximumFractionDigits: 3});
 }
+// 委託期間は和暦で入力・表示する（データベースには日付として保存）。例：2026-09-30 → 令和8年9月30日
 function wcFmtDate(d){
   if(!d) return '';
-  const p = String(d).split('-');
-  return p.length === 3 ? `${p[0]}/${Number(p[1])}/${Number(p[2])}` : String(d);
+  const p = String(d).split('-').map(Number);
+  if(p.length !== 3 || p.some(isNaN)) return String(d);
+  const [y, m, day] = p;
+  const ymd = y * 10000 + m * 100 + day;
+  let era, ey;
+  if(ymd >= 20190501){ era = '令和'; ey = y - 2018; }
+  else if(ymd >= 19890108){ era = '平成'; ey = y - 1988; }
+  else { return `${y}年${m}月${day}日`; }
+  return `${era}${ey === 1 ? '元' : ey}年${m}月${day}日`;
+}
+// 令和の年・月・日の入力欄 → 'YYYY-MM-DD'。全部空なら null、正しくない日付なら false
+function wcReadReiwa(prefix){
+  const z = v => v.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
+  let ys = z(document.getElementById(prefix + '-y').value);
+  const ms = z(document.getElementById(prefix + '-m').value);
+  const ds = z(document.getElementById(prefix + '-d').value);
+  if(ys === '元') ys = '1';
+  if(!ys && !ms && !ds) return null;
+  if(!/^\d{1,2}$/.test(ys) || !/^\d{1,2}$/.test(ms) || !/^\d{1,2}$/.test(ds)) return false;
+  const y = 2018 + Number(ys), m = Number(ms), d = Number(ds);
+  const dt = new Date(y, m - 1, d);
+  if(Number(ys) < 1 || dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return false;
+  if(y * 10000 + m * 100 + d < 20190501) return false;
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+// 'YYYY-MM-DD' → 令和の年・月・日の入力欄へ
+function wcSetReiwa(prefix, iso){
+  const p = iso ? String(iso).split('-').map(Number) : null;
+  const ok = p && p.length === 3 && !p.some(isNaN);
+  document.getElementById(prefix + '-y').value = ok ? String(p[0] - 2018) : '';
+  document.getElementById(prefix + '-m').value = ok ? String(p[1]) : '';
+  document.getElementById(prefix + '-d').value = ok ? String(p[2]) : '';
 }
 // 単位ごとの合計（例：12.5ｔ ／ 30㎥ ／ 2台）
 function wcTotalText(items){
@@ -1683,8 +1722,8 @@ function editWC(id){
   EDITING_WC_ID = id;
   document.getElementById('wc-project').value = r.project_name || '';
   document.getElementById('wc-place').value = r.discharge_place || '';
-  document.getElementById('wc-start').value = r.period_start || '';
-  document.getElementById('wc-end').value = r.period_end || '';
+  wcSetReiwa('wc-start', r.period_start);
+  wcSetReiwa('wc-end', r.period_end);
   document.getElementById('wc-facility').value = r.has_transfer_facility ? '有' : '無';
   resetWCItemRows(Array.isArray(r.items) ? r.items : []);
   document.getElementById('wc-submit-btn').textContent = '更新する';
@@ -1696,7 +1735,9 @@ function editWC(id){
 
 function cancelWCEdit(){
   EDITING_WC_ID = null;
-  ['wc-project','wc-place','wc-start','wc-end'].forEach(id => document.getElementById(id).value = '');
+  ['wc-project','wc-place'].forEach(id => document.getElementById(id).value = '');
+  wcSetReiwa('wc-start', null);
+  wcSetReiwa('wc-end', null);
   document.getElementById('wc-facility').value = '無';
   resetWCItemRows();
   document.getElementById('wc-submit-btn').textContent = '新規登録';
@@ -1708,10 +1749,12 @@ async function submitWC(){
   if(WC_SAVING) return;
   const project = document.getElementById('wc-project').value.trim();
   const place = document.getElementById('wc-place').value.trim();
-  const start = document.getElementById('wc-start').value || null;
-  const end = document.getElementById('wc-end').value || null;
+  const start = wcReadReiwa('wc-start');
+  const end = wcReadReiwa('wc-end');
   const facility = document.getElementById('wc-facility').value === '有';
   if(!project){ showToast('工事名を入力してください'); document.getElementById('wc-project').focus(); return; }
+  if(start === false){ showToast('委託期間（から）の日付が正しくありません（令和の年・月・日を数字で）'); document.getElementById('wc-start-y').focus(); return; }
+  if(end === false){ showToast('委託期間（まで）の日付が正しくありません（令和の年・月・日を数字で）'); document.getElementById('wc-end-y').focus(); return; }
   if(start && end && end < start){ showToast('委託期間の終わりが、始まりより前になっています'); return; }
   const rows = readWCItemRows().filter(r => r.kind || r.qtyRaw);
   for(const r of rows){
