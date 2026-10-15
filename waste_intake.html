@@ -1210,14 +1210,14 @@
     <div class="wc-list-bar">
       <label for="wc-sort">並び順</label>
       <select id="wc-sort" onchange="setWCSort(this.value)">
-        <option value="asc">委託期間（まで）の日付が早い順</option>
-        <option value="desc">委託期間（まで）の日付が遅い順</option>
+        <option value="asc">委託期間（まで）日付が古い順</option>
+        <option value="desc">委託期間（まで）日付が新しい順</option>
       </select>
       <span class="field-hint" id="wc-count" style="margin:0;"></span>
     </div>
     <div class="table-wrap" id="wc-table-wrap">
       <table>
-        <thead><tr><th>工事名</th><th>契約相手会社</th><th>契約区分</th><th>排出場所</th><th class="wc-sort-th" id="wc-sort-th" role="button" tabindex="0" title="押すと、早い順・遅い順が入れ替わります" onclick="setWCSort(WC_SORT==='asc'?'desc':'asc')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setWCSort(WC_SORT==='asc'?'desc':'asc');}">委託期間 <span id="wc-sort-mark">▲</span></th><th class="wc-col-min">積替<br>保管</th><th>廃棄物種類・予定数量</th><th class="wc-note-th">備考</th><th></th></tr></thead>
+        <thead><tr><th>工事名</th><th>契約相手会社</th><th>契約区分</th><th>排出場所</th><th class="wc-sort-th" id="wc-sort-th" role="button" tabindex="0" title="押すと、古い順・新しい順が入れ替わります" onclick="setWCSort(WC_SORT==='asc'?'desc':'asc')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setWCSort(WC_SORT==='asc'?'desc':'asc');}">委託期間 <span id="wc-sort-mark">▲</span></th><th class="wc-col-min">積替<br>保管</th><th>廃棄物種類・予定数量</th><th class="wc-note-th">備考</th><th></th></tr></thead>
         <tbody id="wc-body">
           <tr><td colspan="9">読み込み中…</td></tr>
         </tbody>
@@ -1370,7 +1370,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱から選ぶ。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は「まで」の日付の早い順・遅い順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・備考〔10月15日〜。一覧で直接入力〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱から選ぶ。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は「まで」の日付の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・備考〔10月15日〜。一覧で直接入力〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
             <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
@@ -1633,7 +1633,7 @@ function switchSystem(sys){
 const WC_UNITS = ['ｔ','㎥','台'];
 let WC_LIST = [];
 let EDITING_WC_ID = null;
-// 一覧の並び順：委託期間の「まで」の日付で、asc＝早い順／desc＝遅い順。
+// 一覧の並び順：委託期間の「まで」の日付で、asc＝古い順／desc＝新しい順。
 // 「まで」が空の契約書は、どちらの順でもいちばん下。同じ日付どうしは、登録が新しいものを上にする。
 let WC_SORT = 'asc';
 function setWCSort(v){
