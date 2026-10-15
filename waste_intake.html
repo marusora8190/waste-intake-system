@@ -792,7 +792,7 @@
       <div class="card-form">
         <div class="field">
           <label>品名 *</label>
-          <input type="text" id="iwp-item" placeholder="例: Co廃材処理">
+          <input type="text" id="iwp-item" placeholder="例: ｺﾝｸﾘｰﾄ廃材処理">
         </div>
         <div class="field">
           <label>業者 *</label>
@@ -1370,7 +1370,7 @@
             <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱から選ぶ。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は「まで」の日付の早い順・遅い順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・備考〔10月15日〜。一覧で直接入力〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
-            <li>②産業廃棄物の品名は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます（2026年10月15日〜）。廃材・再生資材の品名と単価表、委託契約書の廃棄物種類は、「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります。それまでの記録・単価表・契約書も同じ日に書き換えました。</li>
+            <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
           </ul>
         </div>
       </details>
@@ -1512,9 +1512,10 @@ async function sbAll(path, pageSize = 1000){
   return all;
 }
 
-/* ---------- ②産業廃棄物の品名の書き方をそろえる（2026年10月15日〜） ---------- */
+/* ---------- 廃棄物処理委託契約書の廃棄物種類の書き方をそろえる（2026年10月15日〜） ---------- */
 // 「コンクリート」は「Co」、「アスファルト」は「As」と書く（半角カタカナで入れても同じ）。
-// 廃材・再生資材の品名と単価表、委託契約書の廃棄物種類を保存するとき、単価表と照らし合わせるときに使う。
+// 委託契約書の廃棄物種類を保存するときだけ使う。廃材・再生資材の品名と単価表は、そのままの言葉で保存する
+// （10月15日の午前に廃材・再生資材にも使っていたが、同日夕方に委託契約書だけに戻した）。
 function iwAbbr(str){
   return String(str ?? '')
     .replace(/コンクリート|ｺﾝｸﾘｰﾄ/g, 'Co')
@@ -3015,7 +3016,7 @@ function refreshIWItemSuggestions(){
 
 function onIWItemChange(){
   const vendor = document.getElementById('iw-vendor').value.trim();
-  const item = iwAbbr(document.getElementById('iw-item').value.trim());
+  const item = document.getElementById('iw-item').value.trim();
   const hint = document.getElementById('iw-price-hint');
   const match = IW_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
   if(match){
@@ -3086,7 +3087,7 @@ function cancelIWPriceEdit(){
 }
 
 async function submitIWPrice(){
-  const item = iwAbbr(document.getElementById('iwp-item').value.trim());
+  const item = document.getElementById('iwp-item').value.trim();
   const vendor = document.getElementById('iwp-vendor').value.trim();
   const priceRaw = document.getElementById('iwp-price').value.replace(/,/g,'').trim();
   const note = document.getElementById('iwp-note').value.trim();
@@ -3178,7 +3179,7 @@ async function submitIWRecord(){
   const manifest = document.getElementById('iw-manifest').value.trim();
   const site = document.getElementById('iw-site').value.trim();
   const vehicle = document.getElementById('iw-vehicle').value.trim();
-  const item = iwAbbr(document.getElementById('iw-item').value.trim());
+  const item = document.getElementById('iw-item').value.trim();
   const unit = document.getElementById('iw-unit').value;
   const totalRaw = document.getElementById('iw-total').value;
   const tareRaw = document.getElementById('iw-tare').value;
@@ -3805,7 +3806,7 @@ function onMatVendorChange(){
 
 function onMatItemChange(){
   const vendor = document.getElementById('mat-vendor').value.trim();
-  const item = iwAbbr(document.getElementById('mat-item').value.trim());
+  const item = document.getElementById('mat-item').value.trim();
   const hint = document.getElementById('mat-price-hint');
   const match = MAT_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
   if(match && match.unit_price!==null && match.unit_price!==undefined){
@@ -3866,7 +3867,7 @@ function cancelMatPriceEdit(){
 }
 
 async function submitMatPrice(){
-  const item = iwAbbr(document.getElementById('matp-item').value.trim());
+  const item = document.getElementById('matp-item').value.trim();
   const vendor = document.getElementById('matp-vendor').value.trim();
   const priceRaw = document.getElementById('matp-price').value;
   const note = document.getElementById('matp-note').value.trim();
@@ -3932,7 +3933,7 @@ async function submitMatRecord(){
   normalizeDateField(dateEl);
   const date = dateEl.value;
   const vendor = document.getElementById('mat-vendor').value.trim();
-  const item = iwAbbr(document.getElementById('mat-item').value.trim());
+  const item = document.getElementById('mat-item').value.trim();
   const unit = document.getElementById('mat-unit').value;
   const qty = document.getElementById('mat-qty').value;
   const price = document.getElementById('mat-price').value;
