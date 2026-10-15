@@ -1735,7 +1735,7 @@ function renderWCTable(){
 
 function resetWCItemRows(items){
   document.getElementById('wc-items-body').innerHTML = '';
-  const list = (items && items.length) ? items : [null, null, null];
+  const list = (items && items.length) ? items : [null];
   list.forEach(it => addWCItemRow(it));
   updateWCTotal();
 }
