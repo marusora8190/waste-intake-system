@@ -376,7 +376,7 @@
   .wc-cell-items{white-space:nowrap;}
   .wc-cell-nowrap{white-space:nowrap;}
   /* 契約書の一覧：見出しは上に固定して中央、中身は左寄せ。積替・保管施設の列は最小の幅 */
-  #wc-table-wrap thead th{position:sticky;top:0;z-index:2;text-align:center;vertical-align:middle;}
+  #wc-table-wrap thead th{position:sticky;top:0;z-index:3;text-align:center;vertical-align:middle;box-shadow:0 1px 0 var(--line);}
   #wc-body td{text-align:left;vertical-align:top;}
   #wc-body td.wc-cell-text{padding-left:10px;}
   #wc-table-wrap .wc-col-min{width:1%;white-space:nowrap;}
@@ -1400,7 +1400,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -1882,6 +1882,7 @@ function renderWCTable(){
     return;
   }
   const today = todayStr();
+  setTimeout(wcStickHead, 0);
   body.innerHTML = sortWCList(WC_LIST).map(r => {
     const items = Array.isArray(r.items) ? r.items : [];
     // 委託期間中（始まりの日〜終了日。どちらの日も含む）なら、行を薄い黄色にする。終了日が過ぎると色は消える。
@@ -2150,6 +2151,30 @@ async function moveWCMaster(cat, id, dir){
     await wcReloadMasters();
   }
 }
+
+// ---- 一覧の見出しを画面の上に固定する（2026年10月16日〜） ----
+// 表の枠の中で下へずらしたときは、前から見出しが上に残る（position:sticky）。
+// それに加えて、画面全体を下へずらして表の上の端が画面から出たときも、見出しを画面のいちばん上に残す。
+function wcStickHead(){
+  const wrap = document.getElementById('wc-table-wrap');
+  const panel = document.getElementById('tab-contract');
+  if(!wrap || !panel || panel.style.display === 'none') return;
+  const ths = wrap.querySelectorAll('thead th');
+  if(!ths.length) return;
+  const r = wrap.getBoundingClientRect();
+  const headH = ths[0].getBoundingClientRect().height;
+  // 表の上の端が画面の上より上に出た分だけ、見出しを下げる（表の下の端は越えない）
+  const off = Math.max(0, Math.min(-r.top, r.height - headH * 2));
+  const v = off ? `translateY(${Math.round(off)}px)` : '';
+  ths.forEach(th => { if(th.style.transform !== v) th.style.transform = v; });
+}
+let WC_STICK_RAF = 0;
+function wcStickHeadSoon(){
+  if(WC_STICK_RAF) return;
+  WC_STICK_RAF = requestAnimationFrame(() => { WC_STICK_RAF = 0; wcStickHead(); });
+}
+window.addEventListener('scroll', wcStickHeadSoon, { passive: true });
+window.addEventListener('resize', wcStickHeadSoon);
 
 function resetWCItemRows(items){
   document.getElementById('wc-items-body').innerHTML = '';
