@@ -1151,7 +1151,7 @@
       <div class="wc-form">
         <div class="field">
           <label for="wc-project">工事名 *</label>
-          <input type="text" id="wc-project" autocomplete="off" placeholder="例: ○○棟 改修工事">
+          <input type="text" id="wc-project" autocomplete="off">
         </div>
         <div class="field">
           <label for="wc-contractor">契約相手会社 *</label>
@@ -1173,7 +1173,7 @@
         </div>
         <div class="field">
           <label for="wc-place">排出場所</label>
-          <input type="text" id="wc-place" autocomplete="off" placeholder="例: ○○棟">
+          <input type="text" id="wc-place" autocomplete="off">
         </div>
         <div class="field">
           <label for="wc-facility">積替・保管施設の有無</label>
@@ -1186,14 +1186,14 @@
           <label for="wc-start-y">委託期間（和暦）</label>
           <div class="wc-period">
             <span class="wc-era">令和</span>
-            <input type="text" id="wc-start-y" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="8" aria-label="委託期間（から）の年">年
-            <input type="text" id="wc-start-m" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="9" aria-label="委託期間（から）の月">月
-            <input type="text" id="wc-start-d" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="30" aria-label="委託期間（から）の日">日
+            <input type="text" id="wc-start-y" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の年">年
+            <input type="text" id="wc-start-m" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の月">月
+            <input type="text" id="wc-start-d" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の日">日
             <span>〜</span>
             <span class="wc-era">令和</span>
-            <input type="text" id="wc-end-y" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="9" aria-label="委託期間（まで）の年">年
-            <input type="text" id="wc-end-m" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="3" aria-label="委託期間（まで）の月">月
-            <input type="text" id="wc-end-d" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="31" aria-label="委託期間（まで）の日">日
+            <input type="text" id="wc-end-y" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の年">年
+            <input type="text" id="wc-end-m" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の月">月
+            <input type="text" id="wc-end-d" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の日">日
           </div>
         </div>
       </div>
@@ -1733,8 +1733,8 @@ function addWCItemRow(item){
   const unit = item && item.unit ? item.unit : 'ｔ';
   const units = WC_UNITS.includes(unit) ? WC_UNITS : WC_UNITS.concat([unit]);
   tr.innerHTML = `
-    <td><input type="text" class="wc-kind" autocomplete="off" placeholder="例: がれき類" aria-label="廃棄物種類" value="${wcEsc(item ? item.kind : '')}"></td>
-    <td><input type="text" class="wc-qty" inputmode="decimal" autocomplete="off" placeholder="例: 12.5" aria-label="予定数量" value="${item && item.qty !== null && item.qty !== undefined ? wcEsc(item.qty) : ''}"></td>
+    <td><input type="text" class="wc-kind" autocomplete="off" aria-label="廃棄物種類" value="${wcEsc(item ? item.kind : '')}"></td>
+    <td><input type="text" class="wc-qty" inputmode="decimal" autocomplete="off" aria-label="予定数量" value="${item && item.qty !== null && item.qty !== undefined ? wcEsc(item.qty) : ''}"></td>
     <td><select class="wc-unit" aria-label="単位">${units.map(u => `<option value="${wcEsc(u)}"${u===unit?' selected':''}>${wcEsc(u)}</option>`).join('')}</select></td>
     <td class="wc-x"><button type="button" class="del-btn" aria-label="この行を消す" onclick="removeWCItemRow(this)">×</button></td>`;
   body.appendChild(tr);
