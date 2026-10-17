@@ -359,6 +359,12 @@
   @media (max-width: 860px){ .wc-form{grid-template-columns:1fr;} }
   .wc-period{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .wc-period .wc-era{font-weight:600;}
+  .wc-period .wc-era-sel{font-weight:600;padding:4px 2px;}
+  .wc-period-hint{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .wcm-era-add{display:grid;grid-template-columns:1fr 4.5em;gap:6px;margin-top:auto;}
+  .wcm-era-add .wcm-era-date{grid-column:1 / 2;}
+  .wcm-era-lbl{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);font-weight:600;}
+  .wcm-era-lbl input{font-weight:400;}
   .wc-period input{width:3.6em;text-align:center;}
   .wc-items-title{font-size:13px;font-weight:700;color:var(--muted);margin:4px 0 6px;}
   .wc-items{width:100%;max-width:640px;border-collapse:collapse;margin-bottom:0;}
@@ -1203,16 +1209,17 @@
         <div class="field wc-period-field">
           <label for="wc-start-y">委託期間（和暦）</label>
           <div class="wc-period">
-            <span class="wc-era">令和</span>
-            <input type="text" id="wc-start-y" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の年">年
+            <select id="wc-start-era" class="wc-era-sel" aria-label="委託期間（から）の年号"><option value="令和">令和</option></select>
+            <input type="text" id="wc-start-y" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="委託期間（から）の年">年
             <input type="text" id="wc-start-m" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の月">月
             <input type="text" id="wc-start-d" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（から）の日">日
             <span>〜</span>
-            <span class="wc-era">令和</span>
-            <input type="text" id="wc-end-y" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の年">年
+            <select id="wc-end-era" class="wc-era-sel" aria-label="委託期間（まで）の年号"><option value="令和">令和</option></select>
+            <input type="text" id="wc-end-y" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="委託期間（まで）の年">年
             <input type="text" id="wc-end-m" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の月">月
             <input type="text" id="wc-end-d" inputmode="numeric" autocomplete="off" maxlength="2" aria-label="委託期間（まで）の日">日
           </div>
+          <div class="wc-period-hint">年号は左の欄で選べます（年号は管理者メニューの「マスター管理」で足せます）。年の欄に4けた（例：2031）で入れると、西暦として扱います。</div>
         </div>
       </div>
       <!-- マスター管理の選択肢（工事名・排出場所・廃棄物種類・予定数量）。選ぶほか、手で入れることもできる -->
@@ -1251,7 +1258,7 @@
   <!-- 産廃：管理者メニュー ＞ マスター管理（2026年10月16日〜。表：waste_contract_masters） -->
   <div class="panel" id="tab-wcmaster" style="display:none;">
     <div class="form-title">マスター管理（廃棄物処理委託契約書の選択肢）</div>
-    <p class="wcm-lead">ここに登録した言葉が、「廃棄物処理委託契約書」の新規登録・編集の各欄で選べるようになります。並びの順番も、ここでの順番になります。名前を直しても、もう保存してある契約書の中身は変わりません。削除には管理者パスワード（削除用）が必要です。</p>
+    <p class="wcm-lead">ここに登録した言葉が、「廃棄物処理委託契約書」の新規登録・編集の各欄で選べるようになります。並びの順番も、ここでの順番になります。名前を直しても、もう保存してある契約書の中身は変わりません。削除には管理者パスワード（削除用）が必要です。いちばん下の「年号」で、委託期間の和暦の年号を足せます。</p>
     <div class="wcm-grid" id="wcm-grid"><div class="wcm-empty">読み込み中…</div></div>
   </div>
 
@@ -1320,7 +1327,7 @@
           <p><span class="settings-code">ADMIN_EMAIL</span> ／ <span class="settings-code">getAdminToken</span></p>
           <p class="settings-sub">データベースは、削除を管理者アカウントだけに限っています。これが消えると、記録・単価表・カード番号を消しても、実際には消えません（再読み込みすると戻ってきます）。2026年10月1日に、古いファイルでの上書きで一度消えたことがあります。</p>
           <h3 class="settings-h3">1000件対策の部品</h3>
-          <p><span class="settings-code">sbAll</span>（入力の候補2か所・記録の一覧4か所・集計1か所・古いデータの整理1か所・廃棄物処理委託契約書の一覧1か所・同じくマスター（選択肢）1か所の、合わせて10か所の読み込みで使用）</p>
+          <p><span class="settings-code">sbAll</span>（入力の候補2か所・記録の一覧4か所・集計1か所・古いデータの整理1か所・廃棄物処理委託契約書の一覧1か所・同じくマスター（選択肢）1か所・年号1か所の、合わせて11か所の読み込みで使用）</p>
           <p class="settings-sub">データベースは1回に1000件までしか返さないため、1000件ずつ区切ってすべて読み込みます。これが消えると、件数が1000件を超えたときに一覧や合計の一部が欠けてしまいます。新しく読み込みを追加するときも、この部品を使います。</p>
         </div>
       </details>
@@ -1400,7 +1407,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -1625,7 +1632,7 @@ function switchTab(name){
   if(name==='contract') loadWCList();
   if(name==='wcmaster'){
     if(!wcAdminUnlocked()){ switchTab('contract'); return; }
-    loadWCMasters().then(renderWCMasterPanel);
+    Promise.all([loadWCMasters(), loadWCEras()]).then(renderWCMasterPanel);
   }
   if(name==='settings') renderSettingsUrls();
 }
@@ -1697,40 +1704,91 @@ function wcEsc(v){
 function wcFmtQty(n){
   return Number(n).toLocaleString(undefined, {maximumFractionDigits: 3});
 }
-// 委託期間は和暦で入力・表示する（データベースには日付として保存）。
-// 一覧では短い書き方にする。例：2026-10-02 → R8.10.2（平成は H。令和元年は R1）
+// ---- 年号（和暦）：waste_contract_eras（2026年10月17日〜） ----
+// 委託期間はデータベースには西暦の日付で保存し、入力と表示だけ和暦にする。
+// 年号は「マスター管理」の「年号」で足せる（名前・頭文字・始まりの日）。新しい年号が始まったら1行足せば、
+// 入力欄で選べるようになり、一覧と保存期限の表示も日付から自動で新しい年号になる。
+// 読み込めないときは、下の決まった値（平成・令和）を使う。
+const WC_ERA_DEFAULTS = [
+  { name:'平成', abbr:'H', start_date:'1989-01-08' },
+  { name:'令和', abbr:'R', start_date:'2019-05-01' }
+];
+let WC_ERAS = WC_ERA_DEFAULTS.slice();
+function wcErasSorted(){ return WC_ERAS.slice().sort((a, b) => a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0); }
+// その日付の年号（始まりの日がその日付以前で、いちばん新しいもの）。どれより前なら null
+function wcEraOf(iso){
+  if(!iso) return null;
+  let found = null;
+  wcErasSorted().forEach(e => { if(e.start_date <= iso) found = e; });
+  return found;
+}
+function wcEraStartYear(era){ return Number(String(era.start_date).slice(0, 4)); }
+async function loadWCEras(){
+  try{
+    const rows = await sbAll('waste_contract_eras?select=*&order=start_date.asc');
+    WC_ERAS = (rows && rows.length) ? rows : WC_ERA_DEFAULTS.slice();
+  }catch(e){
+    console.error(e);
+    WC_ERAS = WC_ERA_DEFAULTS.slice();
+  }
+  wcRenderEraSelects();
+}
+// 入力欄の年号の選ぶ欄を作り直す（新しい年号を上に。選んでいた年号はそのまま）
+function wcRenderEraSelects(){
+  const list = wcErasSorted().reverse();
+  ['wc-start-era','wc-end-era'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const keep = sel.dataset.chosen || sel.value || (wcEraOf(todayStr()) || list[0] || {}).name;
+    sel.innerHTML = list.map(e => `<option value="${wcEsc(e.name)}">${wcEsc(e.name)}</option>`).join('');
+    sel.value = list.some(e => e.name === keep) ? keep : ((wcEraOf(todayStr()) || list[0] || {}).name || '');
+  });
+}
+// 一覧では短い書き方にする。例：2026-10-02 → R8.10.2（年号の頭文字＋年。元年は 1）。どの年号より前なら西暦
 function wcFmtDate(d){
   if(!d) return '';
   const p = String(d).split('-').map(Number);
   if(p.length !== 3 || p.some(isNaN)) return String(d);
   const [y, m, day] = p;
-  const ymd = y * 10000 + m * 100 + day;
-  let era, ey;
-  if(ymd >= 20190501){ era = 'R'; ey = y - 2018; }
-  else if(ymd >= 19890108){ era = 'H'; ey = y - 1988; }
-  else { return `${y}.${m}.${day}`; }
-  return `${era}${ey}.${m}.${day}`;
+  const era = wcEraOf(String(d).slice(0, 10));
+  if(!era) return `${y}.${m}.${day}`;
+  return `${era.abbr}${y - wcEraStartYear(era) + 1}.${m}.${day}`;
 }
-// 令和の年・月・日の入力欄 → 'YYYY-MM-DD'。全部空なら null、正しくない日付なら false
-function wcReadReiwa(prefix){
+// 和暦の年号・年・月・日の入力欄 → 'YYYY-MM-DD'。全部空なら null、正しくない日付なら false
+// 年が4けたなら西暦として扱う。「元」は1年。
+function wcReadWareki(prefix){
   const z = v => v.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
   let ys = z(document.getElementById(prefix + '-y').value);
   const ms = z(document.getElementById(prefix + '-m').value);
   const ds = z(document.getElementById(prefix + '-d').value);
   if(ys === '元') ys = '1';
   if(!ys && !ms && !ds) return null;
-  if(!/^\d{1,2}$/.test(ys) || !/^\d{1,2}$/.test(ms) || !/^\d{1,2}$/.test(ds)) return false;
-  const y = 2018 + Number(ys), m = Number(ms), d = Number(ds);
+  if(!/^\d{1,4}$/.test(ys) || !/^\d{1,2}$/.test(ms) || !/^\d{1,2}$/.test(ds)) return false;
+  let y, era = null;
+  if(ys.length === 4){
+    y = Number(ys);
+  }else{
+    const name = document.getElementById(prefix + '-era').value;
+    era = WC_ERAS.find(e => e.name === name);
+    if(!era || Number(ys) < 1) return false;
+    y = wcEraStartYear(era) + Number(ys) - 1;
+  }
+  const m = Number(ms), d = Number(ds);
   const dt = new Date(y, m - 1, d);
-  if(Number(ys) < 1 || dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return false;
-  if(y * 10000 + m * 100 + d < 20190501) return false;
-  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  if(dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return false;
+  const iso = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  if(era && iso < era.start_date) return false;   // 年号が始まる前の日付
+  return iso;
 }
-// 'YYYY-MM-DD' → 令和の年・月・日の入力欄へ
-function wcSetReiwa(prefix, iso){
+// 'YYYY-MM-DD' → 和暦の年号・年・月・日の入力欄へ（どの年号より前なら、年の欄に西暦4けた）
+function wcSetWareki(prefix, iso){
   const p = iso ? String(iso).split('-').map(Number) : null;
   const ok = p && p.length === 3 && !p.some(isNaN);
-  document.getElementById(prefix + '-y').value = ok ? String(p[0] - 2018) : '';
+  const sel = document.getElementById(prefix + '-era');
+  const era = ok ? wcEraOf(String(iso).slice(0, 10)) : null;
+  const fallback = wcEraOf(todayStr()) || wcErasSorted().slice(-1)[0];
+  if(sel){ sel.value = (era || fallback || {}).name || ''; sel.dataset.chosen = sel.value; }
+  document.getElementById(prefix + '-y').value = ok ? String(era ? p[0] - wcEraStartYear(era) + 1 : p[0]) : '';
   document.getElementById(prefix + '-m').value = ok ? String(p[1]) : '';
   document.getElementById(prefix + '-d').value = ok ? String(p[2]) : '';
 }
@@ -1861,7 +1919,9 @@ async function loadWCList(){
   if(!document.querySelector('#wc-items-body tr')) resetWCItemRows();
   try{
     const mastersReady = loadWCMasters();
+    const erasReady = loadWCEras();
     WC_LIST = await sbAll('waste_contracts?select=*&order=period_start.desc.nullslast,created_at.desc');
+    await erasReady;
     renderWCTable();
     await mastersReady;
   }catch(e){
@@ -2077,7 +2137,7 @@ function renderWCMasterPanel(){
           <button type="button" class="btn" onclick="addWCMaster('${c.key}')">追加</button>
         </div>
       </div>`;
-  }).join('');
+  }).join('') + renderWCEraCard();
 }
 async function wcReloadMasters(){ await loadWCMasters(); renderWCMasterPanel(); }
 async function addWCMaster(cat){
@@ -2176,6 +2236,88 @@ function wcStickHeadSoon(){
 window.addEventListener('scroll', wcStickHeadSoon, { passive: true });
 window.addEventListener('resize', wcStickHeadSoon);
 
+['wc-start-era','wc-end-era'].forEach(id => {
+  const sel = document.getElementById(id);
+  if(sel) sel.addEventListener('change', () => { sel.dataset.chosen = sel.value; });
+});
+
+// ---- マスター管理：年号（2026年10月17日〜） ----
+function renderWCEraCard(){
+  const eras = wcErasSorted();
+  const items = eras.map(e => `
+        <li>
+          <span class="wcm-val">${wcEsc(e.name)}（${wcEsc(e.abbr)}）　${wcEsc(e.start_date)} 〜</span>
+          ${e.id ? `<button type="button" class="wcm-btn" onclick="editWCEra(${Number(e.id)})">編集</button>
+          <button type="button" class="wcm-btn del" onclick="deleteWCEra(${Number(e.id)})">削除</button>` : ''}
+        </li>`).join('');
+  return `
+      <div class="wcm-card">
+        <h3>年号<span class="wcm-count">${eras.length}件</span></h3>
+        <p class="wcm-lead" style="margin:0 0 6px;">新しい年号が始まったら、年号・頭文字（一覧の R8.10.2 の R）・始まりの日を足してください。入力欄で選べるようになり、一覧と保存期限も日付から自動でその年号になります。</p>
+        <ul class="wcm-list">${items}</ul>
+        <div class="wcm-era-add">
+          <label class="wcm-era-lbl">年号<input type="text" id="wcm-era-name" autocomplete="off"></label>
+          <label class="wcm-era-lbl">頭文字<input type="text" id="wcm-era-abbr" autocomplete="off" maxlength="3"></label>
+          <label class="wcm-era-lbl wcm-era-date">始まりの日<input type="date" id="wcm-era-start"></label>
+          <button type="button" class="btn" style="align-self:end;" onclick="addWCEra()">追加</button>
+        </div>
+      </div>`;
+}
+function wcCheckEra(name, abbr, start, exceptId){
+  name = String(name ?? '').trim(); abbr = String(abbr ?? '').trim(); start = String(start ?? '').trim();
+  if(!name) return { error: '年号を入れてください' };
+  if(!abbr) return { error: '頭文字を入れてください（例：R）' };
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(start) || isNaN(new Date(start).getTime())) return { error: '始まりの日を、2019-05-01 のように入れてください' };
+  if(WC_ERAS.some(e => e.id !== exceptId && e.name === name)) return { error: `「${name}」はもう登録されています` };
+  if(WC_ERAS.some(e => e.id !== exceptId && e.start_date === start)) return { error: `始まりの日が同じ年号がもうあります` };
+  return { name, abbr, start };
+}
+async function wcReloadEras(){ await loadWCEras(); renderWCMasterPanel(); if(WC_LIST.length) renderWCTable(); }
+async function addWCEra(){
+  const res = wcCheckEra(document.getElementById('wcm-era-name').value, document.getElementById('wcm-era-abbr').value, document.getElementById('wcm-era-start').value);
+  if(res.error){ showToast(res.error, 4000); return; }
+  if(!confirm(`年号「${res.name}」（頭文字 ${res.abbr}）を ${res.start} から始まる年号として追加しますか？\nこの日からあとの日付は、一覧・保存期限で「${res.abbr}」の年号で表示されます。`)) return;
+  try{
+    await sb('waste_contract_eras', { method:'POST', body: JSON.stringify({ name: res.name, abbr: res.abbr, start_date: res.start }) });
+    showToast(`年号「${res.name}」を追加しました`);
+    await wcReloadEras();
+  }catch(e){
+    console.error(e);
+    showToast('追加に失敗しました: ' + e.message, 5000);
+  }
+}
+async function editWCEra(id){
+  const e = WC_ERAS.find(x => x.id === id);
+  if(!e) return;
+  const name = window.prompt('年号', e.name); if(name === null) return;
+  const abbr = window.prompt('頭文字（一覧の R8.10.2 の R）', e.abbr); if(abbr === null) return;
+  const start = window.prompt('始まりの日（2019-05-01 のように）', e.start_date); if(start === null) return;
+  const res = wcCheckEra(name, abbr, start, id);
+  if(res.error){ showToast(res.error, 4000); return; }
+  try{
+    await sb(`waste_contract_eras?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({ name: res.name, abbr: res.abbr, start_date: res.start, updated_at: new Date().toISOString() }) });
+    showToast('直しました');
+    await wcReloadEras();
+  }catch(err){
+    console.error(err);
+    showToast('保存に失敗しました: ' + err.message, 5000);
+  }
+}
+async function deleteWCEra(id){
+  const e = WC_ERAS.find(x => x.id === id);
+  if(!e) return;
+  if(WC_ERAS.length <= 1){ showToast('年号は1つ以上必要です'); return; }
+  if(!confirm(`年号「${e.name}」を削除しますか？\n（保存してある委託期間の日付は変わりませんが、表示の年号が変わります）`)) return;
+  try{
+    await sb(`waste_contract_eras?id=eq.${id}`, { method:'DELETE' });
+    showToast('削除しました');
+    await wcReloadEras();
+  }catch(err){
+    console.error(err);
+    showToast(err.message, 5000);
+  }
+}
+
 function resetWCItemRows(items){
   document.getElementById('wc-items-body').innerHTML = '';
   const list = (items && items.length) ? items : [null];
@@ -2201,8 +2343,8 @@ function editWC(id){
   wcSetContractor(r.contractor);
   wcSetType(r.contract_type);
   document.getElementById('wc-place').value = r.discharge_place || '';
-  wcSetReiwa('wc-start', r.period_start);
-  wcSetReiwa('wc-end', r.period_end);
+  wcSetWareki('wc-start', r.period_start);
+  wcSetWareki('wc-end', r.period_end);
   document.getElementById('wc-facility').value = r.has_transfer_facility ? '有' : '無';
   resetWCItemRows(Array.isArray(r.items) ? r.items : []);
   document.getElementById('wc-submit-btn').textContent = '更新する';
@@ -2217,8 +2359,8 @@ function cancelWCEdit(){
   ['wc-project','wc-place'].forEach(id => document.getElementById(id).value = '');
   wcSetContractor('');
   wcSetType('');
-  wcSetReiwa('wc-start', null);
-  wcSetReiwa('wc-end', null);
+  wcSetWareki('wc-start', null);
+  wcSetWareki('wc-end', null);
   document.getElementById('wc-facility').value = '無';
   resetWCItemRows();
   document.getElementById('wc-submit-btn').textContent = '新規登録';
@@ -2232,14 +2374,14 @@ async function submitWC(){
   const contractor = document.getElementById('wc-contractor').value;
   const contractType = document.getElementById('wc-type').value;
   const place = document.getElementById('wc-place').value.trim();
-  const start = wcReadReiwa('wc-start');
-  const end = wcReadReiwa('wc-end');
+  const start = wcReadWareki('wc-start');
+  const end = wcReadWareki('wc-end');
   const facility = document.getElementById('wc-facility').value === '有';
   if(!project){ showToast('工事名を入力してください'); document.getElementById('wc-project').focus(); return; }
   if(!contractor){ showToast('契約相手会社を選んでください'); document.getElementById('wc-contractor').focus(); return; }
   if(!contractType){ showToast('契約区分を選んでください'); document.getElementById('wc-type').focus(); return; }
-  if(start === false){ showToast('委託期間（から）の日付が正しくありません（令和の年・月・日を数字で）'); document.getElementById('wc-start-y').focus(); return; }
-  if(end === false){ showToast('委託期間（まで）の日付が正しくありません（令和の年・月・日を数字で）'); document.getElementById('wc-end-y').focus(); return; }
+  if(start === false){ showToast('委託期間（から）の日付が正しくありません（年号の年・月・日を数字で。年は西暦4けたでも可）', 4500); document.getElementById('wc-start-y').focus(); return; }
+  if(end === false){ showToast('委託期間（まで）の日付が正しくありません（年号の年・月・日を数字で。年は西暦4けたでも可）', 4500); document.getElementById('wc-end-y').focus(); return; }
   if(start && end && end < start){ showToast('委託期間の終わりが、始まりより前になっています'); return; }
   const rows = readWCItemRows().filter(r => r.kind || r.qtyRaw);
   for(const r of rows){
