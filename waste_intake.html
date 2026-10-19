@@ -73,6 +73,8 @@
     line-height:1.3;
   }
   .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;}
+  /* ①ごみのサイドバー：項目が短いので、文字をボタンの真ん中に置き、高さも少しゆったりさせる（2026年10月19日〜） */
+  #header-tabs.sys-waste .tab{text-align:center;padding:9px 8px;letter-spacing:.04em;}
   .tab-invoice-special{
     margin-top:8px;
     padding-top:8px;padding-bottom:8px;
@@ -445,7 +447,7 @@
   <div class="app-body">
   
 
-  <div class="sidebar" id="header-tabs" style="width:130px;">
+  <div class="sidebar sys-waste" id="header-tabs" style="width:130px;">
       <div class="tab active" data-tab="input" data-system="waste" onclick="switchTab('input')">入　力</div>
       <div class="tab" data-tab="list" data-system="waste" onclick="switchTab('list')">一　覧</div>
       <div class="tab" data-tab="cards" data-system="waste" onclick="switchTab('cards')">カード管理</div>
@@ -1665,6 +1667,7 @@ function switchSystem(sys){
   });
   applyWCAdminMenu();
   document.getElementById('header-tabs').style.width = (sys==='waste') ? '130px' : '200px';
+  document.getElementById('header-tabs').classList.toggle('sys-waste', sys==='waste');
   const defaultTab = ALL_TAB_NAMES.find(n=>TAB_SYSTEM[n]===sys);
   switchTab(defaultTab);
 }
