@@ -567,8 +567,8 @@
       <div class="form-title" style="margin:0;">一覧</div>
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
-      <button type="button" class="btn" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
-      <button type="button" class="btn btn-primary" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
+      <button type="button" class="btn btn-primary" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
+      <button type="button" class="btn" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelで書き出し</button>
       <button type="button" class="btn" id="cleanup-toggle-btn" onclick="toggleCleanupSection()">古いデータの整理</button>
       <div class="list-summary" id="list-summary"></div>
@@ -2842,7 +2842,9 @@ async function submitRecord(){
 
 /* ---------- 一覧 ---------- */
 let ALL_LIST_RECORDS = [];
-let LIST_SORT_MODE = 'entry'; // 'entry' = 登録順(新しい入力が上), 'date' = 日付順(新しい日付が上)
+// 'entry' = 登録順(新しい入力が上), 'date' = 日付順(古い日付が上), 'date-desc' = 日付逆順(新しい日付が上)
+// 開いたときは日付逆順（2026年10月19日〜。それまでは登録順）
+let LIST_SORT_MODE = 'date-desc';
 let NEWLY_ADDED_IDS = new Set(); // 「日付順に並びかえ」が押されるまで黄色くハイライトし続ける新規登録のid群
 
 function setListSortMode(mode){
@@ -2858,12 +2860,13 @@ let LIST_RECORDS = [];
 function populateListYearFilter(){
   const sel = document.getElementById('list-year');
   if(sel.dataset.populated) return;
-  const curYear = String(new Date().getFullYear());
+  const curYear = todayStr().slice(0, 4);
   const years = [...new Set(ALL_LIST_RECORDS.map(r=> r.record_date.slice(0,4)))];
   if(!years.includes(curYear)) years.push(curYear);
   years.sort();
   sel.innerHTML = '<option value="">すべての年</option>' + years.map(y=>`<option value="${y}">${y}年</option>`).join('');
-  sel.value = '';
+  // 開いたときは「本年」（日本時間の今日の年。2026年10月19日〜。それまでは「すべての年」）
+  sel.value = todayStr().slice(0, 4);
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
@@ -2873,7 +2876,8 @@ function populateListMonthFilter(){
   if(sel.dataset.populated) return;
   const months = Array.from({length:12}, (_, i) => i+1);
   sel.innerHTML = months.map(m=>`<option value="${m}">${m}月</option>`).join('') + '<option value="">年間</option>';
-  sel.value = '';
+  // 開いたときは「今月」（日本時間。2026年10月19日〜。それまでは「年間」）
+  sel.value = String(Number(todayStr().slice(5, 7)));
   sel.addEventListener('change', renderListFiltered);
   sel.dataset.populated = '1';
 }
