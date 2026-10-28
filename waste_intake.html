@@ -1417,7 +1417,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -4518,7 +4518,7 @@ function exportMatListToExcel(){
 /* ---------- 蛍光灯等：請求書照合タブ（月ベースの単純な照合） ---------- */
 // システム集計＝蛍光灯・水銀灯・電池処理の記録一覧の金額合計（重さ×単価＋持込手数料＋事務手数料）
 //              ＋再生資材・雑品購入のうち、この業者（野村興産㈱）の分（2026年10月28日〜）
-// 再生資材・雑品購入の分は「廃材・再生資材の請求書照合」にもそのまま入る（利用者の判断）
+// 野村興産㈱の分は「請求書照合（業者×月）」〔㈱ITO・㈱ガイアート〕には出さない（2026年10月28日〜。利用者の希望）
 // 請求書の合計金額は「システム集計＋消費税（10％。1円未満は切り捨て）」とくらべる（2026年10月28日〜）
 const MBI_MAT_VENDOR = '野村興産㈱';
 const MBI_TAX_RATE = 0.10;
@@ -4635,8 +4635,8 @@ function populateMIWVendorFilter(){
   const sel = document.getElementById('miw-vendor-filter');
   if(sel.dataset.populated) return;
   const vendors = new Set();
-  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(getMIWBillingGroup(r.vendor_name)); });
-  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name) vendors.add(getMIWBillingGroup(r.vendor_name)); });
+  ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name && !isMBIMatVendor(r.vendor_name)) vendors.add(getMIWBillingGroup(r.vendor_name)); });
+  ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name && !isMBIMatVendor(r.vendor_name)) vendors.add(getMIWBillingGroup(r.vendor_name)); });
   const sorted = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
   sel.innerHTML = '<option value="">すべての業者</option>' + sorted.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
   sel.dataset.populated = '1';
@@ -4673,6 +4673,7 @@ async function renderMIWTable(){
     const invRows = await sb(`material_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
     const invByVendor = {};
     (invRows||[]).forEach(r=> {
+      if(isMBIMatVendor(r.vendor_name)) return; // 野村興産㈱は「請求書照合（野村興産㈱）」で照合する
       const g = getMIWBillingGroup(r.vendor_name);
       if(invByVendor[g]) invByVendor[g] = { ...invByVendor[g], amount: Number(invByVendor[g].amount) + Number(r.amount) };
       else invByVendor[g] = r;
@@ -4682,6 +4683,7 @@ async function renderMIWTable(){
     const iwBreakdown = {};
     ALL_IW_RECORDS.forEach(r=>{
       if(!r.record_date || !r.vendor_name) return;
+      if(isMBIMatVendor(r.vendor_name)) return;
       if(!(r.record_date>=from && r.record_date<=to)) return;
       const g = getMIWBillingGroup(r.vendor_name);
       iwByVendor[g] = (iwByVendor[g]||0) + Number(r.amount||0);
@@ -4691,6 +4693,7 @@ async function renderMIWTable(){
     const matByVendor = {};
     ALL_MAT_RECORDS.forEach(r=>{
       if(!r.purchase_date || !r.vendor_name) return;
+      if(isMBIMatVendor(r.vendor_name)) return;
       if(!(r.purchase_date>=from && r.purchase_date<=to)) return;
       const g = getMIWBillingGroup(r.vendor_name);
       matByVendor[g] = (matByVendor[g]||0) + Number(r.amount||0);
