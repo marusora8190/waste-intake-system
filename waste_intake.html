@@ -917,6 +917,14 @@
         <input type="number" id="mb-button" class="num-field" step="0.1" inputmode="decimal" oninput="recalcMBPreview()">
       </div>
       <div class="field">
+        <label>持込手数料（円）</label>
+        <input type="number" id="mb-intake-fee" class="num-field" step="1" inputmode="numeric" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
+        <label>事務手数料（円）</label>
+        <input type="number" id="mb-admin-fee" class="num-field" step="1" inputmode="numeric" oninput="recalcMBPreview()">
+      </div>
+      <div class="field">
         <label>金額合計（円）</label>
         <input type="text" id="mb-amount" class="calc-field" readonly value="0">
       </div>
@@ -944,11 +952,11 @@
         <thead>
           <tr>
             <th class="num date-col">搬入日</th><th class="num">蛍光灯</th><th class="num">水銀灯</th><th class="num">電池</th>
-            <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">金額合計</th><th>備考</th><th></th>
+            <th class="num">二次電池</th><th class="num">ボタン電池</th><th class="num">持込手数料</th><th class="num">事務手数料</th><th class="num">金額合計</th><th>備考</th><th></th>
           </tr>
         </thead>
         <tbody id="mb-body">
-          <tr><td colspan="9">読み込み中…</td></tr>
+          <tr><td colspan="11">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1409,7 +1417,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -2668,7 +2676,7 @@ bindEnterNav(['c-card','c-department','c-car-type','c-vehicle'], () => submitCar
 bindEnterNav(['i-date-from','i-date-to']);                                                       // ① 請求書照合の期間
 bindEnterNav(['iwp-item','iwp-vendor','iwp-price','iwp-note'], () => submitIWPrice());          // ② 廃材単価表
 bindEnterNav(['mbp-蛍光灯','mbp-水銀灯','mbp-電池','mbp-二次電池','mbp-ボタン電池'], () => saveMBPrices()); // ② 蛍光灯等の単価設定
-bindEnterNav(['mb-date','mb-fluorescent','mb-mercury','mb-battery','mb-secondary','mb-button','mb-note'], () => submitMBRecord()); // ② 蛍光灯・水銀灯・電池処理
+bindEnterNav(['mb-date','mb-fluorescent','mb-mercury','mb-battery','mb-secondary','mb-button','mb-intake-fee','mb-admin-fee','mb-note'], () => submitMBRecord()); // ② 蛍光灯・水銀灯・電池処理
 bindEnterNav(['mat-date','mat-vendor','mat-item','mat-unit','mat-qty','mat-price','mat-note'], () => submitMatRecord()); // ② 再生資材・雑品購入入力
 bindEnterNav(['matp-item','matp-vendor','matp-price','matp-note'], () => submitMatPrice());     // ② 再生資材・雑品単価表
 bindEnterNav(['miw-date-from','miw-date-to','miw-vendor-filter']);                              // ② 請求書照合（㈱ITO、㈱ガイアート）の期間
@@ -4034,7 +4042,9 @@ function recalcMBPreview(){
   const b = Number(document.getElementById('mb-battery').value) || 0;
   const s = Number(document.getElementById('mb-secondary').value) || 0;
   const bt = Number(document.getElementById('mb-button').value) || 0;
-  const total = f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'];
+  const fi = Number(document.getElementById('mb-intake-fee').value) || 0;
+  const fa = Number(document.getElementById('mb-admin-fee').value) || 0;
+  const total = f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'] + fi + fa;
   document.getElementById('mb-amount').value = Math.round(total).toLocaleString();
 }
 
@@ -4046,6 +4056,8 @@ function clearMBForm(){
   document.getElementById('mb-battery').value = '';
   document.getElementById('mb-secondary').value = '';
   document.getElementById('mb-button').value = '';
+  document.getElementById('mb-intake-fee').value = '';
+  document.getElementById('mb-admin-fee').value = '';
   document.getElementById('mb-note').value = '';
   document.getElementById('mb-submit-btn').textContent = '登録する';
   document.getElementById('mb-edit-banner').style.display = 'none';
@@ -4064,12 +4076,15 @@ async function submitMBRecord(){
   const b = Number(document.getElementById('mb-battery').value) || 0;
   const s = Number(document.getElementById('mb-secondary').value) || 0;
   const bt = Number(document.getElementById('mb-button').value) || 0;
+  const fi = Number(document.getElementById('mb-intake-fee').value) || 0;
+  const fa = Number(document.getElementById('mb-admin-fee').value) || 0;
   const note = document.getElementById('mb-note').value.trim();
-  const totalAmount = Math.round(f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池']);
+  const totalAmount = Math.round(f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'] + fi + fa);
 
   const payload = {
     record_date: date,
     fluorescent_kg: f, mercury_lamp_kg: m, battery_kg: b, secondary_battery_kg: s, button_battery_kg: bt,
+    intake_fee: fi, admin_fee: fa,
     note: note || null, total_amount: totalAmount
   };
 
@@ -4105,6 +4120,8 @@ function editMBRecord(id){
   document.getElementById('mb-battery').value = r.battery_kg ?? '';
   document.getElementById('mb-secondary').value = r.secondary_battery_kg ?? '';
   document.getElementById('mb-button').value = r.button_battery_kg ?? '';
+  document.getElementById('mb-intake-fee').value = Number(r.intake_fee||0) ? r.intake_fee : '';
+  document.getElementById('mb-admin-fee').value = Number(r.admin_fee||0) ? r.admin_fee : '';
   document.getElementById('mb-note').value = r.note || '';
   document.getElementById('mb-submit-btn').textContent = '更新する';
   document.getElementById('mb-edit-banner').style.display = '';
@@ -4125,13 +4142,13 @@ async function deleteMBRecord(id){
 
 async function loadMBRecords(){
   const body = document.getElementById('mb-body');
-  if(body) body.innerHTML = '<tr><td colspan="9">読み込み中…</td></tr>';
+  if(body) body.innerHTML = '<tr><td colspan="11">読み込み中…</td></tr>';
   try{
     const rows = await sbAll('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
     ALL_MB_RECORDS = rows || [];
     renderMBList();
   }catch(e){
-    if(body) body.innerHTML = `<tr><td colspan="9">読み込みに失敗しました: ${e.message}</td></tr>`;
+    if(body) body.innerHTML = `<tr><td colspan="11">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -4140,7 +4157,7 @@ function renderMBList(){
   const body = document.getElementById('mb-body');
   if(!body) return;
   if(ALL_MB_RECORDS.length===0){
-    body.innerHTML = '<tr><td colspan="9">記録がありません</td></tr>';
+    body.innerHTML = '<tr><td colspan="11">記録がありません</td></tr>';
     document.getElementById('mb-summary').textContent = '';
     return;
   }
@@ -4152,6 +4169,8 @@ function renderMBList(){
       <td class="num">${Number(r.battery_kg||0).toLocaleString()}</td>
       <td class="num">${Number(r.secondary_battery_kg||0).toLocaleString()}</td>
       <td class="num">${Number(r.button_battery_kg||0).toLocaleString()}</td>
+      <td class="num">${Number(r.intake_fee||0).toLocaleString()}</td>
+      <td class="num">${Number(r.admin_fee||0).toLocaleString()}</td>
       <td class="num fee-cell">${Number(r.total_amount||0).toLocaleString()}</td>
       <td>${r.note ?? ''}</td>
       <td class="action-cell">
@@ -4165,10 +4184,10 @@ function renderMBList(){
 }
 
 function exportMBListToExcel(){
-  const header = ['搬入日','蛍光灯(kg)','水銀灯(kg)','電池(kg)','二次電池(kg)','ボタン電池(kg)','金額合計(円)','備考'];
+  const header = ['搬入日','蛍光灯(kg)','水銀灯(kg)','電池(kg)','二次電池(kg)','ボタン電池(kg)','持込手数料(円)','事務手数料(円)','金額合計(円)','備考'];
   const rows = [header, ...ALL_MB_RECORDS.map(r => [
     toWareki(r.record_date), Number(r.fluorescent_kg||0), Number(r.mercury_lamp_kg||0), Number(r.battery_kg||0),
-    Number(r.secondary_battery_kg||0), Number(r.button_battery_kg||0), Number(r.total_amount||0), r.note ?? ''
+    Number(r.secondary_battery_kg||0), Number(r.button_battery_kg||0), Number(r.intake_fee||0), Number(r.admin_fee||0), Number(r.total_amount||0), r.note ?? ''
   ])];
   downloadWorkbook([{ name:'蛍光灯水銀灯電池処理', rows }], `mb_records_${todayStr()}.xlsx`);
 }
