@@ -1127,7 +1127,7 @@
       <span style="color:var(--muted);">〜</span>
       <input type="date" id="mbi-date-to" class="period-date-input" onchange="renderMBInvoiceTab()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">指定した期間の記録からシステム集計を計算し、請求書の合計金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
+    <div class="field-hint" style="margin-bottom:14px;">指定した期間の記録からシステム集計を計算し、請求書の合計金額と突き合わせます。システム集計は、蛍光灯・水銀灯・電池処理の記録一覧の金額合計（持込手数料・事務手数料を含む）に、再生資材・雑品購入のうち野村興産㈱の分を足したものです。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
     <div id="mbi-total-card"></div>
   </div>
 
@@ -1417,7 +1417,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -4516,6 +4516,11 @@ function exportMatListToExcel(){
 
 /* ---------- 産廃：請求書照合タブ（業者×月） ---------- */
 /* ---------- 蛍光灯等：請求書照合タブ（月ベースの単純な照合） ---------- */
+// システム集計＝蛍光灯・水銀灯・電池処理の記録一覧の金額合計（重さ×単価＋持込手数料＋事務手数料）
+//              ＋再生資材・雑品購入のうち、この業者（野村興産㈱）の分（2026年10月28日〜）
+// 再生資材・雑品購入の分は「廃材・再生資材の請求書照合」にもそのまま入る（利用者の判断）
+const MBI_MAT_VENDOR = '野村興産㈱';
+function isMBIMatVendor(name){ return String(name||'').replace(/\s/g,'').includes('野村興産'); }
 async function loadMBInvoiceTab(){
   const fromEl = document.getElementById('mbi-date-from');
   const toEl = document.getElementById('mbi-date-to');
@@ -4544,7 +4549,10 @@ async function renderMBInvoiceTab(){
 
     const periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && r.record_date>=from && r.record_date<=to);
     const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
-    const sysTotal = periodRecords.reduce((s,r)=>s+Number(r.total_amount||0),0);
+    const mbTotal = periodRecords.reduce((s,r)=>s+Number(r.total_amount||0),0);
+    const periodMat = ALL_MAT_RECORDS.filter(r=> r.purchase_date && r.purchase_date>=from && r.purchase_date<=to && isMBIMatVendor(r.vendor_name));
+    const matTotal = periodMat.reduce((s,r)=>s+Number(r.amount||0),0);
+    const sysTotal = mbTotal + matTotal;
 
     const billedTotal = totalRow ? Number(totalRow.amount) : null;
     const diff = billedTotal===null ? null : billedTotal - sysTotal;
@@ -4558,8 +4566,9 @@ async function renderMBInvoiceTab(){
           </div>
         </div>
         <div class="summary-total-card">
-          <div class="label">システム集計（${periodLabel} ／ ${periodRecords.length}件）</div>
+          <div class="label">システム集計（${periodLabel}）</div>
           <div class="value" style="font-size:18px;">${sysTotal.toLocaleString()}円</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6;">蛍光灯・水銀灯・電池処理（${periodRecords.length}件）：${mbTotal.toLocaleString()}円<br>再生資材・雑品購入（${MBI_MAT_VENDOR}・${periodMat.length}件）：${matTotal.toLocaleString()}円</div>
         </div>
         <div class="summary-total-card">
           <div class="label">差額(請求書 − システム)</div>
