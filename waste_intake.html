@@ -4744,19 +4744,23 @@ async function saveMBInvoiceTotal(){
 
 function getMIWBillingGroup(vendorName){
   // ㈱ITO奈良が本店・㈱ITO天理が支店。請求書は本店（ITO奈良）が発行するため、照合上は1つのグループとして扱う
-  if(vendorName === '㈱ITO天理' || vendorName === '㈱ITO奈良') return '㈱ITO奈良（奈良・天理 合算）';
+  // 「㈱ITO」だけの名前（再生資材・雑品単価表の業者名）も同じグループにまとめる（2026年10月29日〜。業者の選ぶ欄に「㈱ITO」が別に出ないようにするため）
+  const n = String(vendorName||'').replace(/\s/g,'');
+  if(n === '㈱ITO天理' || n === '㈱ITO奈良' || n === '㈱ITO') return '㈱ITO奈良（奈良・天理 合算）';
   return vendorName;
 }
 
 function populateMIWVendorFilter(){
+  // 開くたびに、その時点の記録から作り直す（2026年10月29日〜。それまでは画面を開いて最初の1回だけ作っていたため、
+  // あとで直した業者名が残ることがあった）。選んでいた業者は、作り直したあとも残っていれば選んだままにする
   const sel = document.getElementById('miw-vendor-filter');
-  if(sel.dataset.populated) return;
+  const keep = sel.value;
   const vendors = new Set();
   ALL_IW_RECORDS.forEach(r=>{ if(r.vendor_name && !isMBIMatVendor(r.vendor_name)) vendors.add(getMIWBillingGroup(r.vendor_name)); });
   ALL_MAT_RECORDS.forEach(r=>{ if(r.vendor_name && !isMBIMatVendor(r.vendor_name)) vendors.add(getMIWBillingGroup(r.vendor_name)); });
   const sorted = [...vendors].sort((a,b)=>a.localeCompare(b,'ja'));
   sel.innerHTML = '<option value="">すべての業者</option>' + sorted.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
-  sel.dataset.populated = '1';
+  sel.value = sorted.includes(keep) ? keep : '';
 }
 
 
