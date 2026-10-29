@@ -1103,15 +1103,16 @@
         <option value="">すべての業者</option>
       </select>
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">指定した期間の産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、請求書の金額と突き合わせます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
+    <div class="field-hint" style="margin-bottom:14px;">指定した期間の産廃小計（産業廃棄物処理）と再生材購入を業者ごとに合算し、消費税（10％。1円未満は切り捨て）を足した「合計（税込）」を、請求書の金額と突き合わせます。消費税は業者ごとに計算します（㈱ITO奈良・天理は合算した金額で計算）。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
           <th class="num">業者</th><th class="num">産廃小計</th><th class="num">再生材購入</th><th class="num">システム集計</th>
+          <th class="num">消費税（10％）</th><th class="num">合計（税込）</th>
           <th class="num">請求書金額</th><th class="num">差額</th><th class="num">判定</th><th></th>
         </tr></thead>
         <tbody id="miw-body">
-          <tr><td colspan="8">読み込み中…</td></tr>
+          <tr><td colspan="10">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1417,7 +1418,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -4522,6 +4523,8 @@ function exportMatListToExcel(){
 // 請求書の合計金額は「システム集計＋消費税（10％。1円未満は切り捨て）」とくらべる（2026年10月28日〜）
 const MBI_MAT_VENDOR = '野村興産㈱';
 const MBI_TAX_RATE = 0.10;
+// 消費税（10％・1円未満は切り捨て）。小数の計算の誤差が出ないよう、整数にしてから計算する（請求書照合〔業者×月〕で使う。2026年10月29日〜）
+function calcTax10(amount){ return Math.floor(Math.round(Number(amount||0) * 100) * Math.round(MBI_TAX_RATE * 100) / 10000); }
 function isMBIMatVendor(name){ return String(name||'').replace(/\s/g,'').includes('野村興産'); }
 async function loadMBInvoiceTab(){
   const fromEl = document.getElementById('mbi-date-from');
@@ -4659,13 +4662,13 @@ async function renderMIWTable(){
   const to = document.getElementById('miw-date-to').value;
   const body = document.getElementById('miw-body');
   if(!from || !to){
-    body.innerHTML = '<tr><td colspan="8">集計期間（開始日・終了日）を選択してください</td></tr>';
+    body.innerHTML = '<tr><td colspan="10">集計期間（開始日・終了日）を選択してください</td></tr>';
     document.getElementById('miw-total-card').innerHTML = '';
     return;
   }
   const year = to.slice(0,4);
   const month = to.slice(5,7);
-  body.innerHTML = '<tr><td colspan="8">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="10">読み込み中…</td></tr>';
   try{
     populateMIWVendorFilter();
     const filterVendor = document.getElementById('miw-vendor-filter').value;
@@ -4709,21 +4712,24 @@ async function renderMIWTable(){
     const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
 
     if(vendorList.length===0){
-      body.innerHTML = '<tr><td colspan="8">データがありません</td></tr>';
+      body.innerHTML = '<tr><td colspan="10">データがありません</td></tr>';
       document.getElementById('miw-total-card').innerHTML = '';
       return;
     }
 
-    let sysGrandTotal = 0, billedGrandTotal = 0, anyBilled = false;
+    let sysGrandTotal = 0, taxGrandTotal = 0, billedGrandTotal = 0, anyBilled = false;
     body.innerHTML = vendorList.map(v=>{
       const iwAmt = iwByVendor[v]||0;
       const matAmt = matByVendor[v]||0;
       const sysTotal = iwAmt + matAmt;
+      const taxAmt = calcTax10(sysTotal);
+      const taxedTotal = sysTotal + taxAmt;
       sysGrandTotal += sysTotal;
+      taxGrandTotal += taxAmt;
       const invRow = invByVendor[v];
       const billed = invRow ? Number(invRow.amount) : null;
       if(billed!==null){ billedGrandTotal += billed; anyBilled = true; }
-      const diff = billed===null ? null : billed - sysTotal;
+      const diff = billed===null ? null : billed - taxedTotal;
       const okClass = billed===null ? '' : (diff===0 ? 'invoice-ok' : 'invoice-ng');
       const okLabel = billed===null ? '未入力' : (diff===0 ? '一致' : '不一致');
       const escVendor = String(v).replace(/"/g,'&quot;');
@@ -4738,6 +4744,8 @@ async function renderMIWTable(){
         <td class="num">${iwCell}</td>
         <td class="num">${matAmt.toLocaleString()}円</td>
         <td class="num">${sysTotal.toLocaleString()}円</td>
+        <td class="num">${taxAmt.toLocaleString()}円</td>
+        <td class="num">${taxedTotal.toLocaleString()}円</td>
         <td class="num"><input type="text" inputmode="numeric" class="miw-amt-input" data-vendor="${escVendor}" value="${billed===null?'':billed.toLocaleString()}" placeholder="未入力" style="width:110px;padding:4px 6px;border:1px solid #d8d1c2;border-radius:6px;font-size:13.5px;text-align:right;" onchange="saveMIWAmount(this)"></td>
         <td class="num ${okClass}">${billed===null?'-':(diff>0?'+':'')+diff.toLocaleString()+'円'}</td>
         <td class="num ${okClass}">${okLabel}</td>
@@ -4746,7 +4754,8 @@ async function renderMIWTable(){
     }).join('');
     body.querySelectorAll('.miw-amt-input').forEach(attachThousandsFormatting);
 
-    const diffGrand = billedGrandTotal - sysGrandTotal;
+    const taxedGrandTotal = sysGrandTotal + taxGrandTotal;
+    const diffGrand = billedGrandTotal - taxedGrandTotal;
     document.getElementById('miw-total-card').innerHTML = `
       <div class="invoice-total-row">
         <div class="summary-total-card">
@@ -4758,13 +4767,22 @@ async function renderMIWTable(){
           <div class="value" style="font-size:18px;">${sysGrandTotal.toLocaleString()}円</div>
         </div>
         <div class="summary-total-card">
-          <div class="label">差額</div>
+          <div class="label">消費税合計（10％）</div>
+          <div class="value" style="font-size:18px;">${taxGrandTotal.toLocaleString()}円</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">業者ごとに1円未満は切り捨て</div>
+        </div>
+        <div class="summary-total-card">
+          <div class="label">合計（システム集計＋消費税）</div>
+          <div class="value" style="font-size:18px;">${taxedGrandTotal.toLocaleString()}円</div>
+        </div>
+        <div class="summary-total-card">
+          <div class="label">差額(請求書 − 合計)</div>
           <div class="value ${anyBilled ? (diffGrand===0?'invoice-ok':'invoice-ng') : ''}" style="font-size:18px;">${anyBilled ? (diffGrand>0?'+':'')+diffGrand.toLocaleString()+'円' : '-'}</div>
         </div>
       </div>
     `;
   }catch(e){
-    body.innerHTML = `<tr><td colspan="8">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
