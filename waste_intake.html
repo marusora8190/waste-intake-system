@@ -91,6 +91,8 @@
   /* 廃材単価表（業者ごと。2026年10月29日〜） */
   .tab-group-label{cursor:default;background:none;border-color:transparent;color:var(--ink-dark);font-weight:700;padding-bottom:2px;}
   .tab-iwprice-sub{margin-left:12px;}
+  /* 廃材単価表の「持ち込み条件」（長い文なので小さめの文字・左寄せ・改行もそのまま出す。2026年10月29日〜） */
+  .iwp-cond-cell{font-size:12px;line-height:1.5;white-space:pre-line;text-align:left;min-width:220px;color:#4a453c;font-weight:400;}
   .tab-iwprice-add{margin-left:12px;border-style:dashed;font-size:12.5px;}
   @media (max-width: 860px){ .tab-iwprice-sub,.tab-iwprice-add{margin-left:4px;} }
   @media (max-width: 860px){ .tab-admin{margin-top:0;margin-left:8px;} .tab-admin-sub{margin-left:4px;} }
@@ -717,7 +719,7 @@
       </div>
       <div class="field">
         <label>単位</label>
-        <select id="iw-unit" onchange="recalcIWPreview()">
+        <select id="iw-unit" onchange="onIWUnitChange()">
           <option value="ｔ" selected>ｔ</option>
           <option value="㎥">㎥</option>
           <option value="枚">枚</option>
@@ -834,10 +836,19 @@
           <input type="text" id="iwp-vendor" readonly tabindex="-1" style="background:#f3efe6;color:var(--muted);" title="業者は左のメニューで選びます">
         </div>
         <div class="field">
-          <label>単価（円） *</label>
+          <label>単価（円・税別） *</label>
           <input type="text" id="iwp-price" class="num-field" inputmode="numeric" autocomplete="off" placeholder="例: 1,800">
         </div>
         <div class="field">
+          <label>単位</label>
+          <input type="text" id="iwp-unit" list="iwp-unit-suggestions" autocomplete="off" placeholder="例: ｔ・㎥・kg・台">
+          <datalist id="iwp-unit-suggestions"><option value="ｔ"></option><option value="㎥"></option><option value="kg"></option><option value="台"></option><option value="枚"></option></datalist>
+        </div>
+        <div class="field" style="grid-column:1 / -1;">
+          <label>持ち込み条件</label>
+          <textarea id="iwp-cond" rows="2" placeholder="任意（例：低含水土砂可、異物なし）。改行は Shift＋Enter" style="width:100%;padding:8px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;background:#fffefb;resize:vertical;line-height:1.5;"></textarea>
+        </div>
+        <div class="field" style="grid-column:1 / -1;">
           <label>備考</label>
           <input type="text" id="iwp-note" placeholder="任意">
         </div>
@@ -845,9 +856,9 @@
     </div>
     <div class="table-wrap" id="iwprice-table-wrap">
       <table>
-        <thead><tr><th class="num">品名</th><th class="num">単価（円）</th><th>備考</th><th></th></tr></thead>
+        <thead><tr><th class="num">品名</th><th class="num">単価（円・税別）</th><th class="num">単位</th><th class="num">持ち込み条件</th><th class="num">備考</th><th></th></tr></thead>
         <tbody id="iwprice-body">
-          <tr><td colspan="4">読み込み中…</td></tr>
+          <tr><td colspan="6">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1424,7 +1435,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
@@ -2572,6 +2583,7 @@ function bindEnterNav(order, lastAction){
     if(!el) return;
     el.addEventListener('keydown', (e) => {
       if(e.key !== 'Enter' || isImeEnter(e)) return;
+      if(e.shiftKey && el.tagName === 'TEXTAREA') return; // 複数行の欄では Shift＋Enter で改行できる（廃材単価表の持ち込み条件。2026年10月29日〜）
       e.preventDefault();
       if(/-date$/.test(id) && el.type === 'text') normalizeDateField(el);
       const nextEl = document.getElementById(order[idx + 1]);
@@ -2684,7 +2696,7 @@ document.getElementById('mat-date').addEventListener('blur', function(){ normali
 // ①②のほかの入力画面も、エンターで次の欄へ進む（2026年10月15日〜）。最後の欄でエンター → 登録・保存
 bindEnterNav(['c-card','c-department','c-car-type','c-vehicle'], () => submitCard());            // ① カード管理
 bindEnterNav(['i-date-from','i-date-to']);                                                       // ① 請求書照合の期間
-bindEnterNav(['iwp-item','iwp-price','iwp-note'], () => submitIWPrice());          // ② 廃材単価表
+bindEnterNav(['iwp-item','iwp-price','iwp-unit','iwp-cond','iwp-note'], () => submitIWPrice());          // ② 廃材単価表
 bindEnterNav(['mbp-蛍光灯','mbp-水銀灯','mbp-電池','mbp-二次電池','mbp-ボタン電池'], () => saveMBPrices()); // ② 蛍光灯等の単価設定
 bindEnterNav(['mb-date','mb-fluorescent','mb-mercury','mb-battery','mb-secondary','mb-button','mb-intake-fee','mb-admin-fee','mb-note'], () => submitMBRecord()); // ② 蛍光灯・水銀灯・電池処理
 bindEnterNav(['mat-date','mat-vendor','mat-item','mat-unit','mat-qty','mat-price','mat-note'], () => submitMatRecord()); // ② 再生資材・雑品購入入力
@@ -3453,23 +3465,26 @@ async function loadIWPriceList(){
   }catch(e){
     console.error(e);
     const body = document.getElementById('iwprice-body');
-    if(body) body.innerHTML = `<tr><td colspan="4">読み込みに失敗しました: ${e.message}</td></tr>`;
+    if(body) body.innerHTML = `<tr><td colspan="6">読み込みに失敗しました: ${e.message}</td></tr>`;
   }
 }
 
 function renderIWPriceTable(){
   const body = document.getElementById('iwprice-body');
   if(!body) return;
-  const rows = IW_PRICE_LIST.filter(r => r.vendor_name === IWPRICE_VENDOR);
+  // 登録した順（id の順）に出す。Excel の単価表から入れた分は、Excel と同じ並びになる（2026年10月29日〜。それまでは品名の順）
+  const rows = IW_PRICE_LIST.filter(r => r.vendor_name === IWPRICE_VENDOR).sort((a,b) => Number(a.id) - Number(b.id));
   if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="4">この業者の単価はまだありません。上の入力欄から登録してください</td></tr>';
+    body.innerHTML = '<tr><td colspan="6">この業者の単価はまだありません。上の入力欄から登録してください</td></tr>';
     return;
   }
   body.innerHTML = rows.map(r => `
     <tr>
-      <td class="card-dept-cell">${r.item_name ?? ''}</td>
+      <td class="card-dept-cell">${escIWHtml(r.item_name ?? '')}</td>
       <td class="num">${Number(r.unit_price).toLocaleString()}</td>
-      <td class="card-dept-cell">${r.note ?? ''}</td>
+      <td class="num">${escIWHtml(r.unit ?? '')}</td>
+      <td class="iwp-cond-cell">${escIWHtml(r.conditions ?? '')}</td>
+      <td class="card-dept-cell">${escIWHtml(r.note ?? '')}</td>
       <td class="action-cell">
         <button class="del-btn" onclick="editIWPrice(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteIWPrice(${r.id})">削除</button>
@@ -3525,15 +3540,43 @@ function refreshIWItemSuggestions(){
   dl.innerHTML = [...new Set(items)].map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}"></option>`).join('');
 }
 
+// 単価表から、業者・品名・単位に合う行をさがす（2026年10月29日〜）。
+// 同じ品名で単位ちがいの行があるときは、単位が合う行を使い、無ければ最初の行を使う。
+function findIWPriceRow(vendor, item, unit){
+  const rows = IW_PRICE_LIST.filter(r => r.vendor_name === vendor && r.item_name === item);
+  if(rows.length===0) return null;
+  return rows.find(r => (r.unit||'') === unit) || rows[0];
+}
+function iwUnitHasOption(unit){
+  const sel = document.getElementById('iw-unit');
+  return !!unit && [...sel.options].some(o => o.value === unit);
+}
+// 単位を変えたとき：同じ品名で、その単位の単価が単価表にあれば、その単価にする
+function onIWUnitChange(){
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const item = document.getElementById('iw-item').value.trim();
+  const unit = document.getElementById('iw-unit').value;
+  const m = IW_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item && (r.unit||'') === unit);
+  if(m) document.getElementById('iw-price').value = formatIWPrice(m.unit_price);
+  recalcIWPreview();
+}
+
 function onIWItemChange(){
   const vendor = document.getElementById('iw-vendor').value.trim();
   const item = document.getElementById('iw-item').value.trim();
   const hint = document.getElementById('iw-price-hint');
-  const match = IW_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
+  const match = findIWPriceRow(vendor, item, document.getElementById('iw-unit').value);
   if(match){
+    // 単価表に単位が入っていて、単位の欄にある値（ｔ・㎥・枚）なら、単位の欄もそれに合わせる
+    if(iwUnitHasOption(match.unit)) document.getElementById('iw-unit').value = match.unit;
     document.getElementById('iw-price').value = formatIWPrice(match.unit_price);
-    hint.textContent = '単価表から自動入力しました（変更可）';
-    hint.style.color = 'var(--muted)';
+    if(match.unit && !iwUnitHasOption(match.unit)){
+      hint.textContent = `単価表から自動入力しました（単価表の単位は「${match.unit}」です。単位の欄に無いため、確かめてください）`;
+      hint.style.color = '#c94f3c';
+    }else{
+      hint.textContent = '単価表から自動入力しました（変更可）';
+      hint.style.color = 'var(--muted)';
+    }
   }else if(vendor && item){
     hint.textContent = '※単価表に未登録の組み合わせです。単価を手入力してください';
     hint.style.color = '#c94f3c';
@@ -3582,6 +3625,8 @@ function editIWPrice(id){
   document.getElementById('iwp-item').value = info.item_name || '';
   document.getElementById('iwp-vendor').value = info.vendor_name || '';
   document.getElementById('iwp-price').value = formatIWPrice(info.unit_price);
+  document.getElementById('iwp-unit').value = info.unit || '';
+  document.getElementById('iwp-cond').value = info.conditions || '';
   document.getElementById('iwp-note').value = info.note || '';
   document.getElementById('iwprice-submit-btn').textContent = '更新する';
   document.getElementById('iwprice-edit-banner').style.display = '';
@@ -3592,6 +3637,8 @@ function cancelIWPriceEdit(){
   document.getElementById('iwp-item').value = '';
   document.getElementById('iwp-vendor').value = IWPRICE_VENDOR;
   document.getElementById('iwp-price').value = '';
+  document.getElementById('iwp-unit').value = '';
+  document.getElementById('iwp-cond').value = '';
   document.getElementById('iwp-note').value = '';
   document.getElementById('iwprice-submit-btn').textContent = '新規登録';
   document.getElementById('iwprice-edit-banner').style.display = 'none';
@@ -3602,6 +3649,10 @@ async function submitIWPrice(){
   const vendor = IWPRICE_VENDOR;
   const priceRaw = document.getElementById('iwp-price').value.replace(/,/g,'').trim();
   const note = document.getElementById('iwp-note').value.trim();
+  // 単位は「トン」「t」も「ｔ」にそろえる（廃材入力の単位の欄と同じ書き方にするため）
+  const unitRaw = document.getElementById('iwp-unit').value.trim();
+  const unit = /^(トン|t|Ｔ|T)$/.test(unitRaw) ? 'ｔ' : (/^(m3|㎥|立米|ｍ３)$/i.test(unitRaw) ? '㎥' : unitRaw);
+  const cond = document.getElementById('iwp-cond').value.trim();
   if(!item || !vendor || priceRaw===''){
     showToast(vendor ? '品名・単価を入力してください' : '左のメニューで業者を選んでください');
     return;
@@ -3610,13 +3661,13 @@ async function submitIWPrice(){
     if(EDITING_IWPRICE_ID){
       await sb(`industrial_waste_price_list?id=eq.${EDITING_IWPRICE_ID}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), note: note || null, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), unit: unit || null, conditions: cond || null, note: note || null, updated_at: new Date().toISOString() })
       });
       showToast('更新しました');
     }else{
       await sb('industrial_waste_price_list', {
         method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), note: note || null })
+        body: JSON.stringify({ item_name: item, vendor_name: vendor, unit_price: Number(priceRaw), unit: unit || null, conditions: cond || null, note: note || null })
       });
       showToast('新しい単価を登録しました');
     }
