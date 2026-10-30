@@ -504,7 +504,6 @@
       <div class="tab tab-input-sub" data-tab="matlist" data-system="industrial" style="display:none;" onclick="switchTab('matlist')">再生材・雑品</div>
       <!-- 廃材単価表：業者ごとに分けて出す（中身は renderIWPriceSidebar で作る。2026年10月29日〜） -->
       <div id="iwprice-tab-group" style="display:contents;"></div>
-      <div class="tab" data-tab="matprice" data-system="industrial" style="display:none;" onclick="switchTab('matprice')">再生資材・雑品単価表</div>
       <div class="tab tab-invoice-special" data-tab="miwinvoice" data-system="industrial" style="display:none;" onclick="switchTab('miwinvoice')">請求書照合<br>㈱ITO、㈱ガイアート</div>
       <div class="tab tab-invoice-special" data-tab="mbinvoice" data-system="industrial" style="display:none;" onclick="switchTab('mbinvoice')">請求書照合<br>野村興産㈱</div>
       <div class="tab" data-tab="contract" data-system="industrial" style="display:none;" onclick="switchTab('contract')">廃棄物処理委託契約書</div>
@@ -1480,7 +1479,7 @@
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
             <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
-            <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。</li>
+            <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
             <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
@@ -3471,10 +3470,13 @@ function renderIWPriceSidebar(){
   const isOpen = panel && panel.style.display !== 'none';
   const mbPanel = document.getElementById('tab-mbprice');
   const mbOpen = mbPanel && mbPanel.style.display !== 'none';
+  const matPanel = document.getElementById('tab-matprice');
+  const matOpen = matPanel && matPanel.style.display !== 'none';
   box.innerHTML =
     `<div class="tab tab-group-label" data-system="industrial" style="${hide}">廃材単価表</div>` +
     iwPriceVendors().map(v => `<div class="tab tab-iwprice-sub${(isOpen && v===IWPRICE_VENDOR)?' active':''}" data-tab="iwprice" data-vendor="${escIWAttr(v)}" data-system="industrial" style="${hide}" role="button" tabindex="0" onclick="openIWPriceVendor(this.dataset.vendor)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openIWPriceVendor(this.dataset.vendor);}">${escIWHtml(v)}</div>`).join('') +
     `<div class="tab tab-iwprice-sub${(mbOpen)?' active':''}" data-tab="mbprice" data-system="industrial" style="${hide}" role="button" tabindex="0" onclick="switchTab('mbprice')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('mbprice');}">蛍光灯・水銀灯・電池</div>` +
+    `<div class="tab tab-iwprice-sub${(matOpen)?' active':''}" data-tab="matprice" data-system="industrial" style="${hide}" role="button" tabindex="0" onclick="switchTab('matprice')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('matprice');}">再生材・雑品</div>` +
     `<div class="tab tab-iwprice-add" data-system="industrial" style="${hide}" role="button" tabindex="0" onclick="addIWPriceVendor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();addIWPriceVendor();}">＋ 業者を追加</div>`;
 }
 function openIWPriceVendor(v){
