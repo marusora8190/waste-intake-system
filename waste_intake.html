@@ -430,6 +430,32 @@
     .app-header{gap:6px;}
     .header-left{gap:10px;}
   }
+  /* スマホで見るとき（画面の幅が600px以下。2026年10月30日〜）：横にはみ出さないよう、縦に並べて画面の幅に収める。
+     パソコンの見た目は変わらない。表は今までどおり枠の中で横にずらして見る */
+  @media (max-width:600px){
+    .app{padding:12px 10px 60px;}
+    .app-header{margin-bottom:12px;}
+    .header-left{flex-wrap:wrap;gap:8px;width:100%;}
+    .app-header h1{font-size:17px;white-space:normal;letter-spacing:.02em;}
+    .app-header p{white-space:normal;}
+    .system-tabs{width:100%;}
+    .system-tab{padding:9px 12px;font-size:13.5px;flex:1 1 auto;text-align:center;}
+    .app-body{align-items:stretch;gap:12px;}
+    .sidebar{flex-wrap:wrap;overflow-x:visible;gap:6px;width:auto !important;}
+    .sidebar .tab{white-space:normal;flex:0 1 auto;}
+    #header-tabs.sys-waste .tab{padding:8px 10px;}
+    .tab-settings,.tab-admin,.tab-invoice-special{margin-top:0;}
+    .main-content{width:100%;}
+    .panel{padding:14px 12px;border-radius:10px;}
+    .field-grid{grid-template-columns:1fr;gap:10px;}
+    .field input,.field select,.field textarea{font-size:16px;min-width:0;max-width:100%;}
+    .card-form{grid-template-columns:1fr;}
+    .list-toolbar,.inline-field{flex-wrap:wrap;}
+    .list-toolbar>*,.inline-field>*{max-width:100%;}
+    .period-date-input{max-width:100%;font-size:16px;}
+    input,select,textarea{max-width:100%;}
+    .table-wrap{max-height:70vh;}
+  }
 </style>
 </head>
 <body>
