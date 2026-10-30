@@ -25,7 +25,8 @@
     background:#f3efe6;
     color:var(--text);
   }
-  .app{max-width:1360px;margin:0 auto;padding:28px 20px 80px;}
+  /* 画面の幅の90％まで広げて開く（2026年10月30日〜。それまでは1360pxまで）。幅の狭いパソコンでは今までどおり横いっぱい */
+  .app{max-width:max(1360px, 90%);margin:0 auto;padding:28px 20px 80px;}
   .app-header{display:flex;flex-direction:column;align-items:stretch;margin-bottom:22px;gap:12px;}
   .app-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
   .header-left{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;}
