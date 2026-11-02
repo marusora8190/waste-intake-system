@@ -288,6 +288,14 @@
   .fee-cell{text-align:right !important;padding-right:16px;}
   .total-num-cell{text-align:right !important;padding-right:28px;}
   .newly-added-row td{background:#fff3b0 !important;}
+  /* ①ごみの一覧：確認（✔）の列と、車番の列の幅（2026年11月2日〜） */
+  #tab-list table th.vehicle-th, #tab-list table td.vehicle-td{width:1%;min-width:0;white-space:nowrap;} /* それまでは最小200px */
+  #tab-list td.vehicle-td .dept-inline-input{width:auto;min-width:0;field-sizing:content;}
+  #tab-list th.confirm-th, #tab-list td.confirm-td{width:1%;white-space:nowrap;text-align:center;}
+  #tab-list td.confirm-td input{width:18px;height:18px;cursor:pointer;accent-color:#2f9e44;}
+  .unconfirmed-row td{background:#fde8e4 !important;}
+  .list-sort-lock-msg{color:#c0392b;font-size:13px;font-weight:700;}
+  .btn.sort-locked{opacity:.45;cursor:not-allowed;}
   #vehicle-thead th, #department-thead th{padding-top:4px;padding-bottom:4px;}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
@@ -643,6 +651,7 @@
       <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
       <button type="button" class="btn" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
+      <span id="list-sort-lock-msg" class="list-sort-lock-msg" style="display:none;">すべて✔が完了するまでソートできません</span>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelで書き出し</button>
       <button type="button" class="btn" id="cleanup-toggle-btn" onclick="toggleCleanupSection()">古いデータの整理</button>
       <div class="list-summary" id="list-summary"></div>
@@ -685,13 +694,13 @@
       <table>
         <thead>
           <tr>
-            <th class="num date-col">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num">車番</th>
+            <th class="num date-col">日付</th><th>時刻</th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">受付</span><br><span style="white-space:nowrap;">No.</span></th><th class="num" style="font-size:9px;"><span style="white-space:nowrap;">カード</span><br><span style="white-space:nowrap;">No.</span></th><th class="num">持込部署</th><th class="num vehicle-th">車番</th>
             <th class="num">品種</th><th class="num">総重量</th><th class="num">空車重量</th>
-            <th class="num">正味重量</th><th class="num">手数料</th><th>備考</th><th></th>
+            <th class="num">正味重量</th><th class="num">手数料</th><th>備考</th><th class="num confirm-th">確認</th><th></th>
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="13">読み込み中…</td></tr>
+          <tr><td colspan="14">読み込み中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1514,6 +1523,7 @@
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。「入　力」「一　覧」「廃材単価表」の見出しを押すと、その下の項目が出ます（開くのは1つだけ。もう一度押すと閉じる。画面を切り替えると、その画面の見出しが自動で開く。2026年10月31日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
+            <li>①ごみの「一覧」のいちばん右（備考の右）に「確認」の列があります（2026年11月2日〜。表：waste_records の confirmed）。新しく入力した記録は✔が入っていない状態で、✔を入れるまで、絞り込みに関係なく一覧のいちばん上に入力した順で並び、行がうすい赤になります。✔の入っていない記録がある間は、並びかえのボタンは使えません（「すべて✔が完了するまでソートできません」と出ます）。それまでに入力してあった記録は、すべて確認済みにしました。車番の列は、入っている文字の幅だけにしています。</li>
             <li>3つの請求書照合の画面（①ごみ・②㈱ITO、㈱ガイアート・②野村興産㈱）のいちばん下に「請求書の一覧」があり、これまでに保存した請求書の金額を、新しい月から順に出します（年・月・請求書金額。見出しは2026年11月2日に「何年何月分」から「年・月」にした。表の中の月は「R8.9月分」の形〔同日〜〕。㈱ITO、㈱ガイアートの画面では業者ごとに分け、業者名を左上に出す〔左半分に㈱ITO奈良、右半分に㈱ガイアート。それぞれ半年ごとの塊を1つの表に縦につなげ〔塊の境目の線は少し濃い〕、期間は業者名の下に列全体の分を1行で出す。スマホでは縦に並べる〕。半年ごと〔4月〜9月分・10月〜翌年3月分〕の塊に分けて横に並べ、新しい4つ〔2年分〕だけを出す。それより古い分は画面に出さないだけで、データベースには残る。見るだけで、直すときは上の照合で入れ直す。2026年11月2日〜）。表：invoices〔車番の無い行だけ〕・material_invoices〔野村興産㈱の行は出さない〕・mb_invoices。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
             <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
@@ -2977,7 +2987,21 @@ let ALL_LIST_RECORDS = [];
 let LIST_SORT_MODE = 'date-desc';
 let NEWLY_ADDED_IDS = new Set(); // 「日付順に並びかえ」が押されるまで黄色くハイライトし続ける新規登録のid群
 
+// 確認（✔）の入っていない記録が1件でもある間は、並びかえのボタンを使えなくする（2026年11月2日〜）
+function hasUnconfirmedRecords(){ return ALL_LIST_RECORDS.some(r => r.confirmed === false); }
+function updateListSortLock(){
+  const locked = hasUnconfirmedRecords();
+  ['list-sort-date-btn','list-sort-date-desc-btn','list-sort-entry-btn'].forEach(id=>{
+    const b = document.getElementById(id);
+    if(!b) return;
+    b.classList.toggle('sort-locked', locked);
+    b.title = locked ? 'すべて✔が完了するまでソートできません' : '';
+  });
+  const msg = document.getElementById('list-sort-lock-msg');
+  if(msg) msg.style.display = locked ? '' : 'none';
+}
 function setListSortMode(mode){
+  if(hasUnconfirmedRecords()){ showToast('すべて✔が完了するまでソートできません'); return; }
   LIST_SORT_MODE = mode;
   NEWLY_ADDED_IDS.clear();
   document.getElementById('list-sort-date-btn').classList.toggle('btn-primary', mode==='date');
@@ -3055,7 +3079,7 @@ function setupListSearchFilters(){
 
 async function loadList(){
   const body = document.getElementById('list-body');
-  body.innerHTML = '<tr><td colspan="13">読み込み中…</td></tr>';
+  body.innerHTML = '<tr><td colspan="14">読み込み中…</td></tr>';
   try{
     const rows = await sbAll('waste_records?select=*&order=id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
@@ -3064,7 +3088,7 @@ async function loadList(){
     setupListSearchFilters();
     renderListFiltered();
   }catch(e){
-    body.innerHTML = `<tr><td colspan="13">読み込みに失敗しました: ${e.message}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="14">読み込みに失敗しました: ${e.message}</td></tr>`;
     console.error(e);
   }
 }
@@ -3239,6 +3263,28 @@ async function runCleanup(){
 }
 // ===== ここまで：古いデータの整理 =====
 
+// 確認（✔）を付け外ししたら、すぐ保存する（2026年11月2日〜。表：waste_records の confirmed）
+async function updateConfirmedInline(id, el){
+  const value = el.checked;
+  el.disabled = true;
+  try{
+    await sb(`waste_records?id=eq.${id}`, {
+      method:'PATCH',
+      headers:{ 'Prefer':'return=minimal' },
+      body: JSON.stringify({ confirmed: value })
+    });
+    const recAll = ALL_LIST_RECORDS.find(r => r.id === id);
+    if(recAll) recAll.confirmed = value;
+    showToast(value ? '確認済みにしました' : '確認を外しました');
+    renderListFiltered();
+  }catch(e){
+    el.checked = !value;
+    el.disabled = false;
+    showToast('保存に失敗しました: ' + e.message, 6000);
+    console.error(e);
+  }
+}
+
 async function updateVehicleInline(el){
   const id = Number(el.dataset.id);
   const value = el.value.trim();
@@ -3332,27 +3378,33 @@ function renderListFiltered(){
   }else{
     rows.sort((a,b)=> b.id - a.id);
   }
-  LIST_RECORDS = rows;
+  // 確認（✔）の入っていない記録は、絞り込みに関係なく、入力した順にいちばん上に並べる（2026年11月2日〜）
+  const matched = rows;
+  const unconfirmed = ALL_LIST_RECORDS.filter(r => r.confirmed === false).sort((a,b)=> a.id - b.id);
+  const shownRows = unconfirmed.concat(matched.filter(r => r.confirmed !== false));
+  LIST_RECORDS = shownRows;
+  updateListSortLock();
 
-  if(rows.length===0){
-    body.innerHTML = '<tr><td colspan="13">記録がありません</td></tr>';
+  if(shownRows.length===0){
+    body.innerHTML = '<tr><td colspan="14">記録がありません</td></tr>';
     document.getElementById('list-summary').textContent = '';
     return;
   }
-  body.innerHTML = rows.map(r => `
-    <tr class="${NEWLY_ADDED_IDS.has(r.id) ? 'newly-added-row' : ''}">
+  body.innerHTML = shownRows.map(r => `
+    <tr class="${r.confirmed === false ? 'unconfirmed-row' : (NEWLY_ADDED_IDS.has(r.id) ? 'newly-added-row' : '')}">
       <td class="num date-col">${toWareki(r.record_date)}</td>
       <td>${r.record_time ?? ''}</td>
       <td class="num">${r.receipt_no ?? ''}</td>
       <td class="num">${r.card_no ?? ''}</td>
       <td><input type="text" class="dept-inline-input" data-id="${r.id}" list="department-suggestions" autocomplete="off" value="${String(r.department ?? '').replace(/"/g,'&quot;')}" onchange="updateDepartmentInline(this)"></td>
-      <td class="vehicle-td" data-full="${String(r.vehicle_no ?? '').replace(/"/g,'&quot;')}"><input type="text" class="dept-inline-input" data-id="${r.id}" data-field="vehicle_no" list="vehicle-suggestions" autocomplete="off" value="${String(r.vehicle_no ?? '').replace(/"/g,'&quot;')}" onchange="updateVehicleInline(this)"></td>
+      <td class="vehicle-td" data-full="${String(r.vehicle_no ?? '').replace(/"/g,'&quot;')}"><input type="text" class="dept-inline-input" data-id="${r.id}" data-field="vehicle_no" list="vehicle-suggestions" autocomplete="off" size="${Math.max(4, [...String(r.vehicle_no ?? '')].reduce((n,c)=> n + (c.charCodeAt(0) > 255 ? 2 : 1), 0))}" value="${String(r.vehicle_no ?? '').replace(/"/g,'&quot;')}" onchange="updateVehicleInline(this)"></td>
       <td class="num ${r.item_type==='不燃' ? 'cell-nonburn' : ''}">${r.item_type ?? ''}</td>
       <td class="num">${Number(r.total_weight).toLocaleString()}</td>
       <td class="num">${Number(r.empty_weight).toLocaleString()}</td>
       <td class="num">${Number(r.net_weight).toLocaleString()}</td>
       <td class="num fee-cell">${Number(r.fee).toLocaleString()}</td>
       <td>${String(r.note ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
+      <td class="confirm-td"><input type="checkbox" ${r.confirmed === false ? '' : 'checked'} onchange="updateConfirmedInline(${r.id}, this)" title="確認したら✔を入れます"></td>
       <td class="action-cell">
         <button class="del-btn" onclick="editRecord(${r.id})">編集</button>
         <button class="del-btn" onclick="deleteRecord(${r.id})">削除</button>
@@ -3360,10 +3412,12 @@ function renderListFiltered(){
     </tr>
   `).join('');
 
-  const totalNet = rows.reduce((s,r)=> s + Number(r.net_weight||0), 0);
-  const totalFee = rows.reduce((s,r)=> s + Number(r.fee||0), 0);
+  // 件数・合計は、今までどおり絞り込みに合う記録だけで数える
+  const totalNet = matched.reduce((s,r)=> s + Number(r.net_weight||0), 0);
+  const totalFee = matched.reduce((s,r)=> s + Number(r.fee||0), 0);
   document.getElementById('list-summary').textContent =
-    `${rows.length}件 ／ 正味重量合計 ${totalNet.toLocaleString()} kg ／ 手数料合計 ${totalFee.toLocaleString()} 円`;
+    `${matched.length}件 ／ 正味重量合計 ${totalNet.toLocaleString()} kg ／ 手数料合計 ${totalFee.toLocaleString()} 円`
+    + (unconfirmed.length ? ` ／ 未確認 ${unconfirmed.length}件` : '');
 }
 
 async function deleteRecord(id){
