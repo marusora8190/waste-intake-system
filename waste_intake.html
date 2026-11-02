@@ -199,7 +199,8 @@
   .inv-history-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px;}
   .inv-history-head .form-title{margin:0;}
   .inv-history-head .inv-history-sum{color:var(--ink-dark);font-size:14px;font-weight:700;}
-  .inv-history .table-wrap{max-height:60vh;overflow:auto;}
+  .inv-history .table-wrap{max-height:60vh;overflow:auto;width:fit-content;max-width:100%;}
+  .inv-history table{width:auto;} /* 列の幅を中身の分だけにする（2026年11月2日〜） */
   .inv-history thead th{position:sticky;top:0;z-index:1;text-align:center;}
   #tab-list table td, #tab-list table th{padding:3px 10px;}
   #tab-list .dept-inline-input{padding:2px 6px;}
