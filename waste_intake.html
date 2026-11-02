@@ -200,6 +200,10 @@
   .inv-history-head .form-title{margin:0;}
   .inv-history-head .inv-history-sum{color:var(--ink-dark);font-size:14px;font-weight:700;}
   .inv-history .table-wrap{max-height:60vh;overflow:auto;width:fit-content;max-width:100%;}
+  .inv-history-blocks{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;}
+  .inv-history-block{min-width:0;max-width:100%;}
+  .inv-history-block-title{font-size:14px;font-weight:700;color:var(--ink-dark);margin-bottom:6px;}
+  .inv-history-block-title span{font-size:12.5px;color:var(--muted);margin-left:10px;font-weight:700;}
   .inv-history table{width:auto;} /* 列の幅を中身の分だけにする（2026年11月2日〜） */
   .inv-history thead th{position:sticky;top:0;z-index:1;text-align:center;}
   #tab-list table td, #tab-list table th{padding:3px 10px;}
@@ -1497,7 +1501,7 @@
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。「入　力」「一　覧」「廃材単価表」の見出しを押すと、その下の項目が出ます（開くのは1つだけ。もう一度押すと閉じる。画面を切り替えると、その画面の見出しが自動で開く。2026年10月31日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
-            <li>3つの請求書照合の画面（①ごみ・②㈱ITO、㈱ガイアート・②野村興産㈱）のいちばん下に「請求書の一覧」があり、これまでに保存した請求書の金額を、新しい月から順に出します（何年何月分・業者〔㈱ITO、㈱ガイアートの画面だけ〕・請求書金額。見るだけで、直すときは上の照合で入れ直す。2026年11月2日〜）。表：invoices〔車番の無い行だけ〕・material_invoices〔野村興産㈱の行は出さない〕・mb_invoices。</li>
+            <li>3つの請求書照合の画面（①ごみ・②㈱ITO、㈱ガイアート・②野村興産㈱）のいちばん下に「請求書の一覧」があり、これまでに保存した請求書の金額を、新しい月から順に出します（何年何月分・業者〔㈱ITO、㈱ガイアートの画面だけ〕・請求書金額。半年ごと〔4月〜9月分・10月〜翌年3月分〕の塊に分けて横に並べ、新しい4つ〔2年分〕だけを出す。それより古い分は画面に出さないだけで、データベースには残る。見るだけで、直すときは上の照合で入れ直す。2026年11月2日〜）。表：invoices〔車番の無い行だけ〕・material_invoices〔野村興産㈱の行は出さない〕・mb_invoices。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
             <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
           </ul>
@@ -5253,6 +5257,7 @@ function exportVehicleSummaryToExcel(){
 // 金額を直すときは、上の照合で集計期間をその月にして入れ直す。
 // ①ごみ … invoices（車番の無い行＝照合で保存した合計だけ。車番付きの行は昔の車番ごとの記録のため出さない）
 // ②㈱ITO・㈱ガイアート … material_invoices（野村興産㈱の行は出さない）／②野村興産㈱ … mb_invoices
+const INVOICE_HISTORY_MAX_BLOCKS = 4; // 一覧に出す半年ごとの塊の数（2年分。2026年11月2日〜）
 const INVOICE_HISTORY_CFG = {
   waste: { el:'inv-history', path:'invoices?select=id,billing_year,billing_month,amount&vehicle_no=is.null', vendor:false },
   miw:   { el:'miw-history', path:'material_invoices?select=id,billing_year,billing_month,vendor_name,amount', vendor:true },
@@ -5273,23 +5278,48 @@ async function renderInvoiceHistory(kind){
       if(ka!==kb) return kb - ka;
       return String(a.vendor_name||'').localeCompare(String(b.vendor_name||''),'ja');
     });
-    const total = rows.reduce((s,r)=>s+Number(r.amount||0),0);
-    const sumText = rows.length ? `${rows.length}件 ／ 合計 ${total.toLocaleString()}円` : '';
-    const body = rows.length===0
-      ? `<tr><td colspan="${cols}">保存した請求書はまだありません</td></tr>`
-      : rows.map(r=>`<tr>
-          <td style="text-align:center;">${Number(r.billing_year)}年${Number(r.billing_month)}月分</td>
-          ${cfg.vendor ? `<td>${escIWHtml(r.vendor_name||'')}</td>` : ''}
-          <td class="num">${Number(r.amount||0).toLocaleString()}円</td>
-        </tr>`).join('');
-    el.innerHTML = head(sumText) + `
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>何年何月分</th>${cfg.vendor ? '<th>業者</th>' : ''}<th>請求書金額</th></tr></thead>
-          <tbody>${body}</tbody>
-        </table>
-      </div>
-      <div class="field-hint" style="margin-top:8px;">金額を直すときは、上の集計期間をその月にして入れ直してください。</div>`;
+    // 半年ごと（4月〜9月分・10月〜翌年3月分）の塊に分け、新しい塊から INVOICE_HISTORY_MAX_BLOCKS 個だけを横に並べて出す
+    // （2026年11月2日〜。それより古い塊は画面に出さないだけで、データベースには残る）
+    const blocks = [];
+    rows.forEach(r=>{
+      const y = Number(r.billing_year), m = Number(r.billing_month);
+      const startY = m>=4 ? y : y-1;            // 塊の始まりの年（1月〜3月分は前の年の10月からの塊）
+      const firstHalf = (m>=4 && m<=9);         // 4月〜9月分なら前半
+      const key = startY*10 + (firstHalf ? 1 : 2);
+      let b = blocks.find(x=>x.key===key);
+      if(!b){
+        b = { key, label: firstHalf ? `${startY}年4月〜9月分` : `${startY}年10月〜${startY+1}年3月分`, rows: [] };
+        blocks.push(b);
+      }
+      b.rows.push(r);
+    });
+    blocks.sort((a,b)=>b.key-a.key);
+    const shown = blocks.slice(0, INVOICE_HISTORY_MAX_BLOCKS);
+    const hiddenCount = blocks.slice(INVOICE_HISTORY_MAX_BLOCKS).reduce((s,b)=>s+b.rows.length,0);
+    const shownRows = shown.reduce((s,b)=>s+b.rows.length,0);
+    const total = shown.reduce((s,b)=>s+b.rows.reduce((t,r)=>t+Number(r.amount||0),0),0);
+    const sumText = shownRows ? `${shownRows}件 ／ 合計 ${total.toLocaleString()}円` : '';
+    const blockHtml = (b)=>{
+      const sub = b.rows.reduce((t,r)=>t+Number(r.amount||0),0);
+      return `<div class="inv-history-block">
+        <div class="inv-history-block-title">${b.label}<span>${b.rows.length}件 ／ ${sub.toLocaleString()}円</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>何年何月分</th>${cfg.vendor ? '<th>業者</th>' : ''}<th>請求書金額</th></tr></thead>
+            <tbody>${b.rows.map(r=>`<tr>
+              <td style="text-align:center;">${Number(r.billing_year)}年${Number(r.billing_month)}月分</td>
+              ${cfg.vendor ? `<td>${escIWHtml(r.vendor_name||'')}</td>` : ''}
+              <td class="num">${Number(r.amount||0).toLocaleString()}円</td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+    };
+    const blocksHtml = shown.length===0
+      ? `<div class="table-wrap"><table><tbody><tr><td colspan="${cols}">保存した請求書はまだありません</td></tr></tbody></table></div>`
+      : `<div class="inv-history-blocks">${shown.map(blockHtml).join('')}</div>`;
+    el.innerHTML = head(sumText) + blocksHtml + `
+      <div class="field-hint" style="margin-top:8px;">半年ごと（4月〜9月分・10月〜翌年3月分）に分けて、新しい${INVOICE_HISTORY_MAX_BLOCKS}つ（2年分）だけを出します${hiddenCount ? `（それより古い${hiddenCount}件は出していません。データは消えていません）` : ''}。金額を直すときは、上の集計期間をその月にして入れ直してください。</div>`;
   }catch(e){
     el.innerHTML = head('') + `<div class="list-summary">請求書の一覧を読み込めませんでした: ${e.message}</div>`;
     console.error(e);
