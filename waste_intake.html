@@ -1276,7 +1276,7 @@
       <span style="color:var(--muted);">〜</span>
       <input type="date" id="mbi-date-to" class="period-date-input" onchange="renderMBInvoiceTab()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">野村興産㈱からは、同じ日の持ち込みでも品物ごと（マニフェストごと）に請求書が届くため、持ち込んだ日ごとに、品物別のシステム金額と請求書の金額をくらべます。品物の金額は「重さ×単価表の単価」です。持込手数料・事務手数料と、同じ日の再生資材・雑品購入（野村興産㈱）も1行ずつ出します。届いた請求書の金額（税込）を、その品物の行に入れてください（欄の外を押すかエンターで保存）。請求書は「廃蛍光灯」「廃水銀灯」「廃電池関係（電池・二次電池・ボタン電池）」に分かれて届くため、電池・二次電池・ボタン電池は1枚の請求書としてまとめて出します（請求書の金額を入れる欄は1つです）。消費税は請求書1枚ごとに自動で計算します（10％・1円未満は切り捨て）。請求書とちがうときは、消費税の欄を直してください（空にすると自動に戻ります）。もう支払った分は「支払済」にチェックすると、請求書の金額とのくらべから外れます。手数料が無い持ち込みには「＋ 持込手数料」「＋ 事務手数料」のボタンが出ます（手数料の行の「金額を直す」で金額を変えたり、0にしてなくしたりできます）。</div>
+    <div class="field-hint" style="margin-bottom:14px;">野村興産㈱からは、同じ日の持ち込みでも品物ごと（マニフェストごと）に請求書が届くため、持ち込んだ日ごとに、品物別のシステム金額と請求書の金額をくらべます。品物の金額は「重さ×単価表の単価」です。持込手数料・事務手数料と、同じ日の再生資材・雑品購入（野村興産㈱）も1行ずつ出します。届いた請求書の金額（税込）を、その品物の行に入れてください（欄の外を押すかエンターで保存）。請求書は「廃蛍光灯」「廃水銀灯」「廃電池関係（電池・二次電池・ボタン電池）」に分かれて届くため、電池・二次電池・ボタン電池は1枚の請求書としてまとめて出します（請求書の金額を入れる欄は1つです）。消費税は請求書1枚ごとに自動で計算します（10％・1円未満は切り捨て）。請求書とちがうときは、消費税の欄を直してください（空にすると自動に戻ります）。支払いの申請をした請求書は「支払申請済」にチェックしてください（印だけで、請求書の金額とのくらべはそのまま行います）。手数料が無い持ち込みには「＋ 持込手数料」「＋ 事務手数料」のボタンが出ます（手数料の行の「金額を直す」で金額を変えたり、0にしてなくしたりできます）。</div>
     <div id="mbi-total-card"></div>
     <div id="mbi-history" class="inv-history"></div>
   </div>
@@ -1568,7 +1568,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕は、2026年11月4日から、持ち込んだ日×品物ごとに請求書の金額をくらべる〔品物の金額＝重さ×単価、持込手数料・事務手数料・同じ日の再生資材・雑品購入〔野村興産㈱〕も1行ずつ。電池・二次電池・ボタン電池は1枚の請求書〔廃電池関係〕にまとめる〔同日〜〕。消費税は請求書1枚ごとに自動〔10％。1円未満は切り捨て〕で、違うときは直せる。「支払済」にチェックした請求書は、くらべから外す。手数料の無い持ち込みには「＋ 持込手数料」「＋ 事務手数料」のボタン〔記録の手数料と金額合計を書き換える〕。表：mb_invoice_lines〕。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表。2026年11月4日に、電池・二次電池・ボタン電池の「一式の金額」〔lump_sum_price〕と「一式にする重さ」〔lump_sum_under_kg。○kg未満〕の欄を追加。重さがそれ未満なら重さ×単価のかわりに一式の金額。はじめは20kg未満で、電池3,000円・二次電池4,000円・ボタン電池7,000円。同日に「持込手数料」「事務手数料」の行〔1回あたりの金額。はじめは5,000円・3,000円。入力画面の欄にはじめから入る〕も追加）・mb_invoices（請求書。1か月に1つの金額。2026年11月3日までの入力）・mb_invoice_lines（請求書。持ち込んだ日×品物ごと。2026年11月4日〜）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕は、2026年11月4日から、持ち込んだ日×品物ごとに請求書の金額をくらべる〔品物の金額＝重さ×単価、持込手数料・事務手数料・同じ日の再生資材・雑品購入〔野村興産㈱〕も1行ずつ。電池・二次電池・ボタン電池は1枚の請求書〔廃電池関係〕にまとめる〔同日〜〕。消費税は請求書1枚ごとに自動〔10％。1円未満は切り捨て〕で、違うときは直せる。「支払申請済」〔支払いの申請をした印。くらべには影響しない〕にチェックできる。手数料の無い持ち込みには「＋ 持込手数料」「＋ 事務手数料」のボタン〔記録の手数料と金額合計を書き換える〕。表：mb_invoice_lines〕。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表。2026年11月4日に、電池・二次電池・ボタン電池の「一式の金額」〔lump_sum_price〕と「一式にする重さ」〔lump_sum_under_kg。○kg未満〕の欄を追加。重さがそれ未満なら重さ×単価のかわりに一式の金額。はじめは20kg未満で、電池3,000円・二次電池4,000円・ボタン電池7,000円。同日に「持込手数料」「事務手数料」の行〔1回あたりの金額。はじめは5,000円・3,000円。入力画面の欄にはじめから入る〕も追加）・mb_invoices（請求書。1か月に1つの金額。2026年11月3日までの入力）・mb_invoice_lines（請求書。持ち込んだ日×品物ごと。2026年11月4日〜）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。「入　力」「一　覧」「廃材単価表」の見出しを押すと、その下の項目が出ます（開くのは1つだけ。もう一度押すと閉じる。画面を切り替えると、その画面の見出しが自動で開く。2026年10月31日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
@@ -5019,7 +5019,7 @@ function mbiBuildBlocks(from, to){
       g.total = g.sys + g.tax;
       g.invoice = (s.invoice_amount === null || s.invoice_amount === undefined) ? null : Number(s.invoice_amount);
       g.manifest = s.manifest_no || '';
-      g.paid = !!s.paid; // 支払済（2026年11月4日〜）。支払済の請求書は、請求書の金額とのくらべから外す
+      g.paid = !!s.paid; // 支払申請済（支払いの申請をした印。2026年11月4日〜。同日の夕方に「支払済」から呼び名を変え、くらべから外すのをやめた。データベースの欄は paid のまま）
     });
   });
   return blocks;
@@ -5038,11 +5038,11 @@ function mbiDraw(){
   const sysTotal = allGroups.reduce((s,g)=>s+g.sys,0);
   const taxTotal = allGroups.reduce((s,g)=>s+g.tax,0);
   const grand = sysTotal + taxTotal;
-  // 支払済の請求書は、請求書の金額とのくらべから外す（2026年11月4日〜）
+  // 支払申請済は印だけ。請求書の金額とのくらべには、すべての請求書を入れる（2026年11月4日〜）
   const paidGroups = allGroups.filter(g=>g.paid);
-  const paidTotal = paidGroups.reduce((s,g)=>s+g.total,0);
-  const openGroups = allGroups.filter(g=>!g.paid);
-  const openTotal = grand - paidTotal;
+  const paidTotal = paidGroups.reduce((s,g)=>s+(g.invoice===null?g.total:g.invoice),0);
+  const openGroups = allGroups;
+  const openTotal = grand;
   const entered = openGroups.filter(g=>g.invoice!==null);
   const invTotal = entered.reduce((s,g)=>s+g.invoice,0);
   const missing = openGroups.length - entered.length;
@@ -5068,7 +5068,7 @@ function mbiDraw(){
         <div class="value" style="font-size:18px;">${yen(grand)}</div>
       </div>
       <div class="summary-total-card">
-        <div class="label">支払済（${paidGroups.length}枚）</div>
+        <div class="label">支払申請済（${paidGroups.length}／${allGroups.length}枚）</div>
         <div class="value" style="font-size:18px;">${yen(paidTotal)}</div>
       </div>
       <div class="summary-total-card">
@@ -5076,7 +5076,7 @@ function mbiDraw(){
         <div class="value" style="font-size:18px;">${yen(invTotal)}</div>
       </div>
       <div class="summary-total-card">
-        <div class="label">差額（請求書 − 支払済を除いた合計${paidGroups.length?` ${yen(openTotal)}`:''}）</div>
+        <div class="label">差額（請求書 − 合計）</div>
         <div class="value ${entered.length===0?(okAll?'invoice-ok':''):(okAll?'invoice-ok':'invoice-ng')}" style="font-size:18px;">${entered.length===0?(okAll?'0円':'-'):sign(diff)}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px;">${allGroups.length===0?'':(okAll?'すべて一致しています':`${missing?`未入力 ${missing}枚`:''}${missing&&ngCount?'・':''}${ngCount?`不一致 ${ngCount}枚`:''}`)}</div>
       </div>
@@ -5090,8 +5090,8 @@ function mbiDraw(){
   const blockHtml = blocks.map(b=>{
     const bSys = b.groups.reduce((s,g)=>s+g.sys,0);
     const bTotal = b.groups.reduce((s,g)=>s+g.total,0);
-    const bOpen = b.groups.filter(g=>!g.paid);
-    const bPaid = b.groups.length - bOpen.length;
+    const bOpen = b.groups;
+    const bPaid = b.groups.filter(g=>g.paid).length;
     const bEntered = bOpen.filter(g=>g.invoice!==null);
     const bInv = bEntered.reduce((s,g)=>s+g.invoice,0);
     const bOk = bEntered.length===bOpen.length && bOpen.every(g=>g.invoice===g.total);
@@ -5123,8 +5123,8 @@ function mbiDraw(){
         </td>
         <td class="num"${rs}>${g.total.toLocaleString()}</td>
         <td class="num"${rs}><input type="text" inputmode="numeric" class="mbi-input" data-mbi-idx="${iIdx}" value="${g.invoice===null?'':g.invoice.toLocaleString()}" onchange="onMbiInvoiceChange('${hk}', this)" onkeydown="onMbiKey(event, this)"></td>
-        <td class="num ${g.paid?'mbi-paid-mark':(d===null?'':(d===0?'invoice-ok':'invoice-ng'))}"${rs}>${g.paid?'支払済':(d===null?'-':(d===0?'一致':sign(d)))}</td>
-        <td style="text-align:center;"${rs}><input type="checkbox" ${g.paid?'checked':''} onchange="onMbiPaidChange('${hk}', this)" title="支払済（請求書の金額とのくらべから外す）"></td>
+        <td class="num ${d===null?'':(d===0?'invoice-ok':'invoice-ng')}"${rs}>${d===null?'-':(d===0?'一致':sign(d))}</td>
+        <td style="text-align:center;"${rs}><input type="checkbox" ${g.paid?'checked':''} onchange="onMbiPaidChange('${hk}', this)" title="支払申請済（支払いの申請をした印）"></td>
         <td${rs}>${noManifest ? '' : `<input type="text" class="mbi-input mbi-manifest" data-mbi-idx="${mIdx}" value="${escIWHtml(g.manifest)}" onchange="onMbiManifestChange('${hk}', this)" onkeydown="onMbiKey(event, this)">`}</td>`;
       }
       return `<tr class="${first&&!isBlockFirst?'mbi-group-start':''}${g.paid?' mbi-paid':''}">${cells}</tr>`;
@@ -5132,13 +5132,13 @@ function mbiDraw(){
     return `<div class="mbi-block">
       <div class="mbi-block-head">
         <span class="mbi-block-title">${title}</span>
-        <span>請求書 ${b.groups.length}枚（${bPaid?`支払済 ${bPaid}枚・`:''}入力済み ${bEntered.length}枚）／ システム ${yen(bSys)}・税込 ${yen(bTotal)}／ 請求書 ${yen(bInv)}</span>
-        ${(bEntered.length || (bOpen.length===0 && bPaid))?`<span class="${bOk?'invoice-ok':'invoice-ng'}">${bOk?'一致':(bEntered.length<bOpen.length?'未入力あり':'不一致あり')}</span>`:''}
+        <span>請求書 ${b.groups.length}枚（${bPaid?`支払申請済 ${bPaid}枚・`:''}入力済み ${bEntered.length}枚）／ システム ${yen(bSys)}・税込 ${yen(bTotal)}／ 請求書 ${yen(bInv)}</span>
+        ${bEntered.length?`<span class="${bOk?'invoice-ok':'invoice-ng'}">${bOk?'一致':(bEntered.length<bOpen.length?'未入力あり':'不一致あり')}</span>`:''}
         ${feeBtns}
       </div>
       ${warn}
       <div class="table-wrap"><table class="mbi-table">
-        <thead><tr><th>品物</th><th>数量</th><th>単価</th><th>金額<br>（税抜）</th><th>消費税</th><th>合計<br>（税込）</th><th>請求書の金額<br>（税込）</th><th>差額</th><th>支払済</th><th>マニフェスト番号</th></tr></thead>
+        <thead><tr><th>品物</th><th>数量</th><th>単価</th><th>金額<br>（税抜）</th><th>消費税</th><th>合計<br>（税込）</th><th>請求書の金額<br>（税込）</th><th>差額</th><th>支払申請済</th><th>マニフェスト番号</th></tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table></div>
     </div>`;
@@ -5201,12 +5201,12 @@ async function mbiTaxAuto(key){
 async function onMbiManifestChange(key, el){
   const v = String(el.value||'').trim();
   await mbiSave(key, { manifest_no: v==='' ? null : v });
-  mbiDraw();
+  mbiDraw(); renderInvoiceHistory('mb'); // 下の一覧のマニフェスト番号も入れ直す（2026年11月4日〜）
 }
-// 支払済のチェック（2026年11月4日〜）
+// 支払申請済のチェック（2026年11月4日〜。同日の夕方に「支払済」から呼び名を変えた）
 async function onMbiPaidChange(key, cb){
   await mbiSave(key, { paid: cb.checked });
-  mbiDraw();
+  mbiDraw(); renderInvoiceHistory('mb'); // 下の一覧の支払申請済も入れ直す（2026年11月4日〜）
 }
 // 持込手数料・事務手数料を足す・直す・なくす（2026年11月4日〜）。持ち込みの記録（mb_records）の手数料と金額合計を書き換える
 async function mbiEditFee(recId, kind){
@@ -5248,7 +5248,7 @@ function onMbiKey(e, el){
   }
 }
 // 下の「請求書の一覧」（野村興産㈱）：請求書1枚ずつを、持ち込み（購入）の日の新しい順に出す（2026年11月4日〜）。
-// 請求書の金額を入れたものと、支払済にしたものを出す。
+// 請求書の金額を入れたものと、支払申請済にしたものを出す。
 // それまでの「1か月に1つの金額」（mb_invoices。2026年11月3日までの入れ方）は、新しい形の入力が無い月だけ「○月分（月の合計）」として出す
 const MBI_HISTORY_YEARS = 2; // 出すのは、いちばん新しい日から2年分
 function mbiGroupLabel(g){
@@ -5291,11 +5291,11 @@ function mbiHistoryHtml(oldRows){
       <td style="white-space:nowrap;">${escIWHtml(x.label)}</td>
       <td style="white-space:nowrap;">${escIWHtml(x.manifest||'')}</td>
       <td class="num">${x.amount===null?'（未入力）':Number(x.amount).toLocaleString()+'円'}</td>
-      <td style="text-align:center;" class="${x.paid?'mbi-paid-mark':''}">${x.paid?'支払済':''}</td>
+      <td style="text-align:center;" class="${x.paid?'mbi-paid-mark':''}">${x.paid?'支払申請済':''}</td>
     </tr>`;
   }).join('');
   return head(`${shown.length}件 ／ 合計 ${sum.toLocaleString()}円`) + `<div class="inv-history-block"><div class="table-wrap"><table>
-      <thead><tr><th>持ち込んだ日</th><th>請求書</th><th>マニフェスト番号</th><th>請求書金額</th><th>支払済</th></tr></thead>
+      <thead><tr><th>持ち込んだ日</th><th>請求書</th><th>マニフェスト番号</th><th>請求書金額</th><th>支払申請済</th></tr></thead>
       <tbody>${body}</tbody>
     </table></div></div>
     <div class="field-hint" style="margin-top:8px;">請求書1枚ずつを、持ち込んだ日の新しい順に出します（いちばん新しい日から2年分${hidden?`。それより古い${hidden}件は出していません。データは消えていません`:''}）。「○月分（月の合計）」は、2026年11月3日までの入れ方（1か月に1つの金額）で入れたものです。金額を直すときは、上の表で入れ直してください。</div>`;
