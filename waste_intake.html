@@ -982,6 +982,26 @@
         </div>
         <button class="btn" onclick="saveMBPrices()">単価を保存</button>
       </div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 10px;">一式の金額（円。重さが少ないときは、重さ×単価のかわりにこの金額）</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:end;">
+        <div class="field" style="width:150px;">
+          <label>一式にする重さ（kg未満）</label>
+          <input type="number" id="mbl-under" class="num-field" step="0.1" min="0">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>電池</label>
+          <input type="number" id="mbl-電池" class="num-field" step="1" min="0">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>二次電池</label>
+          <input type="number" id="mbl-二次電池" class="num-field" step="1" min="0">
+        </div>
+        <div class="field" style="width:110px;">
+          <label>ボタン電池</label>
+          <input type="number" id="mbl-ボタン電池" class="num-field" step="1" min="0">
+        </div>
+      </div>
+      <div class="field-hint" style="margin-top:8px;">例：電池が20kg未満なら一式3,000円、20kg以上なら重さ×単価。一式の金額を空にすると、その品物は一式を使わず、いつも重さ×単価になります。上の「単価を保存」で一緒に保存します。</div>
       <div class="field-hint" style="margin-top:8px;">※ここでの変更は今後の新規登録にのみ適用され、過去の記録の金額は変わりません。</div>
     </div>
 
@@ -1534,7 +1554,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕は、2026年11月4日から、持ち込んだ日×品物ごとに請求書の金額をくらべる〔品物の金額＝重さ×単価、持込手数料・事務手数料・同じ日の再生資材・雑品購入〔野村興産㈱〕も1行ずつ。「上と同じ請求書」で何行かを1枚にまとめられる。消費税は請求書1枚ごとに自動〔10％。1円未満は切り捨て〕で、違うときは直せる。表：mb_invoice_lines〕。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書。1か月に1つの金額。2026年11月3日までの入力）・mb_invoice_lines（請求書。持ち込んだ日×品物ごと。2026年11月4日〜）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕は、2026年11月4日から、持ち込んだ日×品物ごとに請求書の金額をくらべる〔品物の金額＝重さ×単価、持込手数料・事務手数料・同じ日の再生資材・雑品購入〔野村興産㈱〕も1行ずつ。「上と同じ請求書」で何行かを1枚にまとめられる。消費税は請求書1枚ごとに自動〔10％。1円未満は切り捨て〕で、違うときは直せる。表：mb_invoice_lines〕。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表。2026年11月4日に、電池・二次電池・ボタン電池の「一式の金額」〔lump_sum_price〕と「一式にする重さ」〔lump_sum_under_kg。○kg未満〕の欄を追加。重さがそれ未満なら重さ×単価のかわりに一式の金額。はじめは20kg未満で、電池3,000円・二次電池4,000円・ボタン電池7,000円）・mb_invoices（請求書。1か月に1つの金額。2026年11月3日までの入力）・mb_invoice_lines（請求書。持ち込んだ日×品物ごと。2026年11月4日〜）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。「入　力」「一　覧」「廃材単価表」の見出しを押すと、その下の項目が出ます（開くのは1つだけ。もう一度押すと閉じる。画面を切り替えると、その画面の見出しが自動で開く。2026年10月31日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
@@ -2822,7 +2842,7 @@ document.getElementById('mat-date').addEventListener('blur', function(){ normali
 bindEnterNav(['c-card','c-department','c-car-type','c-vehicle'], () => submitCard());            // ① カード管理
 bindEnterNav(['i-date-from','i-date-to']);                                                       // ① 請求書照合の期間
 bindEnterNav(['iwp-item','iwp-price','iwp-unit','iwp-cond','iwp-note'], () => submitIWPrice());          // ② 廃材単価表
-bindEnterNav(['mbp-蛍光灯','mbp-水銀灯','mbp-電池','mbp-二次電池','mbp-ボタン電池'], () => saveMBPrices()); // ② 蛍光灯等の単価設定
+bindEnterNav(['mbp-蛍光灯','mbp-水銀灯','mbp-電池','mbp-二次電池','mbp-ボタン電池','mbl-under','mbl-電池','mbl-二次電池','mbl-ボタン電池'], () => saveMBPrices()); // ② 蛍光灯等の単価設定
 bindEnterNav(['mb-date','mb-fluorescent','mb-mercury','mb-battery','mb-secondary','mb-button','mb-intake-fee','mb-admin-fee','mb-note'], () => submitMBRecord()); // ② 蛍光灯・水銀灯・電池処理
 bindEnterNav(['mat-date','mat-vendor','mat-item','mat-unit','mat-qty','mat-price','mat-note'], () => submitMatRecord()); // ② 再生資材・雑品購入入力
 bindEnterNav(['matp-item','matp-vendor','matp-price','matp-note'], () => submitMatPrice());     // ② 再生資材・雑品単価表
@@ -4278,31 +4298,76 @@ function exportIWListToExcel(){
 /* ---------- 産廃：蛍光灯・水銀灯・電池処理タブ ---------- */
 const MB_CATEGORIES = ['蛍光灯','水銀灯','電池','二次電池','ボタン電池'];
 let MB_PRICES = { '蛍光灯':200, '水銀灯':200, '電池':200, '二次電池':200, 'ボタン電池':200 };
+// 一式の金額（2026年11月4日〜）：重さが under kg 未満（0より多い）のときは、重さ×単価のかわりに price 円。
+// 単価表（mb_price_list）の lump_sum_price・lump_sum_under_kg から読む。price が空なら一式なし
+const MB_LUMP_CATEGORIES = ['電池','二次電池','ボタン電池'];
+let MB_LUMP = { '電池':{price:3000, under:20}, '二次電池':{price:4000, under:20}, 'ボタン電池':{price:7000, under:20} };
+function mbIsLump(c, kg){
+  const l = MB_LUMP[c];
+  return !!(l && l.price!==null && l.under!==null && kg>0 && kg<l.under);
+}
+// 品物1つの金額（円。重さ×単価は丸めない。合計で丸める）
+function mbItemAmount(c, kg){
+  kg = Number(kg)||0;
+  return mbIsLump(c, kg) ? Number(MB_LUMP[c].price) : kg*Number(MB_PRICES[c]||0);
+}
 let ALL_MB_RECORDS = [];
 let EDITING_MB_ID = null;
 
 async function loadMBPriceList(){
   try{
     const rows = await sb('mb_price_list?select=*');
-    (rows||[]).forEach(r => { MB_PRICES[r.category] = Number(r.unit_price); });
+    (rows||[]).forEach(r => {
+      MB_PRICES[r.category] = Number(r.unit_price);
+      if(MB_LUMP_CATEGORIES.includes(r.category)){
+        MB_LUMP[r.category] = {
+          price: (r.lump_sum_price===null||r.lump_sum_price===undefined) ? null : Number(r.lump_sum_price),
+          under: (r.lump_sum_under_kg===null||r.lump_sum_under_kg===undefined) ? null : Number(r.lump_sum_under_kg)
+        };
+      }
+    });
     MB_CATEGORIES.forEach(c => {
       const el = document.getElementById('mbp-'+c);
       if(el) el.value = MB_PRICES[c];
     });
+    MB_LUMP_CATEGORIES.forEach(c => {
+      const el = document.getElementById('mbl-'+c);
+      if(el) el.value = MB_LUMP[c].price===null ? '' : MB_LUMP[c].price;
+    });
+    const underEl = document.getElementById('mbl-under');
+    if(underEl){ const u = MB_LUMP_CATEGORIES.map(c=>MB_LUMP[c].under).find(v=>v!==null); underEl.value = (u===undefined||u===null) ? '' : u; }
+    if(document.getElementById('mb-amount')) recalcMBPreview();
   }catch(e){
     console.error(e);
   }
 }
 
 async function saveMBPrices(){
+  // 一式の金額・重さを先に確かめる（2026年11月4日〜）
+  const underRaw = String(document.getElementById('mbl-under')?.value ?? '').trim();
+  const under = underRaw==='' ? null : Number(underRaw);
+  const lumps = {};
+  for(const c of MB_LUMP_CATEGORIES){
+    const v = String(document.getElementById('mbl-'+c)?.value ?? '').trim();
+    lumps[c] = v==='' ? null : Number(v);
+    if(lumps[c]!==null && (isNaN(lumps[c]) || lumps[c]<0)){ showToast(`${c}の一式の金額を正しく入れてください`); return; }
+  }
+  if(under!==null && (isNaN(under) || under<=0)){ showToast('一式にする重さを正しく入れてください'); return; }
+  if(under===null && MB_LUMP_CATEGORIES.some(c=>lumps[c]!==null)){ showToast('一式にする重さ（kg未満）を入れてください'); return; }
   try{
     for(const c of MB_CATEGORIES){
       const val = Number(document.getElementById('mbp-'+c).value || 0);
+      const body = { unit_price: val, updated_at: new Date().toISOString() };
+      if(MB_LUMP_CATEGORIES.includes(c)){
+        body.lump_sum_price = lumps[c];
+        body.lump_sum_under_kg = lumps[c]===null ? null : under;
+      }
       await sb(`mb_price_list?category=eq.${encodeURIComponent(c)}`, {
         method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ unit_price: val, updated_at: new Date().toISOString() })
+        body: JSON.stringify(body)
       });
       MB_PRICES[c] = val;
+      if(MB_LUMP_CATEGORIES.includes(c)) MB_LUMP[c] = { price: lumps[c], under: lumps[c]===null ? null : under };
     }
     showToast('単価を保存しました');
   }catch(e){
@@ -4336,7 +4401,7 @@ function recalcMBPreview(){
   const bt = Number(document.getElementById('mb-button').value) || 0;
   const fi = Number(document.getElementById('mb-intake-fee').value) || 0;
   const fa = Number(document.getElementById('mb-admin-fee').value) || 0;
-  const total = f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'] + fi + fa;
+  const total = mbItemAmount('蛍光灯',f) + mbItemAmount('水銀灯',m) + mbItemAmount('電池',b) + mbItemAmount('二次電池',s) + mbItemAmount('ボタン電池',bt) + fi + fa;
   document.getElementById('mb-amount').value = Math.round(total).toLocaleString();
 }
 
@@ -4371,7 +4436,7 @@ async function submitMBRecord(){
   const fi = Number(document.getElementById('mb-intake-fee').value) || 0;
   const fa = Number(document.getElementById('mb-admin-fee').value) || 0;
   const note = document.getElementById('mb-note').value.trim();
-  const totalAmount = Math.round(f*MB_PRICES['蛍光灯'] + m*MB_PRICES['水銀灯'] + b*MB_PRICES['電池'] + s*MB_PRICES['二次電池'] + bt*MB_PRICES['ボタン電池'] + fi + fa);
+  const totalAmount = Math.round(mbItemAmount('蛍光灯',f) + mbItemAmount('水銀灯',m) + mbItemAmount('電池',b) + mbItemAmount('二次電池',s) + mbItemAmount('ボタン電池',bt) + fi + fa);
 
   const payload = {
     record_date: date,
@@ -4867,7 +4932,10 @@ function mbiBuildBlocks(from, to){
     const lines = [];
     MB_CATEGORIES.forEach(c=>{
       const kg = Number(r[MBI_KG_FIELDS[c]]||0);
-      if(kg>0) lines.push({ key:`mb:${r.id}:${c}`, label:c, qty:`${kg.toLocaleString()}kg`, price:MB_PRICES[c], amount:Math.round(kg*Number(MB_PRICES[c]||0)) });
+      if(kg>0){
+        const lump = mbIsLump(c, kg); // 一式（2026年11月4日〜）
+        lines.push({ key:`mb:${r.id}:${c}`, label:c, qty:`${kg.toLocaleString()}kg`, price: lump ? '一式' : MB_PRICES[c], amount:Math.round(mbItemAmount(c, kg)) });
+      }
     });
     const fi = Number(r.intake_fee||0), fa = Number(r.admin_fee||0);
     if(fi) lines.push({ key:`mb:${r.id}:持込手数料`, label:'持込手数料', qty:'', price:null, amount:fi });
@@ -4962,7 +5030,7 @@ function mbiDraw(){
     const bInv = bEntered.reduce((s,g)=>s+g.invoice,0);
     const bOk = bEntered.length===b.groups.length && b.groups.every(g=>g.invoice===g.total);
     const title = b.rec ? `${toWareki(b.date)} 持ち込み${b.rec.note?`（${escIWHtml(b.rec.note)}）`:''}` : `${toWareki(b.date)} 購入のみ`;
-    const warn = b.rec && b.recDiff ? `<div class="mbi-warn">※この持ち込みの記録の金額合計（${yen(b.rec.total_amount)}）と、今の単価で計算した品物ごとの金額の合計がちがいます（${sign(b.recDiff)}）。記録したあとで単価表を変えた可能性があります。</div>` : '';
+    const warn = b.rec && b.recDiff ? `<div class="mbi-warn">※この持ち込みの記録の金額合計（${yen(b.rec.total_amount)}）と、今の単価で計算した品物ごとの金額の合計がちがいます（${sign(b.recDiff)}）。記録したあとで単価表（一式の金額を含む）を変えた可能性があります。</div>` : '';
     const rowsHtml = b.groups.map(g=>g.lines.map((l,j)=>{
       const first = j===0;
       const isBlockFirst = (g===b.groups[0] && first);
@@ -4971,7 +5039,7 @@ function mbiDraw(){
       let cells = `
         <td class="mbi-item">${escIWHtml(l.label)}${l.isMat?'<span class="mbi-tag">購入</span>':''}</td>
         <td class="num">${l.qty}</td>
-        <td class="num">${l.price===null||l.price===undefined?'':Number(l.price).toLocaleString()}</td>
+        <td class="num">${l.price===null||l.price===undefined?'':(typeof l.price==='string'?l.price:Number(l.price).toLocaleString())}</td>
         <td class="num">${l.amount.toLocaleString()}</td>
         <td style="text-align:center;">${isBlockFirst?'':`<input type="checkbox" ${merged?'checked':''} onchange="onMbiMergeChange('${keyAttr}', this)" title="上の行と1枚の請求書にまとめる">`}</td>`;
       if(first){
