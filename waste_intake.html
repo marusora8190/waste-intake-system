@@ -5247,17 +5247,58 @@ function onMbiKey(e, el){
     el.blur();
   }
 }
-// 下の「請求書の一覧」用：新しい形で入れた請求書の金額を、持ち込み（購入）の月ごとに足す
-function mbiMonthlyFromLines(){
-  const map = {};
+// 下の「請求書の一覧」（野村興産㈱）：請求書1枚ずつを、持ち込み（購入）の日の新しい順に出す（2026年11月4日〜）。
+// 請求書の金額を入れたものと、支払済にしたものを出す。
+// それまでの「1か月に1つの金額」（mb_invoices。2026年11月3日までの入れ方）は、新しい形の入力が無い月だけ「○月分（月の合計）」として出す
+const MBI_HISTORY_YEARS = 2; // 出すのは、いちばん新しい日から2年分
+function mbiGroupLabel(g){
+  if(g.batt) return '廃電池関係';
+  const l = g.head;
+  if(l.feeKind || l.isMat) return l.label;
+  return { '蛍光灯':'廃蛍光灯', '水銀灯':'廃水銀灯' }[l.label] || l.label;
+}
+function mbiHistoryHtml(oldRows){
+  const head = (sumText)=> `<div class="inv-history-head"><div class="form-title">請求書の一覧</div><span class="inv-history-sum">${sumText}</span></div>`;
+  const items = [];
+  const newMonths = {};
   mbiBuildBlocks('0000-01-01','9999-12-31').forEach(b=>{
     b.groups.forEach(g=>{
-      if(g.invoice===null) return;
-      const k = b.date.slice(0,7);
-      map[k] = (map[k]||0) + g.invoice;
+      if(g.invoice===null && !g.paid) return;
+      items.push({ date:b.date, label:mbiGroupLabel(g), manifest:g.manifest, amount:g.invoice, paid:g.paid, total:g.total });
+      newMonths[b.date.slice(0,7)] = true;
     });
   });
-  return map;
+  (oldRows||[]).forEach(r=>{
+    const k = `${r.billing_year}-${String(r.billing_month).padStart(2,'0')}`;
+    if(newMonths[k]) return;
+    items.push({ date:`${k}-99`, month:true, label:`${invMonthLabel(r.billing_year, r.billing_month)}（月の合計）`, manifest:'', amount:Number(r.amount||0), paid:false });
+  });
+  items.sort((a,b)=> a.date===b.date ? 0 : (a.date<b.date?1:-1));
+  if(items.length===0){
+    return head('') + `<div class="table-wrap"><table><tbody><tr><td>保存した請求書はまだありません</td></tr></tbody></table></div>`;
+  }
+  // いちばん新しい日から2年分だけ出す（それより古いものはデータベースに残る）
+  const latest = items[0].date.slice(0,10);
+  const cut = `${Number(latest.slice(0,4))-MBI_HISTORY_YEARS}${latest.slice(4,10)}`;
+  const shown = items.filter(x=> x.date.slice(0,10) > cut);
+  const hidden = items.length - shown.length;
+  const sum = shown.reduce((t,x)=>t+(x.amount||0),0);
+  const dateLabel = (x)=> x.month ? '' : toWareki(x.date);
+  const body = shown.map((x,i)=>{
+    const sep = i>0 && x.date.slice(0,7)!==shown[i-1].date.slice(0,7) ? ' class="inv-history-sep"' : '';
+    return `<tr${sep}>
+      <td style="text-align:center;white-space:nowrap;">${dateLabel(x)}</td>
+      <td style="white-space:nowrap;">${escIWHtml(x.label)}</td>
+      <td style="white-space:nowrap;">${escIWHtml(x.manifest||'')}</td>
+      <td class="num">${x.amount===null?'（未入力）':Number(x.amount).toLocaleString()+'円'}</td>
+      <td style="text-align:center;" class="${x.paid?'mbi-paid-mark':''}">${x.paid?'支払済':''}</td>
+    </tr>`;
+  }).join('');
+  return head(`${shown.length}件 ／ 合計 ${sum.toLocaleString()}円`) + `<div class="inv-history-block"><div class="table-wrap"><table>
+      <thead><tr><th>持ち込んだ日</th><th>請求書</th><th>マニフェスト番号</th><th>請求書金額</th><th>支払済</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table></div></div>
+    <div class="field-hint" style="margin-top:8px;">請求書1枚ずつを、持ち込んだ日の新しい順に出します（いちばん新しい日から2年分${hidden?`。それより古い${hidden}件は出していません。データは消えていません`:''}）。「○月分（月の合計）」は、2026年11月3日までの入れ方（1か月に1つの金額）で入れたものです。金額を直すときは、上の表で入れ直してください。</div>`;
 }
 
 function getMIWBillingGroup(vendorName){
@@ -5698,13 +5739,8 @@ async function renderInvoiceHistory(kind){
   try{
     let rows = await sbAll(cfg.path);
     if(kind==='miw') rows = rows.filter(r=> !isMBIMatVendor(r.vendor_name));
-    // 野村興産㈱：持ち込んだ日×品物ごとに入れた請求書（mb_invoice_lines。2026年11月4日〜）を月ごとに足して出す。
-    // その形の入力が無い月だけ、それまでの「1か月に1つの金額」（mb_invoices）を出す
-    if(kind==='mb'){
-      const monthly = mbiMonthlyFromLines();
-      rows = rows.filter(r=> !monthly[`${r.billing_year}-${String(r.billing_month).padStart(2,'0')}`]);
-      Object.keys(monthly).forEach(k=> rows.push({ billing_year:k.slice(0,4), billing_month:String(Number(k.slice(5,7))), amount:monthly[k] }));
-    }
+    // 野村興産㈱：請求書1枚ずつの一覧にする（2026年11月4日〜。部品 mbiHistoryHtml）
+    if(kind==='mb'){ el.innerHTML = mbiHistoryHtml(rows); return; }
     rows.sort((a,b)=>{
       const ka = Number(a.billing_year)*100 + Number(a.billing_month);
       const kb = Number(b.billing_year)*100 + Number(b.billing_month);
