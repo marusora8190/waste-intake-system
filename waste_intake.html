@@ -196,6 +196,20 @@
   .invoice-total-row{display:flex;gap:24px;flex-wrap:wrap;}
   /* 請求書照合の下の「請求書の一覧」（2026年11月2日〜） */
   .inv-history{margin-top:28px;}
+  .mbi-block{margin-top:22px;}
+  .mbi-block-head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin-bottom:6px;font-size:13px;color:var(--ink-dark);}
+  .mbi-block-title{font-size:15px;font-weight:700;}
+  .mbi-warn{font-size:12px;color:#c0392b;margin-bottom:6px;}
+  .mbi-table th{text-align:center;white-space:nowrap;}
+  .mbi-table td{vertical-align:middle;}
+  .mbi-table tr.mbi-group-start td{border-top:2px solid #b9b09c;}
+  .mbi-item{white-space:nowrap;}
+  .mbi-tag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;background:var(--accent-bg);font-size:11px;}
+  .mbi-input{width:96px;padding:4px 8px;border:1px solid #d8d1c2;border-radius:6px;font-size:14px;font-family:inherit;text-align:right;}
+  .mbi-input.mbi-manifest{width:120px;text-align:left;}
+  .mbi-input.mbi-tax-edited{background:#fff4d6;border-color:#e0b04a;}
+  .mbi-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;}
+  .mbi-link{border:none;background:none;color:#1971c2;text-decoration:underline;cursor:pointer;font-size:11px;padding:0 0 0 4px;font-family:inherit;}
   .inv-history-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px;}
   .inv-history-head .form-title{margin:0;}
   .inv-history-head .inv-history-sum{color:var(--ink-dark);font-size:14px;font-weight:700;}
@@ -210,6 +224,7 @@
   .inv-history-groups-2col .inv-history-blocks{flex-direction:column;gap:22px;} /* 半年ごとの塊は縦に1つずつ（①ごみと同じ並べ方。2026年11月2日〜） */
   .inv-history-groups-2col .inv-history-group:nth-child(2n){border-left:1px solid var(--line);padding-left:28px;}
   @media (max-width:600px){
+    .mbi-input{font-size:16px;}
     .inv-history-groups-2col{grid-template-columns:minmax(0,1fr);}
     .inv-history-groups-2col .inv-history-group:nth-child(2n){border-left:0;padding-left:0;}
   }
@@ -1227,7 +1242,7 @@
       <span style="color:var(--muted);">〜</span>
       <input type="date" id="mbi-date-to" class="period-date-input" onchange="renderMBInvoiceTab()">
     </div>
-    <div class="field-hint" style="margin-bottom:14px;">指定した期間の記録からシステム集計を計算し、請求書の合計金額と突き合わせます。システム集計は、蛍光灯・水銀灯・電池処理の記録一覧の金額合計（持込手数料・事務手数料を含む）に、再生資材・雑品購入のうち野村興産㈱の分を足したものです。請求書の合計金額は、システム集計に消費税（10％。1円未満は切り捨て）を足した「合計」とくらべます。保存した金額は期間の終了日が属する月の請求分として記録されます。</div>
+    <div class="field-hint" style="margin-bottom:14px;">野村興産㈱からは、同じ日の持ち込みでも品物ごと（マニフェストごと）に請求書が届くため、持ち込んだ日ごとに、品物別のシステム金額と請求書の金額をくらべます。品物の金額は「重さ×単価表の単価」です。持込手数料・事務手数料と、同じ日の再生資材・雑品購入（野村興産㈱）も1行ずつ出します。届いた請求書の金額（税込）を、その品物の行に入れてください（欄の外を押すかエンターで保存）。何品かが1枚の請求書になっているときは、2行目から「上と同じ請求書」にチェックを入れます。消費税は請求書1枚ごとに自動で計算します（10％・1円未満は切り捨て）。請求書とちがうときは、消費税の欄を直してください（空にすると自動に戻ります）。</div>
     <div id="mbi-total-card"></div>
     <div id="mbi-history" class="inv-history"></div>
   </div>
@@ -1519,7 +1534,7 @@
         <div class="settings-body">
           <ul>
             <li>天理市ごみ処分場の計量票（元はExcel）をWeb化したものです。カードNo.から車番を自動で出し、正味重量と手数料を自動で計算します。</li>
-            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕のシステム集計は、この金額合計に再生資材・雑品購入の野村興産㈱の分を足したもの。請求書の合計金額は、システム集計に消費税〔10％。1円未満は切り捨て〕を足した合計とくらべる。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
+            <li>使っているデータの表：①ごみ … waste_records（持込記録。2026年10月9日に「備考」の欄を追加）・card_vehicle_map（カード車番対応表）／②産業廃棄物 … industrial_waste_records（記録）・industrial_waste_price_list（単価表。2026年10月29日に「単位」〔unit〕・「持ち込み条件」〔conditions〕の欄を追加し、同じ品名でも単位がちがえば別の行にできるようにした〔例：木くずA1 のｔと㎥〕。廃材入力では、品名を選ぶと単価表の単位〔ｔ・㎥・枚のとき〕も入る。左のメニューでは業者ごとに分けて出す〔はじめは ㈱ITO奈良・㈱ITO天理・㈱ガイアート。「＋ 業者を追加」で業者を足せ、単価を1件登録すると次からもメニューに出る。2026年10月29日〜〕）／蛍光灯・水銀灯・電池 … mb_records（記録。2026年10月28日に「持込手数料」「事務手数料」〔円。金額合計に足す〕の欄を追加。請求書照合〔野村興産㈱〕は、2026年11月4日から、持ち込んだ日×品物ごとに請求書の金額をくらべる〔品物の金額＝重さ×単価、持込手数料・事務手数料・同じ日の再生資材・雑品購入〔野村興産㈱〕も1行ずつ。「上と同じ請求書」で何行かを1枚にまとめられる。消費税は請求書1枚ごとに自動〔10％。1円未満は切り捨て〕で、違うときは直せる。表：mb_invoice_lines〕。野村興産㈱の分は、請求書照合〔業者×月。㈱ITO・㈱ガイアート〕には出さない。請求書照合〔業者×月〕も、業者ごとのシステム集計に消費税〔10％。1円未満は切り捨て。2026年10月29日〜〕を足した合計〔税込〕を請求書の金額とくらべる）・mb_price_list（単価表）・mb_invoices（請求書。1か月に1つの金額。2026年11月3日までの入力）・mb_invoice_lines（請求書。持ち込んだ日×品物ごと。2026年11月4日〜）／再生資材・雑品 … material_purchases（購入記録）・material_price_list（単価表）・material_invoices（請求書）／廃棄物処理委託契約書 … waste_contracts（2026年10月14日〜。工事名・契約相手会社〔㈱ガイアート・㈱ITO・野村興産㈱などから選ぶ。「＋ 会社を追加…」で会社を足せる〔10月16日〜〕。10月15日〜〕・契約区分〔収集運搬用・処分用・収集運搬及び処分用から選ぶ。10月15日〜〕・排出場所・委託期間（和暦で入力。年号は選べて、マスター管理の「年号」〔表：waste_contract_eras〕で足せる。年を4けたで入れると西暦扱い〔10月17日〜〕。一覧では R8.10.2～R9.10.1 の形で表示。保存は日付。一覧は保存期限〔終了日の5年後〕の古い順・新しい順に並び替えできる）・積替・保管施設の有無と、廃棄物種類・予定数量・単位〔ｔ・㎥・台〕の行・保存期限〔一覧の列。委託期間終了日の5年後の日付を出す。10月16日〜。それまでは「備考」の列で手入力〕。一覧の見出しは、画面全体を下へずらしても画面の上に残る〔10月16日〜〕。一覧では、委託期間中〔始まりの日〜終了日〕の契約書の行が薄い黄色になり、終了日が過ぎると色が消える〔10月16日〜〕。入力はエンターキーで次の欄へ進む〔10月15日〜〕。合計予定数量は入力欄で単位ごとに足して出し、保存はしない。一覧には合計予定数量の列は無い）。</li>
             <li>データベース（Supabase）は、②③④⑥と同じ「スパーベース」プロジェクトを共用しています。</li>
             <li>②産業廃棄物のサイドバーの「入　力」の中に、「産業廃棄物」「蛍光灯・水銀灯・電池」「再生材・雑品」の3つの入力画面を、「一　覧」の中に同じ3つの一覧（蛍光灯・水銀灯・電池の一覧は、2026年10月30日に入力画面の下から移した。「編集」を押すと入力画面へ移る）をまとめています。蛍光灯・水銀灯・電池の単価（円/㎏。表：mb_price_list）は、サイドバーの「廃材単価表」の中の「蛍光灯・水銀灯・電池」で設定します（2026年10月30日〜。それまでは「蛍光灯・水銀灯・電池処理」の画面の上にありました）。再生資材・雑品の単価表も、「廃材単価表」の中の「再生材・雑品」から開きます（2026年10月30日〜）。「入　力」「一　覧」「廃材単価表」の見出しを押すと、その下の項目が出ます（開くのは1つだけ。もう一度押すと閉じる。画面を切り替えると、その画面の見出しが自動で開く。2026年10月31日〜）。</li>
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
@@ -4793,16 +4808,24 @@ function exportMatListToExcel(){
 }
 
 /* ---------- 産廃：請求書照合タブ（業者×月） ---------- */
-/* ---------- 蛍光灯等：請求書照合タブ（月ベースの単純な照合） ---------- */
-// システム集計＝蛍光灯・水銀灯・電池処理の記録一覧の金額合計（重さ×単価＋持込手数料＋事務手数料）
-//              ＋再生資材・雑品購入のうち、この業者（野村興産㈱）の分（2026年10月28日〜）
-// 野村興産㈱の分は「請求書照合（業者×月）」〔㈱ITO・㈱ガイアート〕には出さない（2026年10月28日〜。利用者の希望）
-// 請求書の合計金額は「システム集計＋消費税（10％。1円未満は切り捨て）」とくらべる（2026年10月28日〜）
+/* ---------- 蛍光灯等：請求書照合タブ（持ち込んだ日×品物ごと。2026年11月4日〜） ---------- */
+// 野村興産㈱は、同じ日の持ち込みでも、品物ごと（産業廃棄物管理票〔マニフェスト〕ごと）に請求書が届くため、
+// 持ち込みの記録1件ごとに品物別のシステム金額を出し、その横に請求書の金額を1枚ずつ入れてくらべる。
+// ・品物の金額＝重さ×今の単価表の単価。持込手数料・事務手数料も1行ずつ。
+//   同じ日の再生資材・雑品購入（野村興産㈱）も1行ずつ（同じ日の持ち込みが無ければ、購入だけのまとまりを作る）
+// ・「上と同じ請求書」にチェックすると、上の行と1枚の請求書にまとめる（消費税はまとめた金額で計算）
+// ・消費税は請求書1枚ごとに自動で計算（10％・1円未満は切り捨て）。違うときは直せる（空にすると自動に戻る）
+// ・保存先：mb_invoice_lines（line_key で1行。請求書の金額・消費税・マニフェスト番号は、まとまりの先頭の行に入れる）
+// ・それまでの「1か月に1つの金額」（mb_invoices）は残し、下の「請求書の一覧」で、新しい形の入力が無い月だけ出す
 const MBI_MAT_VENDOR = '野村興産㈱';
 const MBI_TAX_RATE = 0.10;
-// 消費税（10％・1円未満は切り捨て）。小数の計算の誤差が出ないよう、整数にしてから計算する（請求書照合〔業者×月〕で使う。2026年10月29日〜）
+// 消費税（10％・1円未満は切り捨て）。小数の計算の誤差が出ないよう、整数にしてから計算する（請求書照合〔業者×月〕でも使う。2026年10月29日〜）
 function calcTax10(amount){ return Math.floor(Math.round(Number(amount||0) * 100) * Math.round(MBI_TAX_RATE * 100) / 10000); }
 function isMBIMatVendor(name){ return String(name||'').replace(/\s/g,'').includes('野村興産'); }
+const MBI_KG_FIELDS = { '蛍光灯':'fluorescent_kg', '水銀灯':'mercury_lamp_kg', '電池':'battery_kg', '二次電池':'secondary_battery_kg', 'ボタン電池':'button_battery_kg' };
+let MBI_LINES = {};          // line_key → 保存した行
+let MBI_PENDING_FOCUS = null; // エンターで次の欄へ進むとき、描き直したあとに入る欄の番号
+
 async function loadMBInvoiceTab(){
   const fromEl = document.getElementById('mbi-date-from');
   const toEl = document.getElementById('mbi-date-to');
@@ -4811,10 +4834,75 @@ async function loadMBInvoiceTab(){
     toEl.value = todayStr();
     fromEl.dataset.populated = '1';
   }
+  document.getElementById('mbi-total-card').innerHTML = '<div class="list-summary">読み込み中…</div>';
+  // 品物ごとの金額を出すため、単価表・持ち込みの記録・購入の記録を読み直す
+  await Promise.all([loadMBPriceList(), loadMBRecords(), loadMatRecords()]);
   await renderMBInvoiceTab();
 }
 
 async function renderMBInvoiceTab(){
+  const el = document.getElementById('mbi-total-card');
+  try{
+    const rows = await sbAll('mb_invoice_lines?select=*');
+    MBI_LINES = {};
+    (rows||[]).forEach(r=>{ MBI_LINES[r.line_key] = r; });
+  }catch(e){
+    el.innerHTML = `<div class="list-summary">読み込みに失敗しました: ${e.message}</div>`;
+    console.error(e);
+    return;
+  }
+  mbiDraw();
+  renderInvoiceHistory('mb');
+}
+
+// 期間の中の持ち込み（と購入）を、日付の順のまとまりにする。各まとまりの行は、請求書ごとのまとまり（groups）に分ける
+function mbiBuildBlocks(from, to){
+  const inRange = (d)=> d && d>=from && d<=to;
+  const recs = ALL_MB_RECORDS.filter(r=> inRange(r.record_date))
+    .sort((a,b)=> a.record_date===b.record_date ? a.id-b.id : (a.record_date<b.record_date?-1:1));
+  const mats = ALL_MAT_RECORDS.filter(r=> inRange(r.purchase_date) && isMBIMatVendor(r.vendor_name))
+    .sort((a,b)=> a.purchase_date===b.purchase_date ? a.id-b.id : (a.purchase_date<b.purchase_date?-1:1));
+  const blocks = [];
+  recs.forEach(r=>{
+    const lines = [];
+    MB_CATEGORIES.forEach(c=>{
+      const kg = Number(r[MBI_KG_FIELDS[c]]||0);
+      if(kg>0) lines.push({ key:`mb:${r.id}:${c}`, label:c, qty:`${kg.toLocaleString()}kg`, price:MB_PRICES[c], amount:Math.round(kg*Number(MB_PRICES[c]||0)) });
+    });
+    const fi = Number(r.intake_fee||0), fa = Number(r.admin_fee||0);
+    if(fi) lines.push({ key:`mb:${r.id}:持込手数料`, label:'持込手数料', qty:'', price:null, amount:fi });
+    if(fa) lines.push({ key:`mb:${r.id}:事務手数料`, label:'事務手数料', qty:'', price:null, amount:fa });
+    const sumLines = lines.reduce((s,l)=>s+l.amount,0);
+    blocks.push({ date:r.record_date, rec:r, lines, recDiff: Number(r.total_amount||0) - sumLines });
+  });
+  mats.forEach(m=>{
+    let b = blocks.find(x=> x.date===m.purchase_date);
+    if(!b){ b = { date:m.purchase_date, rec:null, lines:[], recDiff:0 }; blocks.push(b); }
+    b.lines.push({ key:`mat:${m.id}`, label:m.item_name || '（品名なし）', qty:`${Number(m.quantity||0).toLocaleString()}${m.unit||''}`, price:m.unit_price, amount:Number(m.amount||0), isMat:true });
+  });
+  blocks.sort((a,b)=> a.date===b.date ? 0 : (a.date<b.date?-1:1));
+  blocks.forEach(b=>{
+    b.groups = [];
+    b.lines.forEach((l,i)=>{
+      const saved = MBI_LINES[l.key] || {};
+      if(i===0 || !saved.merge_up) b.groups.push({ head:l, lines:[] });
+      b.groups[b.groups.length-1].lines.push(l);
+    });
+    b.groups.forEach(g=>{
+      const s = MBI_LINES[g.head.key] || {};
+      g.sys = g.lines.reduce((t,l)=>t+l.amount,0);
+      g.autoTax = calcTax10(g.sys);
+      g.taxEdited = (s.tax_amount !== null && s.tax_amount !== undefined);
+      g.tax = g.taxEdited ? Number(s.tax_amount) : g.autoTax;
+      g.total = g.sys + g.tax;
+      g.invoice = (s.invoice_amount === null || s.invoice_amount === undefined) ? null : Number(s.invoice_amount);
+      g.manifest = s.manifest_no || '';
+    });
+  });
+  return blocks;
+}
+
+function mbiDraw(){
   const from = document.getElementById('mbi-date-from').value;
   const to = document.getElementById('mbi-date-to').value;
   const el = document.getElementById('mbi-total-card');
@@ -4822,88 +4910,195 @@ async function renderMBInvoiceTab(){
     el.innerHTML = '<div class="list-summary">集計期間（開始日・終了日）を選択してください</div>';
     return;
   }
-  el.innerHTML = '<div class="list-summary">読み込み中…</div>';
-  try{
-    const year = to.slice(0,4);
-    const month = to.slice(5,7);
-    const rows = await sb(`mb_invoices?select=*&billing_year=eq.${year}&billing_month=eq.${month}`);
-    const totalRow = (rows && rows.length>0) ? rows[0] : null;
+  const blocks = mbiBuildBlocks(from, to);
+  const allGroups = blocks.reduce((a,b)=>a.concat(b.groups),[]);
+  const sysTotal = allGroups.reduce((s,g)=>s+g.sys,0);
+  const taxTotal = allGroups.reduce((s,g)=>s+g.tax,0);
+  const grand = sysTotal + taxTotal;
+  const entered = allGroups.filter(g=>g.invoice!==null);
+  const invTotal = entered.reduce((s,g)=>s+g.invoice,0);
+  const missing = allGroups.length - entered.length;
+  const diff = invTotal - grand;
+  const okAll = allGroups.length>0 && missing===0 && allGroups.every(g=>g.invoice===g.total);
+  const ngCount = entered.filter(g=>g.invoice!==g.total).length;
+  const yen = (n)=> Number(n).toLocaleString() + '円';
+  const sign = (n)=> (n>0?'+':'') + Number(n).toLocaleString() + '円';
+  let idx = 0;
 
-    const periodRecords = ALL_MB_RECORDS.filter(r=> r.record_date && r.record_date>=from && r.record_date<=to);
-    const periodLabel = `${toWareki(from)} 〜 ${toWareki(to)}`;
-    const mbTotal = periodRecords.reduce((s,r)=>s+Number(r.total_amount||0),0);
-    const periodMat = ALL_MAT_RECORDS.filter(r=> r.purchase_date && r.purchase_date>=from && r.purchase_date<=to && isMBIMatVendor(r.vendor_name));
-    const matTotal = periodMat.reduce((s,r)=>s+Number(r.amount||0),0);
-    const sysTotal = mbTotal + matTotal;
-    const taxAmount = Math.floor(Math.round(sysTotal * 100) * Math.round(MBI_TAX_RATE * 100) / 10000); // 小数の計算の誤差が出ないよう、整数にしてから計算する
-    const grandTotal = sysTotal + taxAmount;
-
-    const billedTotal = totalRow ? Number(totalRow.amount) : null;
-    const diff = billedTotal===null ? null : billedTotal - grandTotal;
-    el.innerHTML = `
-      <div class="invoice-total-row">
-        <div class="summary-total-card">
-          <div class="label">請求書の合計金額(${year}年${Number(month)}月分として保存)</div>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
-            <input type="text" inputmode="numeric" id="mbi-total-input" value="${billedTotal===null?'':billedTotal.toLocaleString()}" placeholder="例: 46,200" style="width:140px;padding:6px 10px;border:1px solid #d8d1c2;border-radius:7px;font-size:14px;font-family:inherit;text-align:right;">
-            <button class="btn" onclick="saveMBInvoiceTotal()">保存</button>
-          </div>
-        </div>
-        <div class="summary-total-card">
-          <div class="label">システム集計（${periodLabel}）</div>
-          <div class="value" style="font-size:18px;">${sysTotal.toLocaleString()}円</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6;">蛍光灯・水銀灯・電池処理（${periodRecords.length}件）：${mbTotal.toLocaleString()}円<br>再生資材・雑品購入（${MBI_MAT_VENDOR}・${periodMat.length}件）：${matTotal.toLocaleString()}円</div>
-        </div>
-        <div class="summary-total-card">
-          <div class="label">消費税（10％）</div>
-          <div class="value" style="font-size:18px;">${taxAmount.toLocaleString()}円</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:4px;">1円未満は切り捨て</div>
-        </div>
-        <div class="summary-total-card">
-          <div class="label">合計（システム集計＋消費税）</div>
-          <div class="value" style="font-size:18px;">${grandTotal.toLocaleString()}円</div>
-        </div>
-        <div class="summary-total-card">
-          <div class="label">差額(請求書 − 合計)</div>
-          <div class="value ${billedTotal===null?'':(diff===0?'invoice-ok':'invoice-ng')}" style="font-size:18px;">${billedTotal===null?'-':(diff>0?'+':'')+diff.toLocaleString()+'円'}</div>
-        </div>
+  const summary = `
+    <div class="invoice-total-row">
+      <div class="summary-total-card">
+        <div class="label">システム集計（${toWareki(from)} 〜 ${toWareki(to)}・税抜）</div>
+        <div class="value" style="font-size:18px;">${yen(sysTotal)}</div>
       </div>
-    `;
-    attachThousandsFormatting(document.getElementById('mbi-total-input'));
-    renderInvoiceHistory('mb');
-  }catch(e){
-    el.innerHTML = `<div class="list-summary">読み込みに失敗しました: ${e.message}</div>`;
-    console.error(e);
+      <div class="summary-total-card">
+        <div class="label">消費税（請求書1枚ごと）</div>
+        <div class="value" style="font-size:18px;">${yen(taxTotal)}</div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">合計（税込）</div>
+        <div class="value" style="font-size:18px;">${yen(grand)}</div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">請求書の金額の合計（${entered.length}／${allGroups.length}枚 入力済み）</div>
+        <div class="value" style="font-size:18px;">${yen(invTotal)}</div>
+      </div>
+      <div class="summary-total-card">
+        <div class="label">差額（請求書 − 合計）</div>
+        <div class="value ${entered.length===0?'':(okAll?'invoice-ok':'invoice-ng')}" style="font-size:18px;">${entered.length===0?'-':sign(diff)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">${allGroups.length===0?'':(okAll?'すべて一致しています':`${missing?`未入力 ${missing}枚`:''}${missing&&ngCount?'・':''}${ngCount?`不一致 ${ngCount}枚`:''}`)}</div>
+      </div>
+    </div>`;
+
+  if(blocks.length===0){
+    el.innerHTML = summary + '<div class="list-summary" style="margin-top:14px;">この期間の持ち込み・購入（野村興産㈱）の記録はありません</div>';
+    return;
+  }
+
+  const blockHtml = blocks.map(b=>{
+    const bSys = b.groups.reduce((s,g)=>s+g.sys,0);
+    const bTotal = b.groups.reduce((s,g)=>s+g.total,0);
+    const bEntered = b.groups.filter(g=>g.invoice!==null);
+    const bInv = bEntered.reduce((s,g)=>s+g.invoice,0);
+    const bOk = bEntered.length===b.groups.length && b.groups.every(g=>g.invoice===g.total);
+    const title = b.rec ? `${toWareki(b.date)} 持ち込み${b.rec.note?`（${escIWHtml(b.rec.note)}）`:''}` : `${toWareki(b.date)} 購入のみ`;
+    const warn = b.rec && b.recDiff ? `<div class="mbi-warn">※この持ち込みの記録の金額合計（${yen(b.rec.total_amount)}）と、今の単価で計算した品物ごとの金額の合計がちがいます（${sign(b.recDiff)}）。記録したあとで単価表を変えた可能性があります。</div>` : '';
+    const rowsHtml = b.groups.map(g=>g.lines.map((l,j)=>{
+      const first = j===0;
+      const isBlockFirst = (g===b.groups[0] && first);
+      const merged = !!(MBI_LINES[l.key] && MBI_LINES[l.key].merge_up) && !isBlockFirst;
+      const keyAttr = escIWHtml(l.key);
+      let cells = `
+        <td class="mbi-item">${escIWHtml(l.label)}${l.isMat?'<span class="mbi-tag">購入</span>':''}</td>
+        <td class="num">${l.qty}</td>
+        <td class="num">${l.price===null||l.price===undefined?'':Number(l.price).toLocaleString()}</td>
+        <td class="num">${l.amount.toLocaleString()}</td>
+        <td style="text-align:center;">${isBlockFirst?'':`<input type="checkbox" ${merged?'checked':''} onchange="onMbiMergeChange('${keyAttr}', this)" title="上の行と1枚の請求書にまとめる">`}</td>`;
+      if(first){
+        const rs = g.lines.length>1 ? ` rowspan="${g.lines.length}"` : '';
+        const hk = escIWHtml(g.head.key);
+        const d = g.invoice===null ? null : g.invoice - g.total;
+        const tIdx = idx++, iIdx = idx++, mIdx = idx++;
+        cells += `
+        <td class="num mbi-tax"${rs}>
+          <input type="text" inputmode="numeric" class="mbi-input${g.taxEdited?' mbi-tax-edited':''}" data-mbi-idx="${tIdx}" value="${g.tax.toLocaleString()}" onchange="onMbiTaxChange('${hk}', this)" onkeydown="onMbiKey(event, this)">
+          <div class="mbi-sub">${g.taxEdited?`直した（自動は${g.autoTax.toLocaleString()}円）<button class="mbi-link" onclick="mbiTaxAuto('${hk}')">自動に戻す</button>`:'自動'}</div>
+        </td>
+        <td class="num"${rs}>${g.total.toLocaleString()}</td>
+        <td class="num"${rs}><input type="text" inputmode="numeric" class="mbi-input" data-mbi-idx="${iIdx}" value="${g.invoice===null?'':g.invoice.toLocaleString()}" onchange="onMbiInvoiceChange('${hk}', this)" onkeydown="onMbiKey(event, this)"></td>
+        <td class="num ${d===null?'':(d===0?'invoice-ok':'invoice-ng')}"${rs}>${d===null?'-':(d===0?'一致':sign(d))}</td>
+        <td${rs}><input type="text" class="mbi-input mbi-manifest" data-mbi-idx="${mIdx}" value="${escIWHtml(g.manifest)}" onchange="onMbiManifestChange('${hk}', this)" onkeydown="onMbiKey(event, this)"></td>`;
+      }
+      return `<tr class="${first&&!isBlockFirst?'mbi-group-start':''}">${cells}</tr>`;
+    }).join('')).join('');
+    return `<div class="mbi-block">
+      <div class="mbi-block-head">
+        <span class="mbi-block-title">${title}</span>
+        <span>請求書 ${b.groups.length}枚（入力済み ${bEntered.length}枚）／ システム ${yen(bSys)}・税込 ${yen(bTotal)}／ 請求書 ${yen(bInv)}</span>
+        ${bEntered.length?`<span class="${bOk?'invoice-ok':'invoice-ng'}">${bOk?'一致':(bEntered.length<b.groups.length?'未入力あり':'不一致あり')}</span>`:''}
+      </div>
+      ${warn}
+      <div class="table-wrap"><table class="mbi-table">
+        <thead><tr><th>品物</th><th>数量</th><th>単価</th><th>金額<br>（税抜）</th><th>上と同じ<br>請求書</th><th>消費税</th><th>合計<br>（税込）</th><th>請求書の金額<br>（税込）</th><th>差額</th><th>マニフェスト番号</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+
+  // 描き直す前に入っていた欄（ほかの欄を押して保存されたとき）に、描き直したあとも入ったままにする
+  const act = document.activeElement;
+  if(MBI_PENDING_FOCUS===null && act && act.dataset && act.dataset.mbiIdx!==undefined && el.contains(act)) MBI_PENDING_FOCUS = Number(act.dataset.mbiIdx);
+  el.innerHTML = summary + blockHtml;
+  ['.mbi-input:not(.mbi-manifest)'].forEach(sel=> el.querySelectorAll(sel).forEach(attachThousandsFormatting));
+  if(MBI_PENDING_FOCUS !== null){
+    const next = el.querySelector(`[data-mbi-idx="${MBI_PENDING_FOCUS}"]`);
+    MBI_PENDING_FOCUS = null;
+    if(next){ next.focus(); if(next.select) next.select(); }
   }
 }
 
-async function saveMBInvoiceTotal(){
-  const to = document.getElementById('mbi-date-to').value;
-  if(!to){ showToast('集計期間を選択してください'); return; }
-  const year = to.slice(0,4);
-  const month = to.slice(5,7);
-  const val = document.getElementById('mbi-total-input').value;
-  const numVal = parseCommaNumber(val);
-  if(val === '' || isNaN(numVal)){ showToast('金額を入力してください'); return; }
+// 1行を保存する（line_key で、あれば書き換え・無ければ足す）
+async function mbiSave(key, fields){
+  const ids = key.startsWith('mat:') ? { material_purchase_id: Number(key.slice(4)) } : { mb_record_id: Number(key.split(':')[1]) };
+  const body = { line_key:key, ...ids, ...fields, updated_at:new Date().toISOString() };
   try{
-    const existing = await sb(`mb_invoices?select=id&billing_year=eq.${year}&billing_month=eq.${month}`);
-    if(existing && existing.length>0){
-      await sb(`mb_invoices?id=eq.${existing[0].id}`, {
-        method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ amount: numVal, updated_at: new Date().toISOString() })
-      });
-    }else{
-      await sb('mb_invoices', {
-        method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ billing_year: year, billing_month: month, amount: numVal })
-      });
-    }
-    showToast('請求書合計金額を保存しました');
-    renderMBInvoiceTab();
+    const rows = await sb('mb_invoice_lines?on_conflict=line_key', {
+      method:'POST', headers:{'Prefer':'resolution=merge-duplicates,return=representation'},
+      body: JSON.stringify(body)
+    });
+    if(rows && rows[0]) MBI_LINES[key] = rows[0];
+    return true;
   }catch(e){
     showToast('保存に失敗しました: ' + e.message, 6000);
     console.error(e);
+    return false;
   }
+}
+function mbiNum(el){
+  const v = String(el.value||'').trim();
+  if(v==='') return null;
+  const n = parseCommaNumber(v);
+  return isNaN(n) ? NaN : Math.round(n);
+}
+async function onMbiInvoiceChange(key, el){
+  const n = mbiNum(el);
+  if(Number.isNaN(n)){ showToast('金額は数字で入れてください'); mbiDraw(); return; }
+  await mbiSave(key, { invoice_amount:n });
+  mbiDraw(); renderInvoiceHistory('mb');
+}
+async function onMbiTaxChange(key, el){
+  const n = mbiNum(el);
+  if(Number.isNaN(n)){ showToast('消費税は数字で入れてください'); mbiDraw(); return; }
+  // 自動の値と同じなら「直した」にしない（空にしたときも自動に戻す）
+  const blk = mbiBuildBlocks('0000-01-01','9999-12-31').reduce((a,b)=>a.concat(b.groups),[]).find(g=>g.head.key===key);
+  const val = (n===null || (blk && n===blk.autoTax)) ? null : n;
+  await mbiSave(key, { tax_amount:val });
+  mbiDraw();
+}
+async function mbiTaxAuto(key){
+  await mbiSave(key, { tax_amount:null });
+  mbiDraw();
+}
+async function onMbiManifestChange(key, el){
+  const v = String(el.value||'').trim();
+  await mbiSave(key, { manifest_no: v==='' ? null : v });
+  mbiDraw();
+}
+async function onMbiMergeChange(key, cb){
+  if(cb.checked){
+    const s = MBI_LINES[key] || {};
+    const hasVal = (s.invoice_amount!==null && s.invoice_amount!==undefined) || (s.tax_amount!==null && s.tax_amount!==undefined) || s.manifest_no;
+    if(hasVal && !confirm('この行に入れた請求書の金額・消費税・マニフェスト番号は消えて、上の行の請求書にまとめます。よろしいですか？')){ cb.checked = false; return; }
+    await mbiSave(key, { merge_up:true, invoice_amount:null, tax_amount:null, manifest_no:null });
+  }else{
+    await mbiSave(key, { merge_up:false });
+  }
+  mbiDraw(); renderInvoiceHistory('mb');
+}
+// エンターで次の欄へ（日本語の変換を決めるときのエンターでは進まない）
+function onMbiKey(e, el){
+  if(e.key!=='Enter' || isImeEnter(e)) return;
+  e.preventDefault();
+  const next = Number(el.dataset.mbiIdx) + 1;
+  if(el.value === el.defaultValue){
+    const n = document.querySelector(`#mbi-total-card [data-mbi-idx="${next}"]`);
+    if(n){ n.focus(); if(n.select) n.select(); }
+  }else{
+    MBI_PENDING_FOCUS = next;
+    el.blur();
+  }
+}
+// 下の「請求書の一覧」用：新しい形で入れた請求書の金額を、持ち込み（購入）の月ごとに足す
+function mbiMonthlyFromLines(){
+  const map = {};
+  mbiBuildBlocks('0000-01-01','9999-12-31').forEach(b=>{
+    b.groups.forEach(g=>{
+      if(g.invoice===null) return;
+      const k = b.date.slice(0,7);
+      map[k] = (map[k]||0) + g.invoice;
+    });
+  });
+  return map;
 }
 
 function getMIWBillingGroup(vendorName){
@@ -5344,6 +5539,13 @@ async function renderInvoiceHistory(kind){
   try{
     let rows = await sbAll(cfg.path);
     if(kind==='miw') rows = rows.filter(r=> !isMBIMatVendor(r.vendor_name));
+    // 野村興産㈱：持ち込んだ日×品物ごとに入れた請求書（mb_invoice_lines。2026年11月4日〜）を月ごとに足して出す。
+    // その形の入力が無い月だけ、それまでの「1か月に1つの金額」（mb_invoices）を出す
+    if(kind==='mb'){
+      const monthly = mbiMonthlyFromLines();
+      rows = rows.filter(r=> !monthly[`${r.billing_year}-${String(r.billing_month).padStart(2,'0')}`]);
+      Object.keys(monthly).forEach(k=> rows.push({ billing_year:k.slice(0,4), billing_month:String(Number(k.slice(5,7))), amount:monthly[k] }));
+    }
     rows.sort((a,b)=>{
       const ka = Number(a.billing_year)*100 + Number(a.billing_month);
       const kb = Number(b.billing_year)*100 + Number(b.billing_month);
