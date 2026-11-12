@@ -3324,6 +3324,7 @@ async function updateConfirmedInline(id, el){
     });
     const recAll = ALL_LIST_RECORDS.find(r => r.id === id);
     if(recAll) recAll.confirmed = value;
+    if(value) NEWLY_ADDED_IDS.delete(id); // ✔を入れたら新規の黄色の目印も外す（2026年11月12日〜）
     showToast(value ? '確認済みにしました' : '確認を外しました');
     renderListFiltered();
   }catch(e){
