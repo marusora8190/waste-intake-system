@@ -1681,23 +1681,118 @@ async function getAdminToken(){
 async function sb(path, opts={}){
   // 削除（DELETE）のときだけ管理者としてログインした鍵を使う
   const bearer = String(opts.method || '').toUpperCase() === 'DELETE' ? await getAdminToken() : SUPABASE_KEY;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...opts,
-    headers:{
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${bearer}`,
-      "Content-Type":"application/json",
-      ...(opts.headers||{})
+  // timeoutMs を付けたときだけ、その時間で通信を打ち切る（入力画面の登録・更新で使う。2026年11月16日〜）。
+  // 付けないときは今までと同じ動き。
+  const { timeoutMs, ...fetchOpts } = opts;
+  let ctrl = null, timer = null;
+  if(timeoutMs){ ctrl = new AbortController(); timer = setTimeout(()=> ctrl.abort(), timeoutMs); }
+  try{
+    let res;
+    try{
+      res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        ...fetchOpts,
+        ...(ctrl ? { signal: ctrl.signal } : {}),
+        headers:{
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${bearer}`,
+          "Content-Type":"application/json",
+          ...(fetchOpts.headers||{})
+        }
+      });
+    }catch(e){
+      if(!timeoutMs) throw e;
+      const err = new Error(e && e.name === 'AbortError'
+        ? `通信が${Math.round(timeoutMs/1000)}秒たっても終わりませんでした`
+        : '通信できませんでした（ネットワークが不安定です）');
+      err.isNetwork = true;
+      throw err;
     }
-  });
-  if(!res.ok){
-    const t = await res.text().catch(()=> "");
-    throw new Error(`Supabase error ${res.status}: ${t}`);
+    if(!res.ok){
+      const t = await res.text().catch(()=> "");
+      throw new Error(`Supabase error ${res.status}: ${t}`);
+    }
+    const text = await res.text();
+    if(!text) return null;
+    try{ return JSON.parse(text); }
+    catch(e){ console.warn('JSON解析失敗:', text); return null; }
+  }finally{
+    if(timer) clearTimeout(timer);
   }
-  const text = await res.text();
-  if(!text) return null;
-  try{ return JSON.parse(text); }
-  catch(e){ console.warn('JSON解析失敗:', text); return null; }
+}
+
+/* ---------- 入力画面の「登録する」「更新する」（2026年11月16日〜） ----------
+   ・保存している間はボタンを「登録中…」にして押せなくし、エンターキーでも二重に登録しない
+     （それまでは、通信が止まっている間に何回か押すと、通信が戻ったときにまとめて送られ、同じ記録が2〜3件できていた）
+   ・4秒たっても終わらないときは「通信に時間がかかっています」と知らせる
+   ・20秒たっても終わらないときは通信を打ち切り、実は登録できていたかをデータベースで確かめてから知らせる */
+const SAVE_TIMEOUT_MS = 20000;
+const SAVING_BUTTONS = new Set();
+async function runSave(btnId, work){
+  if(SAVING_BUTTONS.has(btnId)){
+    showToast('いま登録しています。終わるまでお待ちください');
+    return;
+  }
+  SAVING_BUTTONS.add(btnId);
+  const btn = document.getElementById(btnId);
+  const origText = btn ? btn.textContent : '';
+  const busyText = origText === '更新する' ? '更新中…' : '登録中…';
+  if(btn){ btn.disabled = true; btn.textContent = busyText; }
+  const slowTimer = setTimeout(()=>{
+    showToast('通信に時間がかかっています。そのままお待ちください（ボタンは押し直さなくて大丈夫です）', 15000);
+  }, 4000);
+  try{
+    await work();
+  }finally{
+    clearTimeout(slowTimer);
+    SAVING_BUTTONS.delete(btnId);
+    if(btn){
+      btn.disabled = false;
+      if(btn.textContent === busyText) btn.textContent = origText;
+    }
+  }
+}
+// 「列=eq.値」の条件をつなげる（値が空なら「列=is.null」）
+function sbEqFilter(obj){
+  return Object.entries(obj).map(([k,v]) =>
+    (v === null || v === undefined) ? `${k}=is.null` : `${k}=eq.${encodeURIComponent(v)}`
+  ).join('&');
+}
+// 新しい記録を1件登録する。通信が途切れたときは、同じ中身の記録がこの2分の間にできていないかを確かめ、
+// できていれば成功として扱う（押し直して同じ記録が2件にならないようにするため）。
+async function sbInsertChecked(table, payload, matchFields){
+  const startedAt = Date.now();
+  try{
+    return await sb(table, {
+      method:'POST', headers:{'Prefer':'return=representation'},
+      body: JSON.stringify(payload), timeoutMs: SAVE_TIMEOUT_MS
+    });
+  }catch(e){
+    if(!e.isNetwork) throw e;
+    const since = new Date(startedAt - 120000).toISOString();
+    let found;
+    try{
+      found = await sb(`${table}?select=id&${sbEqFilter(matchFields)}&created_at=gte.${encodeURIComponent(since)}&order=id.desc&limit=1`, { timeoutMs: 15000 });
+    }catch(e2){
+      throw new Error(e.message + '。登録できたかどうか確かめられませんでした。一覧で登録されているか確かめてから、必要ならもう一度登録してください');
+    }
+    if(found && found.length){
+      found.recovered = true; // 呼んだ側で「通信が不安定でしたが、登録できていました」と出す
+      return found;
+    }
+    throw new Error(e.message + '。登録はされていません。もう一度「登録する」を押してください');
+  }
+}
+// 記録を直す（更新）。同じ中身で何度送っても結果は同じなので、失敗したらそのまま押し直してよい
+async function sbUpdateChecked(path, body){
+  try{
+    return await sb(path, {
+      method:'PATCH', headers:{'Prefer':'return=minimal'},
+      body: JSON.stringify(body), timeoutMs: SAVE_TIMEOUT_MS
+    });
+  }catch(e){
+    if(!e.isNetwork) throw e;
+    throw new Error(e.message + '。もう一度「更新する」を押してください');
+  }
 }
 
 /* ---------- 1000件対策：全件を1000件ずつ区切って読み込む ---------- */
@@ -2988,8 +3083,7 @@ async function submitRecord(){
     if(!confirm('カードNo.に対応する車番が見つかりません。このまま登録しますか？')) return;
   }
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
+  await runSave('submit-btn', async () => {
   try{
     const payload = {
       record_date: date,
@@ -3004,30 +3098,23 @@ async function submitRecord(){
       note: note || null
     };
     if(EDITING_ID){
-      await sb(`waste_records?id=eq.${EDITING_ID}`, {
-        method:'PATCH',
-        headers:{ 'Prefer':'return=minimal' },
-        body: JSON.stringify(payload)
-      });
+      await sbUpdateChecked(`waste_records?id=eq.${EDITING_ID}`, payload);
       showToast(`更新しました（正味重量: ${(total-empty).toLocaleString()} kg）`);
       clearForm();
       switchTab('list');
     }else{
-      const inserted = await sb('waste_records', {
-        method:'POST',
-        headers:{ 'Prefer':'return=representation' },
-        body: JSON.stringify(payload)
-      });
+      const inserted = await sbInsertChecked('waste_records', payload,
+        { record_date: date, receipt_no: receipt, card_no: card, total_weight: total, empty_weight: empty });
       if(inserted && inserted[0]) NEWLY_ADDED_IDS.add(inserted[0].id);
-      showToast(`登録し、一覧に反映されました（正味重量: ${(total-empty).toLocaleString()} kg）`);
+      showToast((inserted && inserted.recovered ? '通信が不安定でしたが、登録できていました' : '登録し、一覧に反映されました')
+        + `（正味重量: ${(total-empty).toLocaleString()} kg）`, inserted && inserted.recovered ? 6000 : 2600);
       clearForm();
     }
   }catch(e){
-    showToast((EDITING_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 10000);
     console.error(e);
-  }finally{
-    btn.disabled = false;
   }
+  });
 }
 
 /* ---------- 一覧 ---------- */
@@ -3991,26 +4078,24 @@ async function submitIWRecord(){
     note: note || null
   };
 
+  await runSave('iw-submit-btn', async () => {
   try{
     if(EDITING_IW_ID){
-      await sb(`industrial_waste_records?id=eq.${EDITING_IW_ID}`, {
-        method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
-      });
+      await sbUpdateChecked(`industrial_waste_records?id=eq.${EDITING_IW_ID}`, { ...payload, updated_at: new Date().toISOString() });
       showToast('記録を更新しました');
     }else{
-      await sb('industrial_waste_records', {
-        method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify(payload)
-      });
-      showToast('記録を登録しました');
+      const inserted = await sbInsertChecked('industrial_waste_records', payload,
+        { record_date: date, vendor_name: vendor, item_name: item, total_weight: total, tare_weight: tare });
+      if(inserted && inserted.recovered) showToast('通信が不安定でしたが、登録できていました', 6000);
+      else showToast('記録を登録しました');
     }
     clearIWForm();
     loadIWList();
   }catch(e){
-    showToast((EDITING_IW_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_IW_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 10000);
     console.error(e);
   }
+  });
 }
 
 function editIWRecord(id){
@@ -4502,26 +4587,24 @@ async function submitMBRecord(){
     note: note || null, total_amount: totalAmount
   };
 
+  await runSave('mb-submit-btn', async () => {
   try{
     if(EDITING_MB_ID){
-      await sb(`mb_records?id=eq.${EDITING_MB_ID}`, {
-        method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
-      });
+      await sbUpdateChecked(`mb_records?id=eq.${EDITING_MB_ID}`, { ...payload, updated_at: new Date().toISOString() });
       showToast('記録を更新しました');
     }else{
-      await sb('mb_records', {
-        method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify(payload)
-      });
-      showToast('記録を登録しました');
+      const inserted = await sbInsertChecked('mb_records', payload,
+        { record_date: date, fluorescent_kg: f, mercury_lamp_kg: m, battery_kg: b, secondary_battery_kg: s, button_battery_kg: bt, total_amount: totalAmount });
+      if(inserted && inserted.recovered) showToast('通信が不安定でしたが、登録できていました', 6000);
+      else showToast('記録を登録しました');
     }
     clearMBForm();
     loadMBRecords();
   }catch(e){
-    showToast((EDITING_MB_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_MB_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 10000);
     console.error(e);
   }
+  });
 }
 
 function editMBRecord(id){
@@ -4827,26 +4910,24 @@ async function submitMatRecord(){
     note: note || null
   };
 
+  await runSave('mat-submit-btn', async () => {
   try{
     if(EDITING_MAT_ID){
-      await sb(`material_purchases?id=eq.${EDITING_MAT_ID}`, {
-        method:'PATCH', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ ...payload, updated_at: new Date().toISOString() })
-      });
+      await sbUpdateChecked(`material_purchases?id=eq.${EDITING_MAT_ID}`, { ...payload, updated_at: new Date().toISOString() });
       showToast('記録を更新しました');
     }else{
-      await sb('material_purchases', {
-        method:'POST', headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify(payload)
-      });
-      showToast('記録を登録しました');
+      const inserted = await sbInsertChecked('material_purchases', payload,
+        { purchase_date: date, vendor_name: vendor, item_name: item, quantity: payload.quantity });
+      if(inserted && inserted.recovered) showToast('通信が不安定でしたが、登録できていました', 6000);
+      else showToast('記録を登録しました');
     }
     clearMatForm();
     loadMatRecords();
   }catch(e){
-    showToast((EDITING_MAT_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 6000);
+    showToast((EDITING_MAT_ID ? '更新' : '登録') + 'に失敗しました: ' + e.message, 10000);
     console.error(e);
   }
+  });
 }
 
 function editMatRecord(id){
