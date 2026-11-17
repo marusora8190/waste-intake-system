@@ -850,6 +850,46 @@
         <label>備考</label>
         <input type="text" id="iw-note" placeholder="任意">
       </div>
+
+      <!-- 再生資材も一緒に購入する（2026年11月17日〜）。新規登録のときだけ出る -->
+      <div class="field full" id="iw-mat-box">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:var(--ink-dark);">
+          <input type="checkbox" id="iw-mat-check" onchange="onIWMatCheckChange()" style="width:18px;height:18px;flex:none;">
+          再生資材も一緒に購入する（「再生資材・雑品購入」にも、同じ日付・業者・備考で1件登録します）
+        </label>
+        <div id="iw-mat-fields" style="display:none;margin-top:8px;padding:10px 12px;border:1px dashed var(--line, #d9c9b6);border-radius:8px;">
+          <div class="field-grid">
+            <div class="field">
+              <label>品名（再生資材） *</label>
+              <input type="text" id="iw-mat-item" list="iw-mat-item-suggestions" autocomplete="off" placeholder="例: 再生CR-M" oninput="onIWMatItemChange()">
+              <datalist id="iw-mat-item-suggestions"></datalist>
+            </div>
+            <div class="field">
+              <label>単位</label>
+              <select id="iw-mat-unit">
+                <option value="ｔ" selected>ｔ</option>
+                <option value="㎥">㎥</option>
+                <option value="缶">缶</option>
+                <option value="枚">枚</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>数量 *</label>
+              <input type="number" id="iw-mat-qty" class="num-field" step="1" inputmode="numeric" value="1" oninput="recalcIWMatPreview()">
+            </div>
+            <div class="field">
+              <label>単価（円）</label>
+              <input type="number" id="iw-mat-price" class="num-field" step="1" inputmode="decimal" oninput="recalcIWMatPreview()">
+              <div class="field-hint" id="iw-mat-price-hint"></div>
+            </div>
+            <div class="field">
+              <label>金額（円）</label>
+              <input type="text" id="iw-mat-amount" class="calc-field" readonly value="0">
+            </div>
+          </div>
+          <div class="field-hint">チェックと品名・単位・数量は、業者ごとに覚えておき、次に同じ業者を入れたときに自動で入ります。</div>
+        </div>
+      </div>
     </div>
 
     <div class="btn-row">
@@ -1757,10 +1797,19 @@ function sbEqFilter(obj){
     (v === null || v === undefined) ? `${k}=is.null` : `${k}=eq.${encodeURIComponent(v)}`
   ).join('&');
 }
-// 新しい記録を1件登録する。通信が途切れたときは、同じ中身の記録がこの2分の間にできていないかを確かめ、
+// 新しい記録を1件登録する。通信が途切れたときは、同じ中身の記録が登録の直前より後にできていないかを確かめ、
 // できていれば成功として扱う（押し直して同じ記録が2件にならないようにするため）。
+// 「直前より後」は、登録の直前にいちばん大きい番号（id）を読んでおき、それより大きい番号で見る
+// （2026年11月17日〜。それまでは「この2分の間」で見ていたが、再生資材のように1分ほどあけて
+//   同じ中身を続けて入れることがあり、前の記録を今の記録とまちがえるおそれがあったため）。
+//   直前の番号を読めなかったときだけ、登録を始めた時刻の30秒前より後で見る。
 async function sbInsertChecked(table, payload, matchFields){
   const startedAt = Date.now();
+  let maxIdBefore = null;
+  try{
+    const last = await sb(`${table}?select=id&order=id.desc&limit=1`, { timeoutMs: 10000 });
+    maxIdBefore = (last && last[0]) ? Number(last[0].id) : 0;
+  }catch(e){ maxIdBefore = null; }
   try{
     return await sb(table, {
       method:'POST', headers:{'Prefer':'return=representation'},
@@ -1768,10 +1817,12 @@ async function sbInsertChecked(table, payload, matchFields){
     });
   }catch(e){
     if(!e.isNetwork) throw e;
-    const since = new Date(startedAt - 120000).toISOString();
+    const after = maxIdBefore !== null
+      ? `id=gt.${maxIdBefore}`
+      : `created_at=gte.${encodeURIComponent(new Date(startedAt - 30000).toISOString())}`;
     let found;
     try{
-      found = await sb(`${table}?select=id&${sbEqFilter(matchFields)}&created_at=gte.${encodeURIComponent(since)}&order=id.desc&limit=1`, { timeoutMs: 15000 });
+      found = await sb(`${table}?select=id&${sbEqFilter(matchFields)}&${after}&order=id.desc&limit=1`, { timeoutMs: 15000 });
     }catch(e2){
       throw new Error(e.message + '。登録できたかどうか確かめられませんでした。一覧で登録されているか確かめてから、必要ならもう一度登録してください');
     }
@@ -1897,6 +1948,7 @@ function switchTab(name){
   if(name==='invoice') loadInvoiceTab();
   if(name==='iwinput'){
     loadIWPriceList();
+    loadIWMatPriceOptions(); // 再生資材も一緒に購入する欄の品名・単価（2026年11月17日〜）
     setTimeout(() => { document.getElementById('iw-date').focus(); }, 50);
   }
   if(name==='iwlist') loadIWList();
@@ -2952,6 +3004,7 @@ document.getElementById('mat-date').addEventListener('blur', function(){ normali
 bindEnterNav(['c-card','c-department','c-car-type','c-vehicle'], () => submitCard());            // ① カード管理
 bindEnterNav(['i-date-from','i-date-to']);                                                       // ① 請求書照合の期間
 bindEnterNav(['iwp-item','iwp-price','iwp-unit','iwp-cond','iwp-note'], () => submitIWPrice());          // ② 廃材単価表
+bindEnterNav(['iw-mat-item','iw-mat-unit','iw-mat-qty','iw-mat-price'], () => submitIWRecord());        // ② 廃材入力の「再生資材も一緒に購入する」（2026年11月17日〜）
 bindEnterNav(['mbp-蛍光灯','mbp-水銀灯','mbp-電池','mbp-二次電池','mbp-ボタン電池','mbl-under','mbl-電池','mbl-二次電池','mbl-ボタン電池','mbf-持込手数料','mbf-事務手数料'], () => saveMBPrices()); // ② 蛍光灯等の単価設定
 bindEnterNav(['mb-date','mb-fluorescent','mb-mercury','mb-battery','mb-secondary','mb-button','mb-intake-fee','mb-admin-fee','mb-note'], () => submitMBRecord()); // ② 蛍光灯・水銀灯・電池処理
 bindEnterNav(['mat-date','mat-vendor','mat-item','mat-unit','mat-qty','mat-price','mat-note'], () => submitMatRecord()); // ② 再生資材・雑品購入入力
@@ -3817,6 +3870,84 @@ function onIWVendorChange(){
   updateIWWeightLabels(vendor);
   refreshIWItemSuggestions();
   onIWItemChange();
+  applyIWMatPrefs(vendor);
+}
+
+/* ---------- 廃材入力：再生資材も一緒に購入する（2026年11月17日〜） ----------
+   ㈱ITO奈良などでは、廃材を下ろした車に再生資材を積んで帰ることが多い。
+   チェックを入れて登録すると、廃材の記録（industrial_waste_records）に続けて、
+   同じ日付・業者・備考で再生資材・雑品購入（material_purchases）にも1件登録する。
+   チェックと品名・単位・数量は、業者ごとにこの端末（localStorage）に覚えておく。
+   新規登録のときだけ出る（編集のときは出さない）。 */
+const IW_MAT_PREFS_KEY = 'iwMatPrefsByVendor';
+let IW_MAT_PREFS_VENDOR = null; // いま入力欄に覚えた内容を入れてある業者
+function loadIWMatPrefs(){
+  try{ return JSON.parse(localStorage.getItem(IW_MAT_PREFS_KEY) || '{}') || {}; }catch(e){ return {}; }
+}
+function saveIWMatPrefs(vendor, prefs){
+  if(!vendor) return;
+  try{
+    const all = loadIWMatPrefs();
+    all[vendor] = prefs;
+    localStorage.setItem(IW_MAT_PREFS_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+// 業者が変わったら、その業者で前に使ったチェック・品名・単位・数量を入れる
+function applyIWMatPrefs(vendor){
+  if(vendor === IW_MAT_PREFS_VENDOR) { refreshIWMatItemSuggestions(); return; }
+  IW_MAT_PREFS_VENDOR = vendor;
+  const p = vendor ? loadIWMatPrefs()[vendor] : null;
+  document.getElementById('iw-mat-check').checked = !!(p && p.checked);
+  document.getElementById('iw-mat-item').value = (p && p.item) || '';
+  document.getElementById('iw-mat-unit').value = (p && p.unit) || 'ｔ';
+  document.getElementById('iw-mat-qty').value = (p && p.qty != null && p.qty !== '') ? p.qty : '1';
+  refreshIWMatItemSuggestions();
+  onIWMatCheckChange();
+  onIWMatItemChange();
+}
+function refreshIWMatItemSuggestions(){
+  const dl = document.getElementById('iw-mat-item-suggestions');
+  if(!dl) return;
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const hasVendor = vendor && MAT_PRICE_LIST.some(r => r.vendor_name === vendor);
+  const items = MAT_PRICE_LIST.filter(r => !hasVendor || r.vendor_name === vendor).map(r=>r.item_name).filter(Boolean);
+  dl.innerHTML = [...new Set(items)].map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}"></option>`).join('');
+}
+function onIWMatCheckChange(){
+  const on = document.getElementById('iw-mat-check').checked;
+  document.getElementById('iw-mat-fields').style.display = on ? '' : 'none';
+}
+function onIWMatItemChange(){
+  const vendor = document.getElementById('iw-vendor').value.trim();
+  const item = document.getElementById('iw-mat-item').value.trim();
+  const hint = document.getElementById('iw-mat-price-hint');
+  const match = MAT_PRICE_LIST.find(r => r.vendor_name === vendor && r.item_name === item);
+  if(match && match.unit_price!==null && match.unit_price!==undefined){
+    document.getElementById('iw-mat-price').value = match.unit_price;
+    hint.textContent = '再生資材・雑品単価表から自動入力しました（変更可）';
+    hint.style.color = 'var(--muted)';
+  }else if(vendor && item){
+    hint.textContent = '※再生資材・雑品単価表に単価がありません。単価を手入力してください';
+    hint.style.color = '#c94f3c';
+  }else{
+    hint.textContent = '';
+  }
+  recalcIWMatPreview();
+}
+function recalcIWMatPreview(){
+  const qty = Number(document.getElementById('iw-mat-qty').value) || 0;
+  const price = Number(document.getElementById('iw-mat-price').value) || 0;
+  document.getElementById('iw-mat-amount').value = Math.round(qty * price).toLocaleString();
+}
+// 新規登録のときだけ出す
+function updateIWMatBoxVisibility(){
+  document.getElementById('iw-mat-box').style.display = EDITING_IW_ID ? 'none' : '';
+}
+// 再生資材・雑品単価表を読み込み、品名の候補と単価を入れ直す（廃材入力を開いたとき）
+async function loadIWMatPriceOptions(){
+  await loadMatPriceList();
+  refreshIWMatItemSuggestions();
+  if(document.getElementById('iw-mat-item').value.trim()) onIWMatItemChange();
 }
 
 // 単価の表示用（15000 → 15,000）。空のときは空欄
@@ -4031,6 +4162,9 @@ function clearIWForm(){
   updateIWWeightLabels('');
   refreshIWItemSuggestions();
   recalcIWPreview();
+  IW_MAT_PREFS_VENDOR = null;
+  applyIWMatPrefs('');       // 再生資材の欄も空に戻す（業者を入れると、その業者で前に使った内容が入る）
+  updateIWMatBoxVisibility();
 }
 
 function cancelIWEdit(){ clearIWForm(); }
@@ -4056,6 +4190,20 @@ async function submitIWRecord(){
     showToast('日付・運搬先（業者）・品名・総重量は必須です（日付は 9/15 のように入力できます）');
     return;
   }
+
+  // 再生資材も一緒に購入する（新規登録のときだけ。2026年11月17日〜）
+  const withMat = !EDITING_IW_ID && document.getElementById('iw-mat-check').checked;
+  const matItem = document.getElementById('iw-mat-item').value.trim();
+  const matUnit = document.getElementById('iw-mat-unit').value;
+  const matQty = document.getElementById('iw-mat-qty').value;
+  const matPrice = document.getElementById('iw-mat-price').value;
+  if(withMat && (!matItem || matQty==='' || isNaN(Number(matQty)))){
+    showToast('「再生資材も一緒に購入する」の品名・数量を入れてください（買わないときはチェックを外してください）', 6000);
+    document.getElementById(matItem ? 'iw-mat-qty' : 'iw-mat-item').focus();
+    return;
+  }
+  // チェックの有無と品名・単位・数量を、この業者の分として覚えておく
+  if(!EDITING_IW_ID) saveIWMatPrefs(vendor, { checked: withMat, item: matItem, unit: matUnit, qty: matQty });
 
   const total = parseCommaNumber(totalRaw);
   const tare = tareRaw==='' ? 0 : parseCommaNumber(tareRaw);
@@ -4086,8 +4234,33 @@ async function submitIWRecord(){
     }else{
       const inserted = await sbInsertChecked('industrial_waste_records', payload,
         { record_date: date, vendor_name: vendor, item_name: item, total_weight: total, tare_weight: tare });
-      if(inserted && inserted.recovered) showToast('通信が不安定でしたが、登録できていました', 6000);
-      else showToast('記録を登録しました');
+      const recovered = !!(inserted && inserted.recovered);
+      if(withMat){
+        // 廃材の登録ができてから、再生資材を登録する
+        const matPayload = {
+          purchase_date: date,
+          vendor_name: vendor,
+          item_name: matItem,
+          unit: matUnit || null,
+          quantity: Number(matQty),
+          unit_price: matPrice==='' ? null : Number(matPrice),
+          note: note || null
+        };
+        try{
+          const mi = await sbInsertChecked('material_purchases', matPayload,
+            { purchase_date: date, vendor_name: vendor, item_name: matItem, quantity: Number(matQty), note: note || null });
+          showToast(((recovered || (mi && mi.recovered)) ? '通信が不安定でしたが、' : '')
+            + `廃材と再生資材（${matItem} ${Number(matQty).toLocaleString()}${matUnit}）を登録しました`, 6000);
+        }catch(me){
+          // 廃材は登録できているので、入力欄は空に戻し、再生資材だけを入れ直してもらう
+          showToast('廃材は登録しましたが、再生資材の登録に失敗しました。「再生資材・雑品購入入力」で入れてください: ' + me.message, 15000);
+          console.error(me);
+        }
+        loadMatRecords();
+      }else{
+        if(recovered) showToast('通信が不安定でしたが、登録できていました', 6000);
+        else showToast('記録を登録しました');
+      }
     }
     clearIWForm();
     loadIWList();
@@ -4125,6 +4298,7 @@ function editIWRecord(id){
   document.getElementById('iw-note').value = r.note || '';
   document.getElementById('iw-submit-btn').textContent = '更新する';
   document.getElementById('iw-edit-banner').style.display = '';
+  updateIWMatBoxVisibility(); // 編集のときは「再生資材も一緒に購入する」を出さない
   updateIWWeightLabels(r.vendor_name || '');
   refreshIWItemSuggestions();
   recalcIWPreview();
