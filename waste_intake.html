@@ -315,6 +315,12 @@
   .list-sort-lock-msg{color:#c0392b;font-size:13px;font-weight:700;}
   .btn.sort-locked{opacity:.45;cursor:not-allowed;}
   #vehicle-thead th, #department-thead th{padding-top:4px;padding-bottom:4px;}
+  /* 一覧の「列の幅を自動調整」（2026年11月17日〜）：表を画面いっぱいに広げず、各列を中身の幅に合わせる */
+  .table-wrap.fit-cols{width:fit-content;max-width:100%;}
+  .table-wrap.fit-cols > table{width:auto;}
+  #tab-iwlist .table-wrap.fit-cols table th:nth-child(12), #tab-iwlist .table-wrap.fit-cols table td:nth-child(12){width:auto;min-width:0;max-width:none;}
+  #tab-iwlist .table-wrap.fit-cols .iw-note-text{max-width:none;overflow:visible;}
+  .btn.fit-cols-on{background:var(--accent-bg);border-color:var(--ink);color:var(--ink-dark);}
   .compact-cols{table-layout:auto;width:auto;min-width:0;}
   .compact-cols th, .compact-cols td{padding:8px 6px;}
   .compact-cols th.num, .compact-cols td.num{white-space:nowrap;width:1%;}
@@ -670,6 +676,7 @@
       <button type="button" class="btn btn-primary" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
       <button type="button" class="btn" id="list-sort-entry-btn" onclick="setListSortMode('entry')">登録順に並びかえ</button>
       <span id="list-sort-lock-msg" class="list-sort-lock-msg" style="display:none;">すべて✔が完了するまでソートできません</span>
+      <button type="button" class="btn" id="fit-btn-list" onclick="toggleFitCols('list')">列の幅を自動調整</button>
       <button type="button" class="btn" onclick="exportListToExcel()">Excelで書き出し</button>
       <button type="button" class="btn" id="cleanup-toggle-btn" onclick="toggleCleanupSection()">古いデータの整理</button>
       <div class="list-summary" id="list-summary"></div>
@@ -906,6 +913,7 @@
       <button type="button" class="btn" id="iwlist-sort-date-btn" onclick="setIWListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn" id="iwlist-sort-date-desc-btn" onclick="setIWListSortMode('date-desc')">日付逆順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="iwlist-sort-entry-btn" onclick="setIWListSortMode('entry')">登録順に並びかえ</button>
+      <button type="button" class="btn" id="fit-btn-iwlist" onclick="toggleFitCols('iwlist')">列の幅を自動調整</button>
       <button type="button" class="btn" onclick="exportIWListToExcel()">Excelで書き出し</button>
       <div class="list-summary" id="iwlist-summary"></div>
     </div>
@@ -1130,6 +1138,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理 一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
+        <button type="button" class="btn" id="fit-btn-mb" onclick="toggleFitCols('mb')">列の幅を自動調整</button>
         <button type="button" class="btn" onclick="exportMBListToExcel()">Excelで書き出し</button>
         <div class="list-summary" id="mb-summary"></div>
       </div>
@@ -1215,11 +1224,12 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
       <div class="form-title" style="margin:0;">再生材・雑品購入 一覧</div>
       <div style="display:flex;gap:10px;align-items:center;">
+        <button type="button" class="btn" id="fit-btn-mat" onclick="toggleFitCols('mat')">列の幅を自動調整</button>
         <button type="button" class="btn" onclick="exportMatListToExcel()">Excelで書き出し</button>
         <div class="list-summary" id="mat-summary"></div>
       </div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="mat-table-wrap">
       <table>
         <thead>
           <tr>
@@ -4489,6 +4499,35 @@ function renderIWListFiltered(){
   document.getElementById('iwlist-summary').textContent = `${rows.length}件 ／ 小計合計 ${totalAmount.toLocaleString()} 円`;
   markIWNoteCut();
 }
+
+// ===== 一覧の「列の幅を自動調整」（2026年11月17日〜） =====
+// 押すと、表を画面いっぱいに広げず、各列を中身の幅に合わせる（廃材一覧の備考は全文を出す）。
+// もう一度押すと元の幅に戻す。一覧ごとに、この端末（localStorage）に覚えておく。
+const FIT_COLS_KEY = 'fitColsByList';
+const FIT_COLS_WRAP = { list:'list-table-wrap', iwlist:'iwlist-table-wrap', mb:'mb-table-wrap', mat:'mat-table-wrap' };
+function loadFitCols(){
+  try{ return JSON.parse(localStorage.getItem(FIT_COLS_KEY) || '{}') || {}; }catch(e){ return {}; }
+}
+function applyFitCols(name, on){
+  const wrap = document.getElementById(FIT_COLS_WRAP[name]);
+  const btn = document.getElementById('fit-btn-' + name);
+  if(wrap) wrap.classList.toggle('fit-cols', on);
+  if(btn){
+    btn.textContent = on ? '列の幅を元に戻す' : '列の幅を自動調整';
+    btn.classList.toggle('fit-cols-on', on);
+  }
+  if(name === 'iwlist') markIWNoteCut();
+}
+function toggleFitCols(name){
+  const all = loadFitCols();
+  all[name] = !all[name];
+  try{ localStorage.setItem(FIT_COLS_KEY, JSON.stringify(all)); }catch(e){}
+  applyFitCols(name, all[name]);
+}
+(function initFitCols(){
+  const all = loadFitCols();
+  Object.keys(FIT_COLS_WRAP).forEach(n => applyFitCols(n, !!all[n]));
+})();
 
 // ===== 廃材一覧の「備考」：入りきらない文字は「…」、そこにマウスを載せると全文を浮かび上がらせる =====
 // 文字が「…」になっている備考にだけ印（is-cut）を付ける
