@@ -479,6 +479,8 @@
 
   .list-toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .list-summary{color:var(--ink-dark);font-size:15px;font-weight:700;margin-left:auto;}
+  /* 一覧の題名の横の「○年○月〜○年○月のデータがあります」（2026年11月25日〜） */
+  .data-range{margin-left:10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;}
 
   .toast{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -670,7 +672,7 @@
   <!-- 一覧タブ -->
   <div class="panel" id="tab-list" style="display:none;">
     <div class="list-toolbar">
-      <div class="form-title" style="margin:0;">一覧</div>
+      <div class="form-title" style="margin:0;">一覧<span class="data-range" id="list-range"></span></div>
       <button type="button" class="btn" id="list-filter-toggle-btn" onclick="toggleListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="list-sort-date-btn" onclick="setListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn btn-primary" id="list-sort-date-desc-btn" onclick="setListSortMode('date-desc')">日付逆順に並びかえ</button>
@@ -908,7 +910,7 @@
   <!-- 産廃：一覧タブ -->
   <div class="panel" id="tab-iwlist" style="display:none;">
     <div class="list-toolbar">
-      <div class="form-title" style="margin:0;">産業廃棄物処理 一覧</div>
+      <div class="form-title" style="margin:0;">産業廃棄物処理 一覧<span class="data-range" id="iwlist-range"></span></div>
       <button type="button" class="btn" id="iwlist-filter-toggle-btn" onclick="toggleIWListFilters()">検索欄を隠す</button>
       <button type="button" class="btn" id="iwlist-sort-date-btn" onclick="setIWListSortMode('date')">日付順に並びかえ</button>
       <button type="button" class="btn" id="iwlist-sort-date-desc-btn" onclick="setIWListSortMode('date-desc')">日付逆順に並びかえ</button>
@@ -1136,7 +1138,7 @@
   <!-- 産廃：蛍光灯・水銀灯・電池処理の一覧（2026年10月30日に「蛍光灯・水銀灯・電池処理」の入力画面の下から移した） -->
   <div class="panel" id="tab-mblist" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理 一覧</div>
+      <div class="form-title" style="margin:0;">蛍光灯・水銀灯・電池処理 一覧<span class="data-range" id="mb-range"></span></div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button type="button" class="btn" id="fit-btn-mb" onclick="toggleFitCols('mb')">列の幅を自動調整</button>
         <button type="button" class="btn" onclick="exportMBListToExcel()">Excelで書き出し</button>
@@ -1222,7 +1224,7 @@
   <!-- 再生材：一覧タブ -->
   <div class="panel" id="tab-matlist" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="form-title" style="margin:0;">再生材・雑品購入 一覧</div>
+      <div class="form-title" style="margin:0;">再生材・雑品購入 一覧<span class="data-range" id="mat-range"></span></div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button type="button" class="btn" id="fit-btn-mat" onclick="toggleFitCols('mat')">列の幅を自動調整</button>
         <button type="button" class="btn" onclick="exportMatListToExcel()">Excelで書き出し</button>
@@ -1624,6 +1626,7 @@
             <li>②産業廃棄物のサイドバーの「🔑 管理者メニュー」（パスワードは管理者が別に保管）を開くと「マスター管理」が出ます。廃棄物処理委託契約書の工事名・契約相手会社・契約区分・排出場所・廃棄物種類・予定数量・単位の選択肢を、追加・修正・削除・並べ替えできます（表：waste_contract_masters。2026年10月16日〜）。新規登録では、契約相手会社・契約区分・単位は選ぶ欄、ほかは選ぶか手で入れる欄です。画面の表示を分けるだけで、データベースの制限ではありません（選択肢の削除だけは、削除用の管理者パスワードが必要）。</li>
             <li>①ごみの「一覧」のいちばん右（備考の右）に「確認」の列があります（2026年11月2日〜。表：waste_records の confirmed）。新しく入力した記録は✔が入っていない状態で、✔を入れるまで、絞り込みに関係なく一覧のいちばん上に入力した順で並び、行がうすい赤になります。✔の入っていない記録がある間は、並びかえのボタンは使えません（「すべて✔が完了するまでソートできません」と出ます）。それまでに入力してあった記録は、すべて確認済みにしました。車番の列は、入っている文字の幅だけにしています。</li>
             <li>3つの請求書照合の画面（①ごみ・②㈱ITO、㈱ガイアート・②野村興産㈱）のいちばん下に「請求書の一覧」があり、これまでに保存した請求書の金額を、新しい月から順に出します（年・月・請求書金額。見出しは2026年11月2日に「何年何月分」から「年・月」にした。表の中の月は「R8.9月分」の形〔同日〜〕。㈱ITO、㈱ガイアートの画面では業者ごとに分け、業者名を左上に出す〔左半分に㈱ITO奈良、右半分に㈱ガイアート。それぞれ半年ごとの塊を1つの表に縦につなげ〔塊の境目の線は少し濃い〕、期間は業者名の下に列全体の分を1行で出す。スマホでは縦に並べる〕。半年ごと〔4月〜9月分・10月〜翌年3月分〕の塊に分けて横に並べ、新しい4つ〔2年分〕だけを出す。それより古い分は画面に出さないだけで、データベースには残る。見るだけで、直すときは上の照合で入れ直す。2026年11月2日〜）。表：invoices〔車番の無い行だけ〕・material_invoices〔野村興産㈱の行は出さない〕・mb_invoices。</li>
+            <li>①ごみの「一覧」・②産業廃棄物の「産業廃棄物処理 一覧」「蛍光灯・水銀灯・電池処理 一覧」「再生材・雑品購入 一覧」の題名の横に、「（2025年4月〜2026年11月のデータがあります）」のように、データベースに残っている記録のいちばん古い月〜いちばん新しい月を出します（日付欄で数える。絞り込みには関係なく全部の記録で数える。「古いデータの整理」で消すと、古い方の月が変わる。2026年11月25日〜）。</li>
             <li>①②の入力画面は、エンターキーで次の欄へ進みます。最後の欄でエンターを押すと、登録（保存）します（委託契約書は「＋ 行を追加」へ進みます）。日本語の変換を決めるときのエンターでは進みません（2026年10月15日〜）。</li>
             <li>廃棄物処理委託契約書の廃棄物種類は、「コンクリート」を「Co」、「アスファルト」を「As」と書きます。「コンクリート」「アスファルト」と入れても、保存するときに自動で「Co」「As」になります（2026年10月15日〜）。廃材・再生資材の品名と単価表は「コンクリート」「アスファルト」のままです（同日の午前にいったん「Co」「As」に書き換えましたが、夕方に元に戻しました）。</li>
           </ul>
@@ -3277,12 +3280,33 @@ function setupListSearchFilters(){
   deptEl.dataset.bound = '1';
 }
 
+// ===== 一覧の「○年○月〜○年○月のデータがあります」（2026年11月25日〜） =====
+// 読み込んだ記録（1000件対策の部品で全件）の日付欄のいちばん古い月〜いちばん新しい月を、一覧の題名の横に出す。
+// 絞り込みに関係なく、データベースにある全部の記録で数える。
+function showDataRange(elId, rows, col){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  let min = '', max = '';
+  (rows || []).forEach(r => {
+    const d = String((r && r[col]) || '');
+    if(!/^\d{4}-\d{2}/.test(d)) return;
+    if(!min || d < min) min = d;
+    if(!max || d > max) max = d;
+  });
+  const ym = d => `${Number(d.slice(0,4))}年${Number(d.slice(5,7))}月`;
+  if(!min){ el.textContent = '（データはまだありません）'; return; }
+  el.textContent = ym(min) === ym(max)
+    ? `（${ym(min)}のデータがあります）`
+    : `（${ym(min)}〜${ym(max)}のデータがあります）`;
+}
+
 async function loadList(){
   const body = document.getElementById('list-body');
   body.innerHTML = '<tr><td colspan="14">読み込み中…</td></tr>';
   try{
     const rows = await sbAll('waste_records?select=*&order=id.desc&limit=5000');
     ALL_LIST_RECORDS = rows || [];
+    showDataRange('list-range', ALL_LIST_RECORDS, 'record_date');
     populateListYearFilter();
     populateListMonthFilter();
     setupListSearchFilters();
@@ -4346,6 +4370,7 @@ async function loadIWList(){
   try{
     const rows = await sbAll('industrial_waste_records?select=*&order=id.desc&limit=5000');
     ALL_IW_RECORDS = rows || [];
+    showDataRange('iwlist-range', ALL_IW_RECORDS, 'record_date');
     populateIWDriverVehicleOptions();
     populateIWVendorOptions();
     populateIWListYearFilter();
@@ -4857,6 +4882,7 @@ async function loadMBRecords(){
   try{
     const rows = await sbAll('mb_records?select=*&order=record_date.desc,id.desc&limit=2000');
     ALL_MB_RECORDS = rows || [];
+    showDataRange('mb-range', ALL_MB_RECORDS, 'record_date');
     renderMBList();
   }catch(e){
     if(body) body.innerHTML = `<tr><td colspan="11">読み込みに失敗しました: ${e.message}</td></tr>`;
@@ -5178,6 +5204,7 @@ async function loadMatRecords(){
   try{
     const rows = await sbAll('material_purchases?select=*&order=purchase_date.desc,id.desc&limit=2000');
     ALL_MAT_RECORDS = rows || [];
+    showDataRange('mat-range', ALL_MAT_RECORDS, 'purchase_date');
     populateMatVendorOptions();
     populateMatNoteOptions();
     renderMatList();
